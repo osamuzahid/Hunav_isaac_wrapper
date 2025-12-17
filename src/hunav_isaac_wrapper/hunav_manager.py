@@ -216,7 +216,7 @@ class HuNavManager:
             preexec_fn=os.setsid,
         )
 
-        self._hunav_processes = [process_1, process_2, process_3]
+        self._hunav_processes = [process_1, process_2] #, process_3]
 
     def close_hunav_nodes(self):
         for process in self._hunav_processes:

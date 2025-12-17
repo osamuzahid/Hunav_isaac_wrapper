@@ -150,16 +150,8 @@ def main():
         print("❌ Error: Cannot find main.py script")
         print("Make sure the package is properly installed or you're in the correct workspace.")
         return 1
-    
-    # Get package share directory for resources
-    share_dir = get_package_share_directory()
-    print(f"Using package share directory: {share_dir}")
     print(f"Using script: {main_script}")
     print("HuNav Isaac Wrapper Launcher")
-    
-    # Change to share directory so main.py can find resources
-    original_cwd = os.getcwd()
-    os.chdir(share_dir)
     
     # Build command
     cmd_parts = isaac_python.split() + [main_script]
@@ -200,9 +192,6 @@ def main():
     except Exception as e:
         print(f"❌ Error executing command: {e}")
         return 1
-    finally:
-        # Restore original working directory
-        os.chdir(original_cwd)
 
 
 if __name__ == "__main__":

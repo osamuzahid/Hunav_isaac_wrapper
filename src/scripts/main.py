@@ -36,39 +36,78 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 src_dir = os.path.dirname(script_dir)
 workspace_root = os.path.dirname(src_dir)
 
-# Try to detect if we're in development or installed mode
-if os.path.basename(src_dir) == "src":
-    # Development mode - running from src directory
-    BASE_WRAPPER = workspace_root
-    CONFIG_DIR = os.path.join(src_dir, "scenarios")
-    WORLDS_DIR = os.path.join(src_dir, "worlds") 
-    CONFIG_CONFIG_DIR = os.path.join(src_dir, "config")
-elif "lib" in script_dir and "hunav_isaac_wrapper" in script_dir:
-    # Installed ROS2 package mode - running from install/lib/hunav_isaac_wrapper/
-    # The ROS2 launcher should have set the working directory to the share directory
-    current_dir = os.getcwd()
-    if os.path.isdir(os.path.join(current_dir, "scenarios")):
-        # We're in the ROS2 package share directory
-        BASE_WRAPPER = current_dir
-        CONFIG_DIR = os.path.join(current_dir, "scenarios")
-        WORLDS_DIR = os.path.join(current_dir, "worlds")
-        CONFIG_CONFIG_DIR = os.path.join(current_dir, "config")
+# Try to detect source directory locations
+SOURCE_PATHS = [
+    "/workspace/hunav_isaac_ws/src/Hunav_isaac_wrapper",  # Docker container
+    os.path.join(os.path.expanduser("~"), "Hunav_isaac_wrapper"),  # Home directory
+    os.path.join(workspace_root, "src"),  # Colcon workspace src directory
+]
+
+# Check for source directory first
+source_found = False
+for source_path in SOURCE_PATHS:
+    scenarios_path = os.path.join(source_path, "scenarios")
+    # Verify this is actually a source directory, not the installed share directory
+    if os.path.isdir(scenarios_path) and "install" not in source_path and "share" not in source_path:
+        BASE_WRAPPER = source_path
+        CONFIG_DIR = scenarios_path
+        WORLDS_DIR = os.path.join(source_path, "worlds")
+        CONFIG_CONFIG_DIR = os.path.join(source_path, "config")
+        source_found = True
+        break
+
+# If no source directory found, use detection logic
+if not source_found:
+    if os.path.basename(src_dir) == "src":
+        # Development mode - running from src directory
+        BASE_WRAPPER = workspace_root
+        CONFIG_DIR = os.path.join(src_dir, "scenarios")
+        WORLDS_DIR = os.path.join(src_dir, "worlds") 
+        CONFIG_CONFIG_DIR = os.path.join(src_dir, "config")
+    elif "lib" in script_dir and "hunav_isaac_wrapper" in script_dir:
+        # Installed ROS2 package mode - try to find source directory relative to install
+        parts = script_dir.split(os.sep)
+        if "install" in parts:
+            install_idx = parts.index("install")
+            possible_workspace = os.sep.join(parts[:install_idx])
+            possible_src = os.path.join(possible_workspace, "src", "scenarios")
+            if os.path.isdir(possible_src):
+                BASE_WRAPPER = os.path.join(possible_workspace, "src")
+                CONFIG_DIR = possible_src
+                WORLDS_DIR = os.path.join(possible_workspace, "src", "worlds")
+                CONFIG_CONFIG_DIR = os.path.join(possible_workspace, "src", "config")
+            else:
+                # Fall back to share directory only if source not found
+                current_dir = os.getcwd()
+                if os.path.isdir(os.path.join(current_dir, "scenarios")):
+                    BASE_WRAPPER = current_dir
+                    CONFIG_DIR = os.path.join(current_dir, "scenarios")
+                    WORLDS_DIR = os.path.join(current_dir, "worlds")
+                    CONFIG_CONFIG_DIR = os.path.join(current_dir, "config")
+                else:
+                    BASE_WRAPPER = workspace_root
+                    CONFIG_DIR = os.path.join(BASE_WRAPPER, "scenarios")
+                    WORLDS_DIR = os.path.join(BASE_WRAPPER, "worlds")
+                    CONFIG_CONFIG_DIR = os.path.join(BASE_WRAPPER, "config")
+        else:
+            # Final fallback to current directory
+            current_dir = os.getcwd()
+            if os.path.isdir(os.path.join(current_dir, "scenarios")):
+                BASE_WRAPPER = current_dir
+                CONFIG_DIR = os.path.join(current_dir, "scenarios")
+                WORLDS_DIR = os.path.join(current_dir, "worlds")
+                CONFIG_CONFIG_DIR = os.path.join(current_dir, "config")
+            else:
+                BASE_WRAPPER = workspace_root
+                CONFIG_DIR = os.path.join(BASE_WRAPPER, "scenarios")
+                WORLDS_DIR = os.path.join(BASE_WRAPPER, "worlds")
+                CONFIG_CONFIG_DIR = os.path.join(BASE_WRAPPER, "config")
     else:
-        # Fallback to old paths for backward compatibility
-        HOME_WRAPPER = os.path.expanduser("~/Hunav_isaac_wrapper")
-        DOCKER_WRAPPER = "/workspace/hunav_isaac_ws/src/Hunav_isaac_wrapper"
-        BASE_WRAPPER = DOCKER_WRAPPER if os.path.isdir(DOCKER_WRAPPER) else HOME_WRAPPER
+        # Final fallback
+        BASE_WRAPPER = workspace_root
         CONFIG_DIR = os.path.join(BASE_WRAPPER, "scenarios")
         WORLDS_DIR = os.path.join(BASE_WRAPPER, "worlds")
         CONFIG_CONFIG_DIR = os.path.join(BASE_WRAPPER, "config")
-else:
-    # Fallback to old paths for backward compatibility
-    HOME_WRAPPER = os.path.expanduser("~/Hunav_isaac_wrapper")
-    DOCKER_WRAPPER = "/workspace/hunav_isaac_ws/src/Hunav_isaac_wrapper"
-    BASE_WRAPPER = DOCKER_WRAPPER if os.path.isdir(DOCKER_WRAPPER) else HOME_WRAPPER
-    CONFIG_DIR = os.path.join(BASE_WRAPPER, "scenarios")
-    WORLDS_DIR = os.path.join(BASE_WRAPPER, "worlds")
-    CONFIG_CONFIG_DIR = os.path.join(BASE_WRAPPER, "config")
 
 LAST_CONFIG_FILE = os.path.join(CONFIG_CONFIG_DIR, "last_launch_config.json")
 

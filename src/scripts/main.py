@@ -38,7 +38,7 @@ workspace_root = os.path.dirname(src_dir)
 
 # Try to detect source directory locations
 SOURCE_PATHS = [
-    "/workspace/hunav_isaac_ws/src/Hunav_isaac_wrapper",  # Docker container
+    "/workspace/hunav_isaac_ws/src/Hunav_isaac_wrapper/src",  # Docker container
     os.path.join(os.path.expanduser("~"), "Hunav_isaac_wrapper"),  # Home directory
     os.path.join(workspace_root, "src"),  # Colcon workspace src directory
 ]

@@ -1,3 +1,21 @@
+# Forked for isaac-social-nav (Isaac Sim 6.0.1 + ROS 2 Jazzy)
+
+Fork of [robotics-upo/Hunav_isaac_wrapper](https://github.com/robotics-upo/Hunav_isaac_wrapper) (`v2.0`) for the [isaac-social-nav](https://github.com/osamuzahid/isaac-social-nav) dissertation stack.
+
+**Why forked:** upstream targets Isaac Sim 4.5 / ROS 2 Humble / Ubuntu 22.04. This branch ports the wrapper onto **Isaac Sim 6.0.1** and **ROS 2 Jazzy** (Ubuntu 24.04).
+
+**What changed vs upstream (branch `isaac-6.0-jazzy`):**
+- Remapped CDN asset paths (Biped_Setup, Jetbot/Create3/Carter USDs) that 404 on Isaac 6.0 content
+- AnimGraph `speed` variable authored as uniform float (fixes compile / type-mismatch on 6.0)
+- PhysX subscribe via `get_physx_interface` (old `acquire_physx_interface` removed)
+- Laptop/debug `SimulationApp` profiles (`HUNAV_ISAAC_PROFILE=debug|laptop|default|lab`) via `sim_app_config.py`
+- Fixed `ros2 run … hunav_isaac_launcher` resource paths for this colcon layout; added `empty_world_agents` preset
+- In-source notes: search `ORIGINALLY` / `PATCH (isaac-social-nav)`
+
+Parent project docs: [isaac-social-nav](https://github.com/osamuzahid/isaac-social-nav) (`README.md`, `docs/ENVIRONMENT.md`).
+
+---
+
 # **HuNav Isaac Wrapper**  
 
 A standalone simulation wrapper for **NVIDIA Isaac Sim**, integrating the **Human Navigation Simulator ([HuNavSim](https://github.com/robotics-upo/hunav_sim))** with **physics-based animations** and **ROS 2 integration**.
@@ -10,9 +28,8 @@ This repository is actively developed and subject to improvements.
 
 ### ✅ **Tested Configurations**  
 
-- **ROS 2 Humble**  
-- **Isaac Sim 4.5**  
-- **Ubuntu 22.04 LTS**  
+- **This fork (`isaac-6.0-jazzy`):** ROS 2 Jazzy, Isaac Sim 6.0.1, Ubuntu 24.04  
+- **Upstream `v2.0`:** ROS 2 Humble, Isaac Sim 4.5, Ubuntu 22.04 LTS  
 
 ## 🔹 **Overview**  
 

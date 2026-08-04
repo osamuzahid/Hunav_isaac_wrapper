@@ -12,4 +12,7 @@ __pycache__/
 # Temporary files   
 *.tmp
 *.swp
-*~  
+*~
+# Runtime launcher state (written by main.py)
+src/config/last_launch_config.json
+**/last_launch_config.json

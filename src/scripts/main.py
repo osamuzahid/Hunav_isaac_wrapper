@@ -36,83 +36,108 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 src_dir = os.path.dirname(script_dir)
 workspace_root = os.path.dirname(src_dir)
 
-# Try to detect source directory locations
-SOURCE_PATHS = [
-    "/workspace/hunav_isaac_ws/src/Hunav_isaac_wrapper/src",  # Docker container
-    os.path.join(os.path.expanduser("~"), "Hunav_isaac_wrapper"),  # Home directory
-    os.path.join(workspace_root, "src"),  # Colcon workspace src directory
-]
+# ---------------------------------------------------------------------------
+# ORIGINALLY (upstream v2.0): path probe used SOURCE_PATHS ending in
+#   <workspace_root>/src
+# and, for installed `lib/.../main.py`, fell back to
+#   <ros2_ws>/src/scenarios
+# then to <install_prefix>/scenarios.
+# Had to be patched because:
+#   1) this repo's layout is ros2_ws/src/Hunav_isaac_wrapper/src/scenarios
+#      (not ros2_ws/src/scenarios)
+#   2) colcon installs scenarios under share/hunav_isaac_wrapper/scenarios,
+#      not install/hunav_isaac_wrapper/scenarios
+#   So `ros2 run hunav_isaac_wrapper hunav_isaac_launcher` failed immediately
+#   with "Scenarios directory not found".
+# ---------------------------------------------------------------------------
+# PATCH (isaac-social-nav): resolve CONFIG_DIR / WORLDS_DIR from (in order)
+# source checkout, ament share, then cwd. Prefer source when present so
+# --symlink-install edits are picked up without a reinstall dance.
+# ---------------------------------------------------------------------------
+def _resolve_wrapper_resource_dirs():
+    candidates = []
 
-# Check for source directory first
-source_found = False
-for source_path in SOURCE_PATHS:
-    scenarios_path = os.path.join(source_path, "scenarios")
-    # Verify this is actually a source directory, not the installed share directory
-    if os.path.isdir(scenarios_path) and "install" not in source_path and "share" not in source_path:
-        BASE_WRAPPER = source_path
-        CONFIG_DIR = scenarios_path
-        WORLDS_DIR = os.path.join(source_path, "worlds")
-        CONFIG_CONFIG_DIR = os.path.join(source_path, "config")
-        source_found = True
-        break
+    # Docker / home checkouts (upstream locations)
+    candidates.append("/workspace/hunav_isaac_ws/src/Hunav_isaac_wrapper/src")
+    candidates.append(os.path.join(os.path.expanduser("~"), "Hunav_isaac_wrapper"))
+    candidates.append(
+        os.path.join(os.path.expanduser("~"), "Hunav_isaac_wrapper", "src")
+    )
 
-# If no source directory found, use detection logic
-if not source_found:
-    if os.path.basename(src_dir) == "src":
-        # Development mode - running from src directory
-        BASE_WRAPPER = workspace_root
-        CONFIG_DIR = os.path.join(src_dir, "scenarios")
-        WORLDS_DIR = os.path.join(src_dir, "worlds") 
-        CONFIG_CONFIG_DIR = os.path.join(src_dir, "config")
-    elif "lib" in script_dir and "hunav_isaac_wrapper" in script_dir:
-        # Installed ROS2 package mode - try to find source directory relative to install
+    # Dev: script lives under .../Hunav_isaac_wrapper/src/scripts
+    if os.path.basename(src_dir) == "src" and os.path.isdir(
+        os.path.join(src_dir, "scenarios")
+    ):
+        candidates.append(src_dir)
+
+    # Installed: .../install/hunav_isaac_wrapper/lib/hunav_isaac_wrapper/main.py
+    # -> prefer sibling source tree under the colcon workspace.
+    if "install" in script_dir.split(os.sep) and "lib" in script_dir.split(os.sep):
         parts = script_dir.split(os.sep)
-        if "install" in parts:
-            install_idx = parts.index("install")
-            possible_workspace = os.sep.join(parts[:install_idx])
-            possible_src = os.path.join(possible_workspace, "src", "scenarios")
-            if os.path.isdir(possible_src):
-                BASE_WRAPPER = os.path.join(possible_workspace, "src")
-                CONFIG_DIR = possible_src
-                WORLDS_DIR = os.path.join(possible_workspace, "src", "worlds")
-                CONFIG_CONFIG_DIR = os.path.join(possible_workspace, "src", "config")
-            else:
-                # Fall back to share directory only if source not found
-                current_dir = os.getcwd()
-                if os.path.isdir(os.path.join(current_dir, "scenarios")):
-                    BASE_WRAPPER = current_dir
-                    CONFIG_DIR = os.path.join(current_dir, "scenarios")
-                    WORLDS_DIR = os.path.join(current_dir, "worlds")
-                    CONFIG_CONFIG_DIR = os.path.join(current_dir, "config")
-                else:
-                    BASE_WRAPPER = workspace_root
-                    CONFIG_DIR = os.path.join(BASE_WRAPPER, "scenarios")
-                    WORLDS_DIR = os.path.join(BASE_WRAPPER, "worlds")
-                    CONFIG_CONFIG_DIR = os.path.join(BASE_WRAPPER, "config")
-        else:
-            # Final fallback to current directory
-            current_dir = os.getcwd()
-            if os.path.isdir(os.path.join(current_dir, "scenarios")):
-                BASE_WRAPPER = current_dir
-                CONFIG_DIR = os.path.join(current_dir, "scenarios")
-                WORLDS_DIR = os.path.join(current_dir, "worlds")
-                CONFIG_CONFIG_DIR = os.path.join(current_dir, "config")
-            else:
-                BASE_WRAPPER = workspace_root
-                CONFIG_DIR = os.path.join(BASE_WRAPPER, "scenarios")
-                WORLDS_DIR = os.path.join(BASE_WRAPPER, "worlds")
-                CONFIG_CONFIG_DIR = os.path.join(BASE_WRAPPER, "config")
-    else:
-        # Final fallback
-        BASE_WRAPPER = workspace_root
-        CONFIG_DIR = os.path.join(BASE_WRAPPER, "scenarios")
-        WORLDS_DIR = os.path.join(BASE_WRAPPER, "worlds")
-        CONFIG_CONFIG_DIR = os.path.join(BASE_WRAPPER, "config")
+        install_idx = parts.index("install")
+        ws = os.sep.join(parts[:install_idx])
+        candidates.append(
+            os.path.join(ws, "src", "Hunav_isaac_wrapper", "src")
+        )
+        candidates.append(os.path.join(ws, "src", "hunav_isaac_wrapper", "src"))
+        # ament share (installed resources)
+        candidates.append(
+            os.path.join(
+                ws, "install", "hunav_isaac_wrapper", "share", "hunav_isaac_wrapper"
+            )
+        )
+        # prefix inferred from script location
+        install_prefix = os.sep.join(parts[: parts.index("lib")])
+        candidates.append(
+            os.path.join(install_prefix, "share", "hunav_isaac_wrapper")
+        )
+
+    # ament index (works after sourcing install/setup.bash)
+    try:
+        from ament_index_python.packages import get_package_share_directory
+
+        candidates.append(get_package_share_directory("hunav_isaac_wrapper"))
+    except Exception:
+        pass
+
+    # cwd fallbacks
+    cwd = os.getcwd()
+    candidates.append(cwd)
+    candidates.append(os.path.join(cwd, "src"))
+
+    seen = set()
+    for base in candidates:
+        if not base or base in seen:
+            continue
+        seen.add(base)
+        scenarios = os.path.join(base, "scenarios")
+        if os.path.isdir(scenarios):
+            return (
+                base,
+                scenarios,
+                os.path.join(base, "worlds"),
+                os.path.join(base, "config"),
+            )
+
+    # Last resort (will fail validation with a clear path)
+    base = workspace_root
+    return (
+        base,
+        os.path.join(base, "scenarios"),
+        os.path.join(base, "worlds"),
+        os.path.join(base, "config"),
+    )
+
+
+BASE_WRAPPER, CONFIG_DIR, WORLDS_DIR, CONFIG_CONFIG_DIR = (
+    _resolve_wrapper_resource_dirs()
+)
+os.makedirs(CONFIG_CONFIG_DIR, exist_ok=True)
 
 LAST_CONFIG_FILE = os.path.join(CONFIG_CONFIG_DIR, "last_launch_config.json")
 
 # built-in presets
-PRESETS = {"warehouse_agents", "hospital_agents", "office_agents"}
+PRESETS = {"warehouse_agents", "hospital_agents", "office_agents", "empty_world_agents"}
 KNOWN_WORLDS = {"warehouse", "hospital", "office", "empty_world"}
 ROBOTS = ["jetbot", "create3", "carter", "carter_ROS"]
 
@@ -335,6 +360,7 @@ Examples:
   {sys.argv[0]} --config custom_config.yaml --world office --robot jetbot
   {sys.argv[0]} --batch                  # Non-interactive mode with defaults
   {sys.argv[0]} --debug --batch          # Laptop/debug SimulationApp profile
+  {sys.argv[0]} --debug --batch --robot jetbot --world empty_world --config empty_world_agents
   {sys.argv[0]} --profile lab --batch    # Lab/default 1280x720 windowed
   HUNAV_ISAAC_PROFILE=laptop {sys.argv[0]} --batch
 

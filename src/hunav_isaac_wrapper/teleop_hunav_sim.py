@@ -9,14 +9,34 @@ Contains the TeleopHuNavSim class which combines:
 """
 from isaacsim import SimulationApp
 
-# Start Isaac Sim
-CONFIG = {
-    "width": 1280,
-    "height": 720,
-    "sync_loads": True,
-    "headless": False,
-    "renderer": "RaytracedLighting",
-}
+# ---------------------------------------------------------------------------
+# ORIGINALLY (upstream v2.0): hard-coded SimulationApp CONFIG — kept for reference.
+# Had to be patched because this laptop is under Isaac 6.0 minima (8GB VRAM / ~16GB
+# RAM): always launching 1280x720 windowed RaytracedLighting OOMs / thrashes swap.
+# ---------------------------------------------------------------------------
+# CONFIG = {
+#     "width": 1280,
+#     "height": 720,
+#     "sync_loads": True,
+#     "headless": False,
+#     "renderer": "RaytracedLighting",
+# }
+# simulation_app = SimulationApp(CONFIG)
+# ---------------------------------------------------------------------------
+# PATCH (isaac-social-nav): selectable profiles via sim_app_config.py
+# (HUNAV_ISAAC_PROFILE / --profile / --debug). default|lab keeps the original
+# 1280x720 windowed settings; debug|laptop uses 960x540 headless so bring-up
+# and E2E smoke can run on this host. Also injects Kit --enable for anim graph.
+# ---------------------------------------------------------------------------
+from .sim_app_config import build_simulation_config, simulation_app_kwargs
+
+_CONFIG_FULL = build_simulation_config()
+CONFIG = simulation_app_kwargs(_CONFIG_FULL)
+print(
+    f"[hunav_isaac_wrapper] SimulationApp profile={_CONFIG_FULL.get('_profile')} "
+    f"{CONFIG.get('width')}x{CONFIG.get('height')} headless={CONFIG.get('headless')} "
+    f"renderer={CONFIG.get('renderer')}"
+)
 simulation_app = SimulationApp(CONFIG)
 
 import os
@@ -149,12 +169,60 @@ class TeleopHuNavSim(Node):
         if map_name == "empty_world":
             self.world.scene.add_default_ground_plane()
 
-        # Define configuration for each wheeled robot available
+        # ---------------------------------------------------------------------------
+        # ORIGINALLY (upstream v2.0) — Isaac 4.5/5.x robot USD layout. Kept for reference.
+        # Had to be patched because on Isaac 6.0 CDN these paths return HTTP 404
+        # (robots moved under NVIDIA/ / iRobot/Create3/; Carter sensors USD gone;
+        # carter_ROS zip not extracted by default).
+        # ---------------------------------------------------------------------------
+        # robot_configs = {
+        #     "jetbot": {
+        #         "name": "Jetbot",
+        #         "usd_relative_path": os.path.join(
+        #             "Isaac", "Robots", "Jetbot", "jetbot.usd"
+        #         ),
+        #         "wheel_dof_names": ["left_wheel_joint", "right_wheel_joint"],
+        #         "wheel_radius": 0.0325,
+        #         "wheel_base": 0.118,
+        #     },
+        #     "create3": {
+        #         "name": "Create3",
+        #         "usd_relative_path": os.path.join(
+        #             "Isaac", "Robots", "iRobot", "create_3.usd"
+        #         ),
+        #         "wheel_dof_names": ["left_wheel_joint", "right_wheel_joint"],
+        #         "wheel_radius": 0.03575,
+        #         "wheel_base": 0.233,
+        #     },
+        #     "carter": {
+        #         "name": "Nova_Carter",
+        #         "usd_relative_path": os.path.join(
+        #             "Isaac", "Robots", "Carter", "nova_carter_sensors.usd"
+        #         ),
+        #         "wheel_dof_names": ["joint_wheel_left", "joint_wheel_right"],
+        #         "wheel_radius": 0.14,
+        #         "wheel_base": 0.413,
+        #     },
+        #     "carter_ROS": {
+        #         "name": "Nova_Carter",
+        #         "usd_relative_path": find_robot_config_path(
+        #             "nova_carter_ros2_sensors.usd"
+        #         ),
+        #         "wheel_dof_names": ["joint_wheel_left", "joint_wheel_right"],
+        #         "wheel_radius": 0.14,
+        #         "wheel_base": 0.413,
+        #     },
+        # }
+        # ---------------------------------------------------------------------------
+        # PATCH (isaac-social-nav): remap usd_relative_path to Isaac 6.0 CDN locations
+        # verified HTTP 200 + omni.client.stat OK. Wheel DOFs / radii unchanged.
+        # Important so robots actually spawn instead of failing asset resolve.
+        # ---------------------------------------------------------------------------
         robot_configs = {
             "jetbot": {
                 "name": "Jetbot",
                 "usd_relative_path": os.path.join(
-                    "Isaac", "Robots", "Jetbot", "jetbot.usd"
+                    "Isaac", "Robots", "NVIDIA", "Jetbot", "jetbot.usd"
                 ),
                 "wheel_dof_names": ["left_wheel_joint", "right_wheel_joint"],
                 "wheel_radius": 0.0325,
@@ -163,7 +231,7 @@ class TeleopHuNavSim(Node):
             "create3": {
                 "name": "Create3",
                 "usd_relative_path": os.path.join(
-                    "Isaac", "Robots", "iRobot", "create_3.usd"
+                    "Isaac", "Robots", "iRobot", "Create3", "create_3.usd"
                 ),
                 "wheel_dof_names": ["left_wheel_joint", "right_wheel_joint"],
                 "wheel_radius": 0.03575,
@@ -172,7 +240,7 @@ class TeleopHuNavSim(Node):
             "carter": {
                 "name": "Nova_Carter",
                 "usd_relative_path": os.path.join(
-                    "Isaac", "Robots", "Carter", "nova_carter_sensors.usd"
+                    "Isaac", "Robots", "NVIDIA", "NovaCarter", "nova_carter.usd"
                 ),
                 "wheel_dof_names": ["joint_wheel_left", "joint_wheel_right"],
                 "wheel_radius": 0.14,
@@ -180,7 +248,9 @@ class TeleopHuNavSim(Node):
             },
             "carter_ROS": {
                 "name": "Nova_Carter",
-                "usd_relative_path": find_robot_config_path("nova_carter_ros2_sensors.usd"),
+                "usd_relative_path": os.path.join(
+                    "Isaac", "Samples", "ROS2", "Robots", "Nova_Carter_ROS.usd"
+                ),
                 "wheel_dof_names": ["joint_wheel_left", "joint_wheel_right"],
                 "wheel_radius": 0.14,
                 "wheel_base": 0.413,
@@ -318,7 +388,19 @@ class TeleopHuNavSim(Node):
 
     def run(self):
         self.world.reset()
-        self.physx_interface = omni.physx.acquire_physx_interface()
+        # ---------------------------------------------------------------------------
+        # ORIGINALLY (upstream v2.0):
+        # self.physx_interface = omni.physx.acquire_physx_interface()
+        # Had to be patched because Isaac 6.0 renamed the API to get_physx_interface
+        # (AttributeError: module 'omni.physx' has no attribute 'acquire_physx_interface').
+        # ---------------------------------------------------------------------------
+        # PATCH (isaac-social-nav): prefer get_physx_interface, fall back to acquire_*
+        # so physics step subscription works on Isaac 6.0 (and older if present).
+        # ---------------------------------------------------------------------------
+        _physx = getattr(omni.physx, "get_physx_interface", None) or getattr(
+            omni.physx, "acquire_physx_interface", None
+        )
+        self.physx_interface = _physx()
         self.physx_sub = self.physx_interface.subscribe_physics_step_events(
             self._on_physics_step
         )

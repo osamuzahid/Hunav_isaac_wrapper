@@ -33,6 +33,20 @@ import carb
 # Import auxiliary animation functions
 from .animation_utils import *
 
+# ---------------------------------------------------------------------------
+# ORIGINALLY (upstream v2.0): only retarget was enabled here, then graph imported:
+#   enable_extension("omni.anim.retarget.core")
+#   import omni.anim.graph.core as ag
+# Had to be patched because on Isaac 6.0.1 (isaacsim.exp.base.python) 
+# omni.anim.graph.core is NOT loaded by default → ModuleNotFoundError.
+# Prefer Kit-start --enable via sim_app_config extra_args; also request both
+# extensions here. Do NOT pump app.update() after enable_extension — that
+# crashed Kit (OmniGraph / exit 139) during E2E on this host.
+# ---------------------------------------------------------------------------
+# PATCH (isaac-social-nav): enable graph + retarget before importing ag so
+# AnimationGraph / retarget APIs resolve on Isaac 6.0.
+# ---------------------------------------------------------------------------
+enable_extension("omni.anim.graph.core")
 enable_extension("omni.anim.retarget.core")
 
 import omni.anim.graph.core as ag
@@ -121,9 +135,23 @@ class HuNavManager:
         else:
             self.config = None
 
-        # Define the default character source asset (for animation retargeting)
-        self.default_biped_usd = os.path.join(
-            self.assets_root, "Isaac/People/Characters/Biped_Setup.usd"
+        # ---------------------------------------------------------------------------
+        # ORIGINALLY (upstream v2.0) — Isaac 4.5/5.x People content path:
+        # self.default_biped_usd = os.path.join(
+        #     self.assets_root, "Isaac/People/Characters/Biped_Setup.usd"
+        # )
+        # Had to be patched because Isaac 6.0 CDN returns HTTP 404 for that path
+        # (People/Characters/Biped_Setup.usd removed; still present on 5.1 content).
+        # Without a valid biped USD, retarget source skeleton + AnimationGraph
+        # cannot be loaded for pedestrian agents.
+        # ---------------------------------------------------------------------------
+        # PATCH (isaac-social-nav): use the AnimGraph-hosted Biped_Setup.usd that
+        # Isaac 6.0's own omni.anim.graph tests use (HTTP 200; same biped_demo_meters
+        # / Skeleton / AnimationGraph prim layout). Important so agent retarget works.
+        # ---------------------------------------------------------------------------
+        self.default_biped_usd = (
+            "https://omniverse-content-production.s3-us-west-2.amazonaws.com/"
+            "Assets/AnimGraph/105.0/Test/Graph/Isaac/Biped_Setup.usd"
         )
 
     def _load_yaml(self, relative_path):

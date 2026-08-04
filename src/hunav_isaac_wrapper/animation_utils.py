@@ -88,6 +88,26 @@ def create_agent_animation_graph(stage, agent_prim, idle_anim_path, walk_anim_pa
     graph_path = Sdf.Path(f"{str(agent_prim.GetPath())}/AnimationGraph")
     anim_graph_prim = stage.DefinePrim(graph_path, "AnimationGraph")
 
+    # ---------------------------------------------------------------------------
+    # ORIGINALLY (upstream v2.0): graph was created, then Blend / clips / ReadVariable
+    # for "speed" — but anim:graph:variable:speed was NEVER declared on the graph
+    # prim at authoring time (only set later, optionally, in set_anim_graph_speed).
+    # Had to be patched because Isaac 6.0 failed to compile the graph:
+    #   Failed to compile asset '.../AnimationGraph'
+    #   Type mismatch for variable speed in Character::SetVariable
+    # ---------------------------------------------------------------------------
+    # PATCH (isaac-social-nav): declare custom *uniform* float
+    # anim:graph:variable:speed before ReadVariable (matches Isaac AnimGraph test
+    # USDs). Important so walk/idle blend compiles and set_variable("speed", ...) works.
+    # ---------------------------------------------------------------------------
+    speed_var = anim_graph_prim.CreateAttribute(
+        "anim:graph:variable:speed",
+        Sdf.ValueTypeNames.Float,
+        custom=True,
+        variability=Sdf.VariabilityUniform,
+    )
+    speed_var.Set(0.0)
+
     # Create and configure child nodes:
     # Blend node
     blend_path = graph_path.AppendChild("Blend")
@@ -107,8 +127,13 @@ def create_agent_animation_graph(stage, agent_prim, idle_anim_path, walk_anim_pa
     # ReadVariable node for speed
     speed_node_path = graph_path.AppendChild("speed")
     speed_node_prim = stage.DefinePrim(speed_node_path, "ReadVariable")
+    # ORIGINALLY: CreateAttribute("inputs:variableName", Token).Set("speed")
+    # PATCH: also mark custom + VariabilityUniform for Isaac 6.0 AnimGraph consistency.
     speed_node_prim.CreateAttribute(
-        "inputs:variableName", Sdf.ValueTypeNames.Token
+        "inputs:variableName",
+        Sdf.ValueTypeNames.Token,
+        custom=True,
+        variability=Sdf.VariabilityUniform,
     ).Set("speed")
 
     # Set up connections:
@@ -189,7 +214,7 @@ def setup_anim_retargeting(
 def set_anim_graph_speed(stage, anim_graph_character, graph_path, speed_value):
     """
     Sets the 'anim:graph:variable:speed' attribute on the AnimationGraph prim.
-    If the attribute does not exist, it is created.
+    If the attribute does not exist, it is created as a uniform float (Isaac 6.0).
 
     Args:
         stage: The USD stage.
@@ -204,7 +229,27 @@ def set_anim_graph_speed(stage, anim_graph_character, graph_path, speed_value):
 
     speed_attr = graph_prim.GetAttribute("anim:graph:variable:speed")
     if not speed_attr or not speed_attr.IsValid():
+        # ORIGINALLY (upstream v2.0):
+        # speed_attr = graph_prim.CreateAttribute(
+        #     "anim:graph:variable:speed", Sdf.ValueTypeNames.Float, custom=True
+        # )
+        # Had to be patched: Isaac 6.0 expects *uniform* float graph variables.
         speed_attr = graph_prim.CreateAttribute(
-            "anim:graph:variable:speed", Sdf.ValueTypeNames.Float, custom=True
+            "anim:graph:variable:speed",
+            Sdf.ValueTypeNames.Float,
+            custom=True,
+            variability=Sdf.VariabilityUniform,
         )
-    anim_graph_character.set_variable("speed", speed_value)
+    # ---------------------------------------------------------------------------
+    # ORIGINALLY (upstream v2.0):
+    #   anim_graph_character.set_variable("speed", speed_value)
+    # Had to be patched because callers pass numpy.float64 from np.clip(...);
+    # Character::SetVariable expects C++ float → "Type mismatch for variable speed".
+    # ---------------------------------------------------------------------------
+    # PATCH (isaac-social-nav): cast to Python float, sync USD attr, then set_variable.
+    # Important so walk/idle blend weight updates without compile/type errors.
+    # ---------------------------------------------------------------------------
+    speed_f = float(speed_value)
+    if speed_attr and speed_attr.IsValid():
+        speed_attr.Set(speed_f)
+    anim_graph_character.set_variable("speed", speed_f)

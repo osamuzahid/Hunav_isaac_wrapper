@@ -334,6 +334,12 @@ Examples:
   {sys.argv[0]} --config agents_warehouse --robot carter
   {sys.argv[0]} --config custom_config.yaml --world office --robot jetbot
   {sys.argv[0]} --batch                  # Non-interactive mode with defaults
+  {sys.argv[0]} --debug --batch          # Laptop/debug SimulationApp profile
+  {sys.argv[0]} --profile lab --batch    # Lab/default 1280x720 windowed
+  HUNAV_ISAAC_PROFILE=laptop {sys.argv[0]} --batch
+
+SimulationApp profiles: default|lab (1280x720 windowed) or debug|laptop (960x540 headless).
+Also: HUNAV_ISAAC_PROFILE, HUNAV_ISAAC_HEADLESS=0|1, --headless, --no-headless.
 
 Configuration files are searched in: {CONFIG_DIR}
         """
@@ -391,6 +397,20 @@ Configuration files are searched in: {CONFIG_DIR}
         action="store_true", 
         help="Enable verbose output"
     )
+
+    # PATCH (isaac-social-nav): NEW argparse flags for SimulationApp profiles.
+    # Upstream v2.0 had no --profile/--debug here. Needed so CLI can select
+    # laptop vs lab Kit settings before teleop imports SimulationApp.
+    try:
+        from hunav_isaac_wrapper.sim_app_config import add_profile_arguments
+        add_profile_arguments(parser)
+    except ImportError:
+        # Dev path before install: load sibling package from src/
+        _src = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        if _src not in sys.path:
+            sys.path.insert(0, _src)
+        from hunav_isaac_wrapper.sim_app_config import add_profile_arguments
+        add_profile_arguments(parser)
     
     return parser.parse_args()
 
@@ -511,6 +531,46 @@ def main():
             
     # Save configuration for future quick reuse
     save_last_config(config_path, world, robot)
+
+    # ---------------------------------------------------------------------------
+    # ORIGINALLY (upstream v2.0): went straight to launch_simulation(...) here.
+    # Nothing to comment out — this block is entirely NEW.
+    # Had to be added because teleop_hunav_sim imports SimulationApp at import
+    # time; profile/env must be applied BEFORE that import so laptop/debug
+    # settings take effect (see sim_app_config.py).
+    # ---------------------------------------------------------------------------
+    # PATCH (isaac-social-nav): resolve --profile / --debug / HUNAV_ISAAC_PROFILE
+    # into the environment, then launch. Important for under-spec laptop runs.
+    # ---------------------------------------------------------------------------
+    # Resolve SimulationApp profile before importing teleop (starts Kit at import).
+    profile = args.profile
+    if getattr(args, "debug", False) or getattr(args, "laptop", False):
+        profile = "debug" if args.debug else "laptop"
+    headless = None
+    if getattr(args, "headless", False):
+        headless = True
+    elif getattr(args, "no_headless", False):
+        headless = False
+    try:
+        from hunav_isaac_wrapper.sim_app_config import (
+            apply_profile_to_environ,
+            build_simulation_config,
+        )
+    except ImportError:
+        _src = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        if _src not in sys.path:
+            sys.path.insert(0, _src)
+        from hunav_isaac_wrapper.sim_app_config import (
+            apply_profile_to_environ,
+            build_simulation_config,
+        )
+    resolved = apply_profile_to_environ(profile=profile, headless=headless)
+    preview = build_simulation_config(profile=resolved, headless=headless)
+    print_info(
+        f"SimulationApp profile={resolved}: "
+        f"{preview.get('width')}x{preview.get('height')} "
+        f"headless={preview.get('headless')} renderer={preview.get('renderer')}"
+    )
     
     # Launch simulation
     launch_simulation(world, config_path, robot, args.verbose)

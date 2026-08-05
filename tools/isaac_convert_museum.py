@@ -33,7 +33,7 @@ simulation_app = SimulationApp(
 
 from omni.kit.asset_converter import AssetConverterContext, get_instance
 from omni.kit.async_engine import run_coroutine
-from pxr import Gf, PhysxSchema, Sdf, Usd, UsdGeom, UsdPhysics
+from pxr import Gf, PhysxSchema, Sdf, Usd, UsdGeom, UsdPhysics, UsdShade
 
 
 SRC_OBJ_DIR = os.environ.get("HUNAV_MUSEUM_OBJ_DIR", "/tmp/cucr_museum_src/obj")
@@ -43,6 +43,22 @@ OUT_DIR = os.path.abspath(
 ASSETS_DIR = os.path.join(OUT_DIR, "assets", "museum")
 MUSEUM_Z_OFFSET = 0.5  # Gazebo museum model.sdf visual pose z=0.5
 CONVERT_TIMEOUT_S = 180.0
+
+# ---------------------------------------------------------------------------
+# ORIGINALLY (CUCR cucr_worlds_museum floor.dae / Assimp floor.mtl)
+#   Kd / diffuse ≈ (0, 0.001, 0.8) — bright neon blue plane in Gazebo too.
+#   Faithful import looks wrong in Isaac for dissertation demos / screenshots.
+# PATCH (isaac-social-nav): after Isaac convert, force a light warm brown
+#   diffuse so the floor reads with the dark brown museum walls (not grey,
+#   not CUCR neon blue). Building mesh textures are untouched.
+# ---------------------------------------------------------------------------
+FLOOR_DIFFUSE_BROWN = Gf.Vec3f(0.62, 0.48, 0.34)
+
+# ---------------------------------------------------------------------------
+# ORIGINALLY: composed stage used DistantLight intensity 3000 (dim indoor look).
+# PATCH (isaac-social-nav): 5000 so museum walls/textures read better on laptop.
+# ---------------------------------------------------------------------------
+DISTANT_LIGHT_INTENSITY = 5000.0
 
 
 def _make_context() -> AssetConverterContext:
@@ -104,6 +120,42 @@ def convert_asset(src: str, dst: str) -> None:
     print(f"[convert] OK {dst} ({os.path.getsize(dst)} bytes)", flush=True)
 
 
+def patch_floor_diffuse(floor_usd: str) -> None:
+    """PATCH (isaac-social-nav): replace CUCR neon-blue floor with light brown.
+
+    ORIGINALLY the converted USD keeps Material.002 Kd=(0,~0,0.8) from
+    cucr_worlds_museum. Different on purpose — warm brown to sit with the
+    museum wall tones (see FLOOR_DIFFUSE_BROWN).
+    """
+    stage = Usd.Stage.Open(floor_usd)
+    if stage is None:
+        raise RuntimeError(f"Cannot open floor USD for material patch: {floor_usd}")
+
+    changed = 0
+    for prim in stage.Traverse():
+        if not prim.IsA(UsdShade.Shader):
+            continue
+        for attr_name in ("inputs:diffuseColor", "inputs:diffuse_tint", "inputs:color"):
+            attr = prim.GetAttribute(attr_name)
+            if attr and attr.Get() is not None:
+                old = attr.Get()
+                if hasattr(old, "__len__") and len(old) >= 3:
+                    attr.Set(FLOOR_DIFFUSE_BROWN)
+                    print(
+                        f"[patch] floor {prim.GetPath()} {attr_name}: "
+                        f"{old} -> {FLOOR_DIFFUSE_BROWN} "
+                        f"(ORIGINALLY CUCR neon blue; PATCH isaac-social-nav light brown)",
+                        flush=True,
+                    )
+                    changed += 1
+    stage.GetRootLayer().Save()
+    if changed == 0:
+        print(
+            "[patch] WARNING: no floor diffuse attrs found to recolor",
+            flush=True,
+        )
+
+
 def _mark_static_colliders(root_prim) -> None:
     UsdPhysics.RigidBodyAPI.Apply(root_prim)
     UsdPhysics.RigidBodyAPI(root_prim).CreateRigidBodyEnabledAttr(False)
@@ -147,7 +199,10 @@ def compose_museum_stage(museum_usd: str, floor_usd: str, out_usd: str) -> None:
     stage.SetDefaultPrim(world.GetPrim())
 
     light = stage.DefinePrim("/World/DistantLight", "DistantLight")
-    light.CreateAttribute("inputs:intensity", Sdf.ValueTypeNames.Float).Set(3000.0)
+    # ORIGINALLY 3000.0 — PATCH (isaac-social-nav): DISTANT_LIGHT_INTENSITY (brighter).
+    light.CreateAttribute("inputs:intensity", Sdf.ValueTypeNames.Float).Set(
+        DISTANT_LIGHT_INTENSITY
+    )
 
     # Gazebo poses were in Z-up; apply them after Y-up→Z-up rotate.
     _add_payload(
@@ -172,6 +227,12 @@ def compose_museum_stage(museum_usd: str, floor_usd: str, out_usd: str) -> None:
         if root and root.IsValid():
             _mark_static_colliders(root)
 
+    # ---------------------------------------------------------------------------
+    # ORIGINALLY: bare GroundPlane mesh (no material) → default white/empty look
+    #   from a top-down camera, which hid the patched museum_floor color.
+    # PATCH (isaac-social-nav): bind the same light-brown PreviewSurface so the
+    #   large ground matches the floor / walls instead of reading as blank white.
+    # ---------------------------------------------------------------------------
     ground = UsdGeom.Mesh.Define(stage, "/World/GroundPlane")
     size = 120.0
     ground.CreatePointsAttr(
@@ -189,6 +250,17 @@ def compose_museum_stage(museum_usd: str, floor_usd: str, out_usd: str) -> None:
     UsdPhysics.MeshCollisionAPI.Apply(ground.GetPrim()).CreateApproximationAttr().Set(
         "none"
     )
+    if not stage.GetPrimAtPath("/World/Looks"):
+        stage.DefinePrim("/World/Looks", "Scope")
+    mat = UsdShade.Material.Define(stage, "/World/Looks/GroundBrown")
+    shader = UsdShade.Shader.Define(stage, "/World/Looks/GroundBrown/Shader")
+    shader.CreateIdAttr("UsdPreviewSurface")
+    shader.CreateInput("diffuseColor", Sdf.ValueTypeNames.Color3f).Set(
+        FLOOR_DIFFUSE_BROWN
+    )
+    shader.CreateInput("roughness", Sdf.ValueTypeNames.Float).Set(0.8)
+    mat.CreateSurfaceOutput().ConnectToSource(shader.ConnectableAPI(), "surface")
+    UsdShade.MaterialBindingAPI.Apply(ground.GetPrim()).Bind(mat)
 
     stage.GetRootLayer().Save()
     bbox = UsdGeom.BBoxCache(
@@ -209,6 +281,8 @@ def main() -> int:
 
     convert_asset(museum_src, museum_out)
     convert_asset(floor_src, floor_out)
+    # Different from CUCR source on purpose (see patch_floor_diffuse docstring).
+    patch_floor_diffuse(floor_out)
     compose_museum_stage(museum_out, floor_out, final_out)
     return 0
 

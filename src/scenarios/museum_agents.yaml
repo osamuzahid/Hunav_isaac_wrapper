@@ -4,26 +4,30 @@ hunav_loader:
     simulator: Isaac Sim
     map: museum
     publish_people: true
-    # Spawns/goals sampled from CUCR museum occupancy free space near origin.
+    # SFM is local (no global planner). PhysX rays against the museum mesh were
+    # pinning agents to walls and spinning yaw — disable until Nav2/navmesh.
+    ignore_obstacle_rays: true
+    # Single open room (mutual LOS on maps/museum.png): x∈[-8,4], y∈[-9.5,2.5].
+    # Do not place goals across corridors/walls — agents walk straight lines.
     global_goals:
       1:
-        x: -8.0
-        y: -6.0
+        x: -6.5
+        y: -3.5
       2:
-        x: -4.0
-        y: 4.0
+        x: -6.5
+        y: -1.5
       3:
-        x: 2.0
-        y: -4.0
+        x: -6.5
+        y: 0.5
       4:
-        x: 4.0
-        y: 6.0
+        x: -5.0
+        y: -2.5
       5:
-        x: -10.0
-        y: 8.0
+        x: -5.5
+        y: -5.0
       6:
-        x: 6.0
-        y: 0.0
+        x: -8.0
+        y: -2.5
     agents:
       - agent1
       - agent2
@@ -33,47 +37,49 @@ hunav_loader:
       skin: 1
       max_vel: 1.0
       radius: 0.4
-      goal_radius: 0.3
+      goal_radius: 0.5
       cyclic_goals: true
       init_pose:
-        x: -6.0
-        y: 0.0
+        x: -6.5
+        y: -4.5
         z: 0.0
-        h: 0.0
+        h: 1.57
       behavior:
-        type: Regular
+        # hunav_loader declares behavior.type as int (1=Regular). String "Regular" crashes the loader.
+        type: 1
         configuration: 0
         goal_force_factor: 10.0
         obstacle_force_factor: 2.0
         social_force_factor: 5.0
         other_force_factor: 20.0
+      # string ids — hunav_loader declares agentN.goals as string_array
       goals:
-        - 1
-        - 2
-        - 3
-        - 4
+        - "1"
+        - "2"
+        - "3"
+        - "4"
     agent2:
       id: 2
       group_id: -1
       skin: 3
       max_vel: 0.9
       radius: 0.4
-      goal_radius: 0.3
+      goal_radius: 0.5
       cyclic_goals: true
       init_pose:
-        x: 2.0
-        y: 4.0
+        x: -5.0
+        y: -1.0
         z: 0.0
-        h: 1.57
+        h: -1.57
       behavior:
-        type: Regular
+        type: 1
         configuration: 0
         goal_force_factor: 10.0
         obstacle_force_factor: 2.0
         social_force_factor: 5.0
         other_force_factor: 20.0
       goals:
-        - 4
-        - 5
-        - 6
-        - 2
+        - "4"
+        - "5"
+        - "6"
+        - "2"

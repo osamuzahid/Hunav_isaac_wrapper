@@ -21,4 +21,9 @@ Outputs:
 - `src/worlds/assets/museum/museum_floor.usd`
 - `src/worlds/museum.usd` (composed stage, Z-up wrapper + colliders)
 
+Intentional differences from CUCR Gazebo (documented in-script as
+`ORIGINALLY` / `PATCH (isaac-social-nav)` and in
+`src/worlds/assets/museum/PATCH_NOTES.md`): light brown floor instead of neon
+blue; brighter distant light; Z-up compose rotate.
+
 Scenario: `src/scenarios/museum_agents.yaml`.

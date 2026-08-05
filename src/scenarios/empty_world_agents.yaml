@@ -33,14 +33,16 @@ hunav_loader:
         z: 0.0
         h: 0.0
       behavior:
-        type: Regular
+        # hunav_loader declares behavior.type as int (1=Regular).
+        type: 1
         configuration: 0
         goal_force_factor: 10.0
         obstacle_force_factor: 2.0
         social_force_factor: 5.0
         other_force_factor: 20.0
+      # string ids — hunav_loader declares agentN.goals as string_array
       goals:
-        - 1
-        - 2
-        - 3
-        - 4
+        - "1"
+        - "2"
+        - "3"
+        - "4"

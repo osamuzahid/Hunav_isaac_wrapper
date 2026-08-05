@@ -11,6 +11,7 @@ Fork of [robotics-upo/Hunav_isaac_wrapper](https://github.com/robotics-upo/Hunav
 - Laptop/debug `SimulationApp` profiles (`HUNAV_ISAAC_PROFILE=debug|laptop|default|lab`) via `sim_app_config.py`
 - Fixed `ros2 run … hunav_isaac_launcher` resource paths for this colcon layout; added `empty_world_agents` preset
 - CUCR museum v1: `museum.usd` (Isaac `asset_converter` + Z-up compose), `museum_agents.yaml`, `maps/museum.png`; rebuild via `tools/isaac_convert_museum.py`
+- Agent walk on Isaac 6: People biped retarget source, file-referenced retarget clips, SFM goals wiring, museum free-space goals + collider/ray fixes — see **[docs/ANIMATION_LOG.md](docs/ANIMATION_LOG.md)**
 - In-source notes: search `ORIGINALLY` / `PATCH (isaac-social-nav)`
 
 Parent project docs: [isaac-social-nav](https://github.com/osamuzahid/isaac-social-nav) (`README.md`, `docs/ENVIRONMENT.md`).

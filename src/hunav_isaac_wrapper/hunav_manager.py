@@ -27,7 +27,7 @@ import omni.kit.commands
 from isaacsim.storage.native import get_assets_root_path
 from isaacsim.core.utils.extensions import enable_extension
 
-from pxr import Sdf, Gf, UsdGeom, UsdPhysics, PhysxSchema
+from pxr import Sdf, Gf, Usd, UsdGeom, UsdPhysics, PhysxSchema
 import carb
 
 # Import auxiliary animation functions
@@ -120,7 +120,6 @@ class HuNavManager:
         self.agent_initial_states = []
         self.animationDict = {}
         self._hunav_processes = []
-        self.retarget_flag = False
         self.bound_animations = {}
         self.flag_anim = {}
         
@@ -141,17 +140,21 @@ class HuNavManager:
         #     self.assets_root, "Isaac/People/Characters/Biped_Setup.usd"
         # )
         # Had to be patched because Isaac 6.0 CDN returns HTTP 404 for that path
-        # (People/Characters/Biped_Setup.usd removed; still present on 5.1 content).
-        # Without a valid biped USD, retarget source skeleton + AnimationGraph
-        # cannot be loaded for pedestrian agents.
+        # (People/Characters/Biped_Setup.usd removed from the 6.0 tree).
         # ---------------------------------------------------------------------------
-        # PATCH (isaac-social-nav): use the AnimGraph-hosted Biped_Setup.usd that
-        # Isaac 6.0's own omni.anim.graph tests use (HTTP 200; same biped_demo_meters
-        # / Skeleton / AnimationGraph prim layout). Important so agent retarget works.
+        # First PATCH tried AnimGraph/105.0/Test/Graph/Isaac/Biped_Setup.usd (HTTP 200),
+        # but that skeleton only shares 1 retarget tag ("Head") with Isaac 6 People
+        # RL_BoneRoot skins → CreateRetargetAnimationsCommand yields near-static clips
+        # and agents stay in T-pose.
+        # ---------------------------------------------------------------------------
+        # PATCH (isaac-social-nav): use Isaac 5.1 People Biped_Setup (still HTTP 200).
+        # Shares ~51 retarget tags with Isaac 6.0 People characters so walk/idle
+        # retarget actually carries motion. Pair with materialized file-referenced
+        # clips in animation_utils.setup_anim_retargeting (inline clips won't play).
         # ---------------------------------------------------------------------------
         self.default_biped_usd = (
             "https://omniverse-content-production.s3-us-west-2.amazonaws.com/"
-            "Assets/AnimGraph/105.0/Test/Graph/Isaac/Biped_Setup.usd"
+            "Assets/Isaac/5.1/Isaac/People/Characters/Biped_Setup.usd"
         )
 
     def _load_yaml(self, relative_path):
@@ -280,16 +283,6 @@ class HuNavManager:
             os.path.join(animations_path, "stand_idle_loop.skelanim.usd"),
         )
         self.source_animation_dict = {0: idle_anim.GetPath(), 1: walk_anim.GetPath()}
-        self.target_animation_parent_path = "/World/Characters"
-        self.retarget_anims_path = [
-            os.path.join(self.target_animation_parent_path, "IdleLoop"),
-            os.path.join(self.target_animation_parent_path, "WalkLoop"),
-        ]
-        self.animationDict = {
-            0: self.retarget_anims_path[0],
-            1: self.retarget_anims_path[1],
-        }
-
         # Set up a rotation for upright orientation
         rotX = Gf.Rotation(Gf.Vec3d(1, 0, 0), 90).GetQuat()
         rotXQ = Gf.Quatf(rotX)
@@ -377,30 +370,46 @@ class HuNavManager:
             xf.AddTranslateOp().Set(global_pos)
             xf.AddOrientOp().Set(global_rot)
             
-            PhysxSchema.PhysxRigidBodyAPI.Apply(container)
-            UsdPhysics.RigidBodyAPI.Apply(container)
+            # HuNav teleports agents each step — keep bodies kinematic / no gravity
+            # so PhysX cannot sink them through the floor between updates.
+            UsdPhysics.RigidBodyAPI.Apply(container).CreateKinematicEnabledAttr(True)
+            PhysxSchema.PhysxRigidBodyAPI.Apply(container).CreateDisableGravityAttr(
+                True
+            )
 
             # Create the inner animated SkelRoot as a child of the container
             anim_path = container_path + "/Animation"
             agent_skelroot = self.stage.DefinePrim(anim_path, "SkelRoot")
             agent_skelroot.GetReferences().AddReference(asset_path)
+            # Character meshes ship with colliders; PhysX obstacle rays would hit
+            # the agent itself → SFM thrashing / spin-in-place against "walls".
+            self._disable_collisions_recursive(container)
 
-            # Apply retargeting and create the AnimationGraph on the inner SkelRoot
-            if not self.retarget_flag:
-                setup_anim_retargeting(
-                    self.stage,
-                    agent_skelroot,
-                    self.source_animation_dict,
-                    self.target_animation_parent_path,
-                )
-                self.retarget_flag = True
+            # Retarget clips per character, then materialize as file references
+            # (see setup_anim_retargeting PATCH). Sharing one character's clips
+            # across different RL skins can leave others in bind pose.
+            target_animation_parent_path = (
+                f"{container_path}/RetargetedAnimations"
+            )
+            self.stage.DefinePrim(target_animation_parent_path, "Xform")
+            animation_dict = setup_anim_retargeting(
+                self.stage,
+                agent_skelroot,
+                self.source_animation_dict,
+                target_animation_parent_path,
+            )
+            if not animation_dict:
+                animation_dict = {
+                    0: f"{target_animation_parent_path}/IdleLoop",
+                    1: f"{target_animation_parent_path}/WalkLoop",
+                }
 
             # Create and apply AnimationGraph
             anim_graph_path = create_agent_animation_graph(
                 self.stage,
                 agent_skelroot,
-                idle_anim_path=self.animationDict.get(0),
-                walk_anim_path=self.animationDict.get(1),
+                idle_anim_path=animation_dict[0],
+                walk_anim_path=animation_dict[1],
             )
             apply_animation_graph(
                 self.stage.GetPrimAtPath(find_skelroot_path(agent_skelroot)),
@@ -448,6 +457,29 @@ class HuNavManager:
         self.animationDict.clear()
         self.agent_previous_orientations.clear()  # Clean up orientation tracking
 
+    def _disable_collisions_recursive(self, root_prim) -> None:
+        """Turn off collision on an agent prim tree (HuNav moves agents kinematically)."""
+        for prim in Usd.PrimRange(root_prim):
+            try:
+                if prim.HasAPI(UsdPhysics.CollisionAPI):
+                    UsdPhysics.CollisionAPI(prim).CreateCollisionEnabledAttr(False)
+            except Exception:
+                pass
+            for attr_name in (
+                "physics:collisionEnabled",
+                "physxContact:collisionEnabled",
+            ):
+                try:
+                    attr = prim.GetAttribute(attr_name)
+                    if attr and attr.IsValid():
+                        attr.Set(False)
+                    else:
+                        prim.CreateAttribute(
+                            attr_name, Sdf.ValueTypeNames.Bool
+                        ).Set(False)
+                except Exception:
+                    pass
+
     # Obstacle detection functions
     def generate_lasers(self, num_lasers: int) -> List[Gf.Vec3f]:
         """
@@ -494,8 +526,16 @@ class HuNavManager:
                     sensor_origin, direction, max_distance
                 )
                 if hit.get("hit", False):
-                    hit_found = True
+                    # Ignore self / other HuNav agents and near-contact noise.
+                    coll_path = str(
+                        hit.get("collision", hit.get("rigidBody", "")) or ""
+                    )
+                    if "/World/Characters/" in coll_path:
+                        continue
                     distance = hit.get("distance", max_distance)
+                    if distance < 0.15:
+                        continue
+                    hit_found = True
                     # Keep the closest hit
                     if distance < best_distance:
                         best_distance = distance
@@ -554,6 +594,81 @@ class HuNavManager:
             print("[HuNavManager] /compute_agents not available.")
             return
         self._call_compute(agents_msg, robot_msg)
+
+    @staticmethod
+    def _parse_behavior_type(raw) -> int:
+        """Map YAML behavior.type (int or name) to hunav_msgs AgentBehavior constants."""
+        name_map = {
+            "regular": AgentBehavior.BEH_REGULAR,
+            "impassive": AgentBehavior.BEH_IMPASSIVE,
+            "surprised": AgentBehavior.BEH_SURPRISED,
+            "scared": AgentBehavior.BEH_SCARED,
+            "curious": AgentBehavior.BEH_CURIOUS,
+            "threatening": AgentBehavior.BEH_THREATENING,
+        }
+        if isinstance(raw, bool):
+            return int(raw)
+        if isinstance(raw, int):
+            return raw
+        if isinstance(raw, float):
+            return int(raw)
+        if isinstance(raw, str):
+            key = raw.strip().lower()
+            if key.isdigit():
+                return int(key)
+            if key in name_map:
+                return name_map[key]
+        return AgentBehavior.BEH_REGULAR
+
+    def _lookup_goal_cfg(self, goal_id, agent_cfg):
+        """Resolve a goal id against global_goals or agent-local goal entries."""
+        params = self.config["hunav_loader"]["ros__parameters"]
+        global_goals = params.get("global_goals") or {}
+
+        candidates = [goal_id]
+        if not isinstance(goal_id, str):
+            candidates.append(str(goal_id))
+        else:
+            try:
+                candidates.append(int(goal_id))
+            except ValueError:
+                pass
+
+        for key in candidates:
+            if key in global_goals:
+                return global_goals[key]
+            if key in agent_cfg and isinstance(agent_cfg[key], dict) and "x" in agent_cfg[key]:
+                return agent_cfg[key]
+        return None
+
+    def _resolve_agent_goals(self, agent_cfg, agent_name):
+        """Build geometry_msgs/Pose[] goals for /compute_agents initialization."""
+        goals = []
+        for goal_id in agent_cfg.get("goals", []) or []:
+            gcfg = self._lookup_goal_cfg(goal_id, agent_cfg)
+            if gcfg is None:
+                print(
+                    f"[HuNavManager] {agent_name}: unknown goal id {goal_id!r}; skipping"
+                )
+                continue
+            pose = Pose()
+            pose.position.x = float(gcfg["x"])
+            pose.position.y = float(gcfg["y"])
+            pose.position.z = float(gcfg.get("z", 0.0))
+            if "h" in gcfg:
+                q = Gf.Rotation(Gf.Vec3d(0, 0, 1), float(gcfg["h"]) * 180.0 / math.pi).GetQuat()
+                pose.orientation.w = float(q.GetReal())
+                imag = q.GetImaginary()
+                pose.orientation.x = float(imag[0])
+                pose.orientation.y = float(imag[1])
+                pose.orientation.z = float(imag[2])
+            goals.append(pose)
+        if not goals:
+            print(
+                f"[HuNavManager] WARNING: {agent_name} has no resolvable goals; "
+                "SFM will leave the agent idle."
+            )
+        return goals
 
     def _create_robot_msg(self):
         # Retrieve robot pose and velocities from the WheeledRobot object
@@ -617,10 +732,11 @@ class HuNavManager:
         rw = rot.GetReal()
         rx, ry, rz = rot.GetImaginary()
 
-        # Position
+        # Position (pin Z to spawn height — SFM is planar)
+        init_z = float(agent_cfg["init_pose"].get("z", 0.0))
         agent.position.position.x = float(pos[0])
         agent.position.position.y = float(pos[1])
-        agent.position.position.z = float(pos[2])
+        agent.position.position.z = init_z
         agent.position.orientation.x = float(rx)
         agent.position.orientation.y = float(ry)
         agent.position.orientation.z = float(rz)
@@ -630,22 +746,29 @@ class HuNavManager:
         )
         agent.yaw = self.normalize_angle(yaw - math.pi / 2.0)
 
-        # Velocities
+        # Velocities — SFM is planar; zero Z / roll-pitch junk from PhysX.
         lin = agent_prim.GetAttribute("physics:velocity").Get()
         ang = agent_prim.GetAttribute("physics:angularVelocity").Get()
-        agent.linear_vel = float(np.linalg.norm(lin))
-        agent.angular_vel = float(np.linalg.norm(ang))
-        agent.velocity.linear.x = float(lin[0])
-        agent.velocity.linear.y = float(lin[1])
-        agent.velocity.linear.z = float(lin[2])
-        agent.velocity.angular.x = float(ang[0])
-        agent.velocity.angular.y = float(ang[1])
+        if lin is None:
+            lin = Gf.Vec3d(0, 0, 0)
+        if ang is None:
+            ang = Gf.Vec3d(0, 0, 0)
+        vx, vy = float(lin[0]), float(lin[1])
+        agent.linear_vel = float(math.hypot(vx, vy))
+        agent.angular_vel = float(ang[2])
+        agent.velocity.linear.x = vx
+        agent.velocity.linear.y = vy
+        agent.velocity.linear.z = 0.0
+        agent.velocity.angular.x = 0.0
+        agent.velocity.angular.y = 0.0
         agent.velocity.angular.z = float(ang[2])
 
-        # Goals
+        # Goals — required by AgentManager.initializeAgents() for SFM attraction.
+        # Upstream never filled these; without them agents idle in place.
         agent.cyclic_goals = agent_cfg["cyclic_goals"]
         agent.goal_radius = float(agent_cfg["goal_radius"])
-        
+        agent.goals = self._resolve_agent_goals(agent_cfg, agent.name)
+
         # Behavior
         beh = agent_cfg["behavior"]
         configuration = int(beh["configuration"])
@@ -692,24 +815,33 @@ class HuNavManager:
                     sfm_params[param] = clamp_value(sfm_params[param], min_val, max_val)
         
         agent.behavior = AgentBehavior(
-            # type=int(beh["type"]),
+            type=self._parse_behavior_type(beh.get("type", 1)),
             state=1,
             configuration=configuration,
-            # duration=float(beh["duration"]),
-            # once=beh["once"],
-            # vel=float(beh["vel"]),
-            # dist=float(beh["dist"]),
+            duration=float(beh.get("duration", 40.0)),
+            once=bool(beh.get("once", True)),
+            vel=float(beh.get("vel", 0.6)),
+            dist=float(beh.get("dist", 0.0)),
             social_force_factor=sfm_params["social_force_factor"],
             goal_force_factor=sfm_params["goal_force_factor"],
             obstacle_force_factor=sfm_params["obstacle_force_factor"],
             other_force_factor=sfm_params["other_force_factor"],
         )
         
-        # Obstacle detection
-        max_distance = 4.0
+        # Obstacle detection. Museum mesh + occupancy often disagree with SFM's
+        # local avoidance → agents walk into walls and spin. Opt out via YAML.
         agent.closest_obs = []
-        sensor_offsets = [0.05, 0.1, 0.25, 0.5, 1.0]
-        hits = self.get_closest_obstacles(pos, max_distance, sensor_offsets)
+        params = self.config["hunav_loader"]["ros__parameters"]
+        if params.get("ignore_obstacle_rays", False):
+            for _ in range(90):
+                agent.closest_obs.append(Point(x=10000.0, y=10000.0, z=10000.0))
+            return agent
+
+        max_distance = 4.0
+        sensor_offsets = [0.9, 1.1, 1.3]  # torso heights; skip floor scrapes
+        # Ray origins use pinned Z, not a fallen PhysX translate.
+        ray_pos = Gf.Vec3d(float(pos[0]), float(pos[1]), init_z)
+        hits = self.get_closest_obstacles(ray_pos, max_distance, sensor_offsets)
         for hit in hits:
             if hit[1] is not None:
                 pt = Point(
@@ -762,68 +894,72 @@ class HuNavManager:
 
             char = ag.get_character(str(find_skelroot_path(agent_skelroot_prim)))
 
-            # Set position
+            # Pin Z to spawn height — SFM is 2D; PhysX/orientation noise must
+            # not accumulate into vertical drift.
+            agent_ref = self.config["hunav_loader"]["ros__parameters"]["agents"][idx]
+            init_z = float(
+                self.config["hunav_loader"]["ros__parameters"][agent_ref]["init_pose"].get(
+                    "z", 0.0
+                )
+            )
             new_pos = Gf.Vec3d(
                 upd.position.position.x,
                 upd.position.position.y,
-                upd.position.position.z,
+                init_z,
             )
             agent_prim.GetAttribute("xformOp:translate").Set(new_pos)
 
-            # Set orientation with smoothing
+            # Planar velocity only — never feed PhysX /people a huge Z component.
+            lin = Gf.Vec3d(upd.velocity.linear.x, upd.velocity.linear.y, 0.0)
+            speed_xy = float(math.hypot(lin[0], lin[1]))
+
+            # Set orientation with smoothing. When nearly stopped (wall jam /
+            # goal wait), keep prior yaw — SFM obstacle thrash otherwise spins
+            # the character in place.
+            agent_path = agent_prim.GetPath()
             new_quat = Gf.Quatf(
                 upd.position.orientation.w,
                 upd.position.orientation.x,
                 upd.position.orientation.y,
                 upd.position.orientation.z,
             )
-            
-            # Pre-calculate orientation corrections
+
             rotX = Gf.Rotation(Gf.Vec3d(0, 0, 1), 90).GetQuat()
             rotXQ = Gf.Quatf(rotX)
             rotZ = Gf.Rotation(Gf.Vec3d(1, 0, 0), 90).GetQuat()
             rotZQ = Gf.Quatf(rotZ)
-            
-            # Apply corrections to get the target final orientations
-            target_prim_quat = new_quat * rotXQ * rotZQ  # Final orientation for prim
+            target_prim_quat = new_quat * rotXQ * rotZQ
             rotZQ_anim = Gf.Quatf(Gf.Rotation(Gf.Vec3d(1, 0, 0), 0).GetQuat())
-            target_anim_quat = new_quat * rotXQ * rotZQ_anim  # Final orientation for animation
-            
-            # Get current orientations for smoothing
-            agent_path = agent_prim.GetPath()
-            
-            # Apply orientation smoothing to the corrected orientations
-            if agent_path in self.agent_previous_orientations:
-                # Get previous animation quaternion (stored separately)
-                prev_prim_quat, prev_anim_quat = self.agent_previous_orientations[agent_path]
-                
-                # Interpolate both prim and animation orientations for smooth turning
+            target_anim_quat = new_quat * rotXQ * rotZQ_anim
+
+            # Freeze yaw below walk speed — male was spinning at |v|~0.2–0.4.
+            if speed_xy < 0.2 and agent_path in self.agent_previous_orientations:
+                smoothed_prim_quat, smoothed_anim_quat = (
+                    self.agent_previous_orientations[agent_path]
+                )
+            elif agent_path in self.agent_previous_orientations:
+                prev_prim_quat, prev_anim_quat = self.agent_previous_orientations[
+                    agent_path
+                ]
                 smoothed_prim_quat = self.slerp_quaternions(
-                    prev_prim_quat, 
-                    target_prim_quat, 
-                    self.orientation_smoothing_factor
+                    prev_prim_quat,
+                    target_prim_quat,
+                    self.orientation_smoothing_factor,
                 )
                 smoothed_anim_quat = self.slerp_quaternions(
                     prev_anim_quat,
                     target_anim_quat,
-                    self.orientation_smoothing_factor
+                    self.orientation_smoothing_factor,
                 )
             else:
-                # First frame - use target orientations directly
                 smoothed_prim_quat = target_prim_quat
                 smoothed_anim_quat = target_anim_quat
-            
-            # Store current orientations for next frame (both prim and animation)
-            self.agent_previous_orientations[agent_path] = (smoothed_prim_quat, smoothed_anim_quat)
-            
-            # Apply the smoothed orientations
-            agent_prim.GetAttribute("xformOp:orient").Set(smoothed_prim_quat)
 
-            lin = Gf.Vec3d(
-                upd.velocity.linear.x,
-                upd.velocity.linear.y,
-                upd.velocity.linear.z,
+            self.agent_previous_orientations[agent_path] = (
+                smoothed_prim_quat,
+                smoothed_anim_quat,
             )
+            agent_prim.GetAttribute("xformOp:orient").Set(smoothed_prim_quat)
 
             # Animation orientation correction (use smoothed animation orientation)
             if char:
@@ -832,18 +968,16 @@ class HuNavManager:
                 imag = smoothed_anim_quat.GetImaginary()
                 rot_carb = carb.Float4(imag[0], imag[1], imag[2], real)
                 char.set_world_transform(pos_carb, rot_carb)
+                # Character API can rewrite the container xform; re-pin XY/Z.
+                agent_prim.GetAttribute("xformOp:translate").Set(new_pos)
 
-            # Set velocities
+            # Set velocities (yaw-rate only; kill tumble)
             agent_prim.GetAttribute("physics:velocity").Set(lin)
-            ang = Gf.Vec3d(
-                upd.velocity.angular.x,
-                upd.velocity.angular.y,
-                upd.velocity.angular.z,
-            )
+            ang = Gf.Vec3d(0.0, 0.0, float(upd.velocity.angular.z))
             agent_prim.GetAttribute("physics:angularVelocity").Set(ang)
 
-            # Set animation based on agent's speed
-            speed = np.linalg.norm(lin)
+            # Set animation based on agent's planar speed
+            speed = speed_xy
             max_expected_speed = 1.5
             normalized_speed = np.clip(speed / max_expected_speed, 0.0, 1.0)
             if anim_graph_path:

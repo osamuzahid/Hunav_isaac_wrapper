@@ -178,6 +178,7 @@ The repository includes multiple pre-configured USD files in `src/worlds/`:
 - `hospital.usd`: Medical environment with corridors and rooms
 - `office.usd`: Workspace with desks and conference areas
 - `empty_world.usd`: A minimal open environment for testing
+- `museum.usd`: CUCR `cucr_worlds_museum` layout (building + floor meshes ported to USD); pair with `museum_agents.yaml`
 
 #### 🧍 Agents Configuration
 

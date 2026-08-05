@@ -137,8 +137,15 @@ os.makedirs(CONFIG_CONFIG_DIR, exist_ok=True)
 LAST_CONFIG_FILE = os.path.join(CONFIG_CONFIG_DIR, "last_launch_config.json")
 
 # built-in presets
-PRESETS = {"warehouse_agents", "hospital_agents", "office_agents", "empty_world_agents"}
-KNOWN_WORLDS = {"warehouse", "hospital", "office", "empty_world"}
+# PATCH (isaac-social-nav): added museum / museum_agents (CUCR cucr_worlds_museum port).
+PRESETS = {
+    "warehouse_agents",
+    "hospital_agents",
+    "office_agents",
+    "empty_world_agents",
+    "museum_agents",
+}
+KNOWN_WORLDS = {"warehouse", "hospital", "office", "empty_world", "museum"}
 ROBOTS = ["jetbot", "create3", "carter", "carter_ROS"]
 
 # Colors for terminal output

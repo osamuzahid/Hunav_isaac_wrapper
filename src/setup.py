@@ -30,9 +30,11 @@ setup(
         (os.path.join('share', package_name, 'maps'),
             glob('maps/*')),
         
-        # Install world files
+        # Install world files (top-level USDs + nested assets/, e.g. museum meshes)
         (os.path.join('share', package_name, 'worlds'),
             glob('worlds/*.usd') + glob('worlds/*.usd-cache/**/*', recursive=True)),
+        (os.path.join('share', package_name, 'worlds', 'assets', 'museum'),
+            glob('worlds/assets/museum/*')),
         
         # Install behavior tree files
         (os.path.join('share', package_name, 'behavior_trees'),

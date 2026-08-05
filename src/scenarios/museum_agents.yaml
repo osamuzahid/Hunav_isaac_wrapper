@@ -1,0 +1,79 @@
+hunav_loader:
+  ros__parameters:
+    yaml_base_name: museum_agents
+    simulator: Isaac Sim
+    map: museum
+    publish_people: true
+    # Spawns/goals sampled from CUCR museum occupancy free space near origin.
+    global_goals:
+      1:
+        x: -8.0
+        y: -6.0
+      2:
+        x: -4.0
+        y: 4.0
+      3:
+        x: 2.0
+        y: -4.0
+      4:
+        x: 4.0
+        y: 6.0
+      5:
+        x: -10.0
+        y: 8.0
+      6:
+        x: 6.0
+        y: 0.0
+    agents:
+      - agent1
+      - agent2
+    agent1:
+      id: 1
+      group_id: -1
+      skin: 1
+      max_vel: 1.0
+      radius: 0.4
+      goal_radius: 0.3
+      cyclic_goals: true
+      init_pose:
+        x: -6.0
+        y: 0.0
+        z: 0.0
+        h: 0.0
+      behavior:
+        type: Regular
+        configuration: 0
+        goal_force_factor: 10.0
+        obstacle_force_factor: 2.0
+        social_force_factor: 5.0
+        other_force_factor: 20.0
+      goals:
+        - 1
+        - 2
+        - 3
+        - 4
+    agent2:
+      id: 2
+      group_id: -1
+      skin: 3
+      max_vel: 0.9
+      radius: 0.4
+      goal_radius: 0.3
+      cyclic_goals: true
+      init_pose:
+        x: 2.0
+        y: 4.0
+        z: 0.0
+        h: 1.57
+      behavior:
+        type: Regular
+        configuration: 0
+        goal_force_factor: 10.0
+        obstacle_force_factor: 2.0
+        social_force_factor: 5.0
+        other_force_factor: 20.0
+      goals:
+        - 4
+        - 5
+        - 6
+        - 2

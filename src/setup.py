@@ -34,7 +34,9 @@ setup(
         (os.path.join('share', package_name, 'worlds'),
             glob('worlds/*.usd') + glob('worlds/*.usd-cache/**/*', recursive=True)),
         (os.path.join('share', package_name, 'worlds', 'assets', 'museum'),
-            glob('worlds/assets/museum/*')),
+            [p for p in glob('worlds/assets/museum/*') if not os.path.isdir(p)]),
+        (os.path.join('share', package_name, 'worlds', 'assets', 'museum', 'textures'),
+            glob('worlds/assets/museum/textures/*')),
         
         # Install behavior tree files
         (os.path.join('share', package_name, 'behavior_trees'),

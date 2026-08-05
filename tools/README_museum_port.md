@@ -1,9 +1,9 @@
-# CUCR museum → Isaac USD
+# CUCR museum to Isaac USD
 
 Source: `CardiffUniversityComputationalRobotics/cucr_worlds` / `cucr_worlds_museum`.
 
-Uses **Isaac `omni.kit.asset_converter`** (must `await task.wait_until_finished()`; polling
-`is_finished()` alone never completes). Assimp is only used as a Collada→OBJ front-end.
+Uses Isaac `omni.kit.asset_converter` (must `await task.wait_until_finished()`; polling
+`is_finished()` alone never completes). Assimp is only used as a Collada-to-OBJ front-end.
 
 ```bash
 # 1) OBJ + textures beside them

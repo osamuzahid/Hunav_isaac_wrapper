@@ -1,0 +1,193 @@
+hunav_loader:
+  ros__parameters:
+    yaml_base_name: museum_behaviors
+    simulator: Isaac Sim
+    map: museum
+    publish_people: true
+    # SFM is local (no global planner). PhysX rays against the museum mesh were
+    # pinning agents to walls and spinning yaw — disable until Nav2/navmesh.
+    ignore_obstacle_rays: true
+    # Single open room (mutual LOS on maps/museum.png): x∈[-8,4], y∈[-9.5,2.5].
+    # Do not place goals across corridors/walls — agents walk straight lines.
+    # Stretch spawn near agents for social-reaction demos (wired by wrapper teleop).
+    robot_init_pose:
+      x: -4.0
+      y: -3.0
+      z: 0.0
+      h: 0.0
+    global_goals:
+      1:
+        x: -6.5
+        y: -3.5
+      2:
+        x: -6.5
+        y: -1.5
+      3:
+        x: -6.5
+        y: 0.5
+      4:
+        x: -5.0
+        y: -2.5
+      5:
+        x: -5.5
+        y: -5.0
+      6:
+        x: -8.0
+        y: -2.5
+      7:
+        x: -3.0
+        y: -4.0
+      8:
+        x: -7.0
+        y: 1.0
+      9:
+        x: -2.0
+        y: -2.0
+    agents:
+      - agent1
+      - agent2
+      - agent3
+      - agent4
+      - agent5
+    agent1:
+      id: 1
+      group_id: -1
+      skin: 1
+      max_vel: 1.0
+      radius: 0.4
+      goal_radius: 0.5
+      cyclic_goals: true
+      init_pose:
+        x: -6.5
+        y: -4.5
+        z: 0.0
+        h: 1.57
+      behavior:
+        # hunav_loader declares behavior.type as int (1=Regular). String "Regular" crashes the loader.
+        type: 1
+        configuration: 0
+        goal_force_factor: 10.0
+        obstacle_force_factor: 2.0
+        social_force_factor: 5.0
+        other_force_factor: 20.0
+      goals:
+        - "1"
+        - "2"
+        - "3"
+        - "4"
+    agent2:
+      id: 2
+      group_id: -1
+      skin: 3
+      max_vel: 0.9
+      radius: 0.4
+      goal_radius: 0.5
+      cyclic_goals: true
+      init_pose:
+        x: -5.0
+        y: -1.0
+        z: 0.0
+        h: -1.57
+      behavior:
+        type: 5
+        configuration: 1
+        duration: 35.0
+        once: true
+        vel: 0.7
+        dist: 1.5
+        goal_force_factor: 10.0
+        obstacle_force_factor: 2.0
+        social_force_factor: 5.0
+        other_force_factor: 20.0
+      goals:
+        - "4"
+        - "7"
+        - "2"
+        - "9"
+    agent3:
+      id: 3
+      group_id: -1
+      skin: 5
+      max_vel: 1.0
+      radius: 0.4
+      goal_radius: 0.5
+      cyclic_goals: true
+      init_pose:
+        x: -7.0
+        y: -2.0
+        z: 0.0
+        h: 0.0
+      behavior:
+        type: 4
+        configuration: 1
+        duration: 40.0
+        once: true
+        vel: 0.6
+        dist: 3.0
+        goal_force_factor: 10.0
+        obstacle_force_factor: 2.0
+        social_force_factor: 5.0
+        other_force_factor: 20.0
+      goals:
+        - "6"
+        - "1"
+        - "5"
+        - "8"
+    agent4:
+      id: 4
+      group_id: -1
+      skin: 7
+      max_vel: 0.85
+      radius: 0.4
+      goal_radius: 0.5
+      cyclic_goals: true
+      init_pose:
+        x: -4.0
+        y: 0.5
+        z: 0.0
+        h: 3.14
+      behavior:
+        type: 3
+        configuration: 1
+        duration: 30.0
+        once: true
+        vel: 0.5
+        dist: 4.0
+        goal_force_factor: 10.0
+        obstacle_force_factor: 2.0
+        social_force_factor: 5.0
+        other_force_factor: 20.0
+      goals:
+        - "3"
+        - "8"
+        - "2"
+        - "9"
+    agent5:
+      id: 5
+      group_id: -1
+      skin: 9
+      max_vel: 0.95
+      radius: 0.4
+      goal_radius: 0.5
+      cyclic_goals: true
+      init_pose:
+        x: -6.0
+        y: -6.0
+        z: 0.0
+        h: 0.78
+      behavior:
+        type: 6
+        configuration: 1
+        duration: 38.0
+        once: true
+        vel: 0.5
+        dist: 1.4
+        goal_force_factor: 10.0
+        obstacle_force_factor: 2.0
+        social_force_factor: 5.0
+        other_force_factor: 20.0
+      goals:
+        - "5"
+        - "7"
+        - "4"
+        - "1"

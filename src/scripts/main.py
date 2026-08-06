@@ -144,6 +144,7 @@ PRESETS = {
     "office_agents",
     "empty_world_agents",
     "museum_agents",
+    "museum_behaviors",
 }
 KNOWN_WORLDS = {"warehouse", "hospital", "office", "empty_world", "museum"}
 ROBOTS = ["jetbot", "create3", "carter", "carter_ROS"]

@@ -22,20 +22,43 @@ Generated from Composed Stage of root layer /tmp/urdf_import_stretch_b7s_ly_i/te
 
 over "stretch"
 {
+    over "Geometry"
+    {
+        over "base_link" (
+            prepend apiSchemas = ["PhysxArticulationAPI"]
+        )
+        {
+            # PATCH (isaac-social-nav): URDF import left PhysX self-collision on; tire
+            # spheres then jam against the chassis collider and kill traction.
+            bool physxArticulation:enabledSelfCollisions = 0
+        }
+    }
+
     over "Physics"
     {
         over "joint_right_wheel" (
             prepend apiSchemas = ["PhysxJointAPI"]
         )
         {
-            float physxJoint:jointFriction = 10.48
+            # PATCH (isaac-social-nav): URDF importer copied damping/friction (~10) which
+            # locks the wheels under DifferentialController. Use near-zero joint friction
+            # so /cmd_vel can drive; tire–ground friction still comes from collision materials.
+            float physxJoint:jointFriction = 0.0
+            # PATCH (isaac-social-nav): stronger velocity drive for ~20 kg base.
+            # ORIGINALLY: drive damping = URDF 21.75, no maxForce.
+            float drive:angular:physics:damping = 1000
+            float drive:angular:physics:maxForce = 10000
+            float drive:angular:physics:stiffness = 0
         }
 
         over "joint_left_wheel" (
             prepend apiSchemas = ["PhysxJointAPI"]
         )
         {
-            float physxJoint:jointFriction = 10.48
+            float physxJoint:jointFriction = 0.0
+            float drive:angular:physics:damping = 1000
+            float drive:angular:physics:maxForce = 10000
+            float drive:angular:physics:stiffness = 0
         }
 
         over "joint_lift" (

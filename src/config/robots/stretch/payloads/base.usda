@@ -39,7 +39,6 @@ def Xform "stretch" (
         def Xform "base_link"
         {
             def Xform "base_link" (
-                instanceable = true
                 prepend references = @./instances.usda@</Instances/base_link>
             )
             {
@@ -50,13 +49,37 @@ def Xform "stretch" (
             }
 
             def Xform "base_link_collision" (
-                instanceable = true
                 prepend references = @./instances.usda@</Instances/base_link_collision>
             )
             {
                 quatd xformOp:orient = (1, 0, 0, 0)
                 double3 xformOp:scale = (1, 1, 1)
                 double3 xformOp:translate = (0, 0, 0)
+                uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+
+                # PATCH (isaac-social-nav): URDF base_link_collision STL reaches z=0 (floor
+                # sled). That supports the chassis on the ground so drive wheels get no
+                # normal load / traction. Disable the mesh collider.
+                over "base_link_collision"
+                {
+                    bool physics:collisionEnabled = 0
+                }
+            }
+
+            # PATCH (isaac-social-nav): chassis box collider disabled — even an elevated
+            # narrow Cube under base_link jammed PhysX diff-drive (ablation). Wall
+            # contact uses mast_wall_collision cylinder on link_mast instead.
+            def Cube "base_body_collision" (
+                prepend apiSchemas = ["PhysicsCollisionAPI"]
+            )
+            {
+                bool physics:collisionEnabled = 0
+                float3[] extent = [(-1, -1, -1), (1, 1, 1)]
+                uniform token purpose = "guide"
+                double size = 2
+                quatf xformOp:orient = (1, 0, 0, 0)
+                float3 xformOp:scale = (0.17, 0.08, 0.06)
+                double3 xformOp:translate = (-0.114, 0, 0.14)
                 uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
             }
 
@@ -68,7 +91,6 @@ def Xform "stretch" (
                 uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
                 def Xform "link_right_wheel" (
-                    instanceable = true
                     prepend references = @./instances.usda@</Instances/link_right_wheel>
                 )
                 {
@@ -79,12 +101,35 @@ def Xform "stretch" (
                 }
 
                 def Xform "link_right_wheel_collision" (
-                    instanceable = true
                     prepend references = @./instances.usda@</Instances/link_right_wheel_collision>
                 )
                 {
                     quatd xformOp:orient = (1, 0, 0, 0)
                     double3 xformOp:scale = (1, 1, 1)
+                    double3 xformOp:translate = (0, 0, 0)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+
+                    # PATCH (isaac-social-nav): coarse 12-tri convexHull wheel mesh is a
+                    # poor roller; disable in favor of sphere collider below.
+                    over "link_right_wheel_collision"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                # PATCH (isaac-social-nav): sphere tire collider + friction for PhysX drive.
+                def Sphere "wheel_collision" (
+                    prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMaterialAPI"]
+                )
+                {
+                    float3[] extent = [(-0.0508, -0.0508, -0.0508), (0.0508, 0.0508, 0.0508)]
+                    float physics:dynamicFriction = 1.2
+                    float physics:restitution = 0
+                    float physics:staticFriction = 1.5
+                    uniform token purpose = "guide"
+                    double radius = 0.0508
+                    quatf xformOp:orient = (1, 0, 0, 0)
+                    float3 xformOp:scale = (1, 1, 1)
                     double3 xformOp:translate = (0, 0, 0)
                     uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
                 }
@@ -98,7 +143,6 @@ def Xform "stretch" (
                 uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
                 def Xform "link_left_wheel" (
-                    instanceable = true
                     prepend references = @./instances.usda@</Instances/link_left_wheel>
                 )
                 {
@@ -109,12 +153,34 @@ def Xform "stretch" (
                 }
 
                 def Xform "link_left_wheel_collision" (
-                    instanceable = true
                     prepend references = @./instances.usda@</Instances/link_left_wheel_collision>
                 )
                 {
                     quatd xformOp:orient = (1, 0, 0, 0)
                     double3 xformOp:scale = (1, 1, 1)
+                    double3 xformOp:translate = (0, 0, 0)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+
+                    # PATCH (isaac-social-nav): see right wheel — disable mesh hull.
+                    over "link_left_wheel_collision"
+                    {
+                        bool physics:collisionEnabled = 0
+                    }
+                }
+
+                # PATCH (isaac-social-nav): sphere tire collider + friction for PhysX drive.
+                def Sphere "wheel_collision" (
+                    prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMaterialAPI"]
+                )
+                {
+                    float3[] extent = [(-0.0508, -0.0508, -0.0508), (0.0508, 0.0508, 0.0508)]
+                    float physics:dynamicFriction = 1.2
+                    float physics:restitution = 0
+                    float physics:staticFriction = 1.5
+                    uniform token purpose = "guide"
+                    double radius = 0.0508
+                    quatf xformOp:orient = (1, 0, 0, 0)
+                    float3 xformOp:scale = (1, 1, 1)
                     double3 xformOp:translate = (0, 0, 0)
                     uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
                 }
@@ -128,7 +194,6 @@ def Xform "stretch" (
                 uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
                 def Xform "omni_wheel_m" (
-                    instanceable = true
                     prepend references = @./instances.usda@</Instances/omni_wheel_m>
                 )
                 {
@@ -139,10 +204,18 @@ def Xform "stretch" (
                 }
 
                 def Sphere "sphere" (
-                    prepend apiSchemas = ["PhysicsCollisionAPI"]
+                    prepend apiSchemas = ["PhysicsCollisionAPI", "PhysicsMaterialAPI"]
                 )
                 {
                     float3[] extent = [(-0.032, -0.032, -0.032), (0.032, 0.032, 0.032)]
+                    # PATCH (isaac-social-nav): caster_joint is FIXED — sphere cannot roll.
+                    # Even friction=0 still disrupted traction in PhysX (combine modes /
+                    # contact solver). Disable collision; tip support comes from CoM +
+                    # drive wheels. Re-enable only with a true free-rolling caster joint.
+                    bool physics:collisionEnabled = 0
+                    float physics:dynamicFriction = 0
+                    float physics:restitution = 0
+                    float physics:staticFriction = 0
                     uniform token purpose = "guide"
                     double radius = 0.032
                     quatf xformOp:orient = (1, 0, 0, 0)
@@ -189,7 +262,6 @@ def Xform "stretch" (
                 uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
                 def Xform "link_mast" (
-                    instanceable = true
                     prepend references = @./instances.usda@</Instances/link_mast>
                 )
                 {
@@ -200,13 +272,29 @@ def Xform "stretch" (
                 }
 
                 def Xform "link_mast_collision" (
-                    instanceable = true
                     prepend references = @./instances.usda@</Instances/link_mast_collision>
                 )
                 {
                     quatd xformOp:orient = (1, 0, 0, 0)
                     double3 xformOp:scale = (1, 1, 1)
                     double3 xformOp:translate = (0, 0, 0)
+                    uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
+                }
+
+                # PATCH (isaac-social-nav): cylinder wall collider on the mast (local Y =
+                # world up after mast orient). Kept high (local y≥0.4) and narrow so it
+                # cannot overlap drive-wheel spheres (that jammed traction in ablation).
+                def Cylinder "mast_wall_collision" (
+                    prepend apiSchemas = ["PhysicsCollisionAPI"]
+                )
+                {
+                    float3[] extent = [(-0.06, -0.4, -0.06), (0.06, 0.4, 0.06)]
+                    double height = 0.8
+                    uniform token purpose = "guide"
+                    double radius = 0.06
+                    quatf xformOp:orient = (1, 0, 0, 0)
+                    float3 xformOp:scale = (1, 1, 1)
+                    double3 xformOp:translate = (0, 0.8, 0)
                     uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
                 }
 
@@ -218,7 +306,6 @@ def Xform "stretch" (
                     uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
                     def Xform "link_lift" (
-                        instanceable = true
                         prepend references = @./instances.usda@</Instances/link_lift>
                     )
                     {
@@ -229,7 +316,6 @@ def Xform "stretch" (
                     }
 
                     def Xform "link_lift_collision" (
-                        instanceable = true
                         prepend references = @./instances.usda@</Instances/link_lift_collision>
                     )
                     {
@@ -247,7 +333,6 @@ def Xform "stretch" (
                         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
                         def Xform "link_arm_l4" (
-                            instanceable = true
                             prepend references = @./instances.usda@</Instances/link_arm_l4>
                         )
                         {
@@ -258,7 +343,6 @@ def Xform "stretch" (
                         }
 
                         def Xform "link_arm_l4_collision" (
-                            instanceable = true
                             prepend references = @./instances.usda@</Instances/link_arm_l4_collision>
                         )
                         {
@@ -276,7 +360,6 @@ def Xform "stretch" (
                             uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
                             def Xform "link_arm_l3" (
-                                instanceable = true
                                 prepend references = @./instances.usda@</Instances/link_arm_l3>
                             )
                             {
@@ -287,7 +370,6 @@ def Xform "stretch" (
                             }
 
                             def Xform "link_arm_l3_collision" (
-                                instanceable = true
                                 prepend references = @./instances.usda@</Instances/link_arm_l3_collision>
                             )
                             {
@@ -305,7 +387,6 @@ def Xform "stretch" (
                                 uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
                                 def Xform "link_arm_l2" (
-                                    instanceable = true
                                     prepend references = @./instances.usda@</Instances/link_arm_l2>
                                 )
                                 {
@@ -316,7 +397,6 @@ def Xform "stretch" (
                                 }
 
                                 def Xform "link_arm_l2_collision" (
-                                    instanceable = true
                                     prepend references = @./instances.usda@</Instances/link_arm_l2_collision>
                                 )
                                 {
@@ -334,7 +414,6 @@ def Xform "stretch" (
                                     uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
                                     def Xform "link_arm_l1" (
-                                        instanceable = true
                                         prepend references = @./instances.usda@</Instances/link_arm_l1>
                                     )
                                     {
@@ -345,7 +424,6 @@ def Xform "stretch" (
                                     }
 
                                     def Xform "link_arm_l1_collision" (
-                                        instanceable = true
                                         prepend references = @./instances.usda@</Instances/link_arm_l1_collision>
                                     )
                                     {
@@ -363,7 +441,6 @@ def Xform "stretch" (
                                         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
                                         def Xform "link_arm_l0" (
-                                            instanceable = true
                                             prepend references = @./instances.usda@</Instances/link_arm_l0>
                                         )
                                         {
@@ -374,7 +451,6 @@ def Xform "stretch" (
                                         }
 
                                         def Xform "link_arm_l0_collision" (
-                                            instanceable = true
                                             prepend references = @./instances.usda@</Instances/link_arm_l0_collision>
                                         )
                                         {
@@ -392,7 +468,6 @@ def Xform "stretch" (
                                             uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
                                             def Xform "link_wrist_yaw" (
-                                                instanceable = true
                                                 prepend references = @./instances.usda@</Instances/link_wrist_yaw>
                                             )
                                             {
@@ -403,7 +478,6 @@ def Xform "stretch" (
                                             }
 
                                             def Xform "link_wrist_yaw_collision" (
-                                                instanceable = true
                                                 prepend references = @./instances.usda@</Instances/link_wrist_yaw_collision>
                                             )
                                             {
@@ -421,7 +495,6 @@ def Xform "stretch" (
                                                 uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
                                                 def Xform "link_DW3_wrist_yaw_bottom" (
-                                                    instanceable = true
                                                     prepend references = @./instances.usda@</Instances/link_DW3_wrist_yaw_bottom>
                                                 )
                                                 {
@@ -432,7 +505,6 @@ def Xform "stretch" (
                                                 }
 
                                                 def Xform "link_DW3_wrist_yaw_bottom_collision" (
-                                                    instanceable = true
                                                     prepend references = @./instances.usda@</Instances/link_DW3_wrist_yaw_bottom_collision>
                                                 )
                                                 {
@@ -450,7 +522,6 @@ def Xform "stretch" (
                                                     uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
                                                     def Xform "link_DW3_wrist_pitch" (
-                                                        instanceable = true
                                                         prepend references = @./instances.usda@</Instances/link_DW3_wrist_pitch>
                                                     )
                                                     {
@@ -461,7 +532,6 @@ def Xform "stretch" (
                                                     }
 
                                                     def Xform "link_DW3_wrist_pitch_collision" (
-                                                        instanceable = true
                                                         prepend references = @./instances.usda@</Instances/link_DW3_wrist_pitch_collision>
                                                     )
                                                     {
@@ -479,7 +549,6 @@ def Xform "stretch" (
                                                         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
                                                         def Xform "link_DW3_wrist_roll" (
-                                                            instanceable = true
                                                             prepend references = @./instances.usda@</Instances/link_DW3_wrist_roll>
                                                         )
                                                         {
@@ -490,7 +559,6 @@ def Xform "stretch" (
                                                         }
 
                                                         def Xform "link_DW3_wrist_roll_collision" (
-                                                            instanceable = true
                                                             prepend references = @./instances.usda@</Instances/link_DW3_wrist_roll_collision>
                                                         )
                                                         {
@@ -516,7 +584,6 @@ def Xform "stretch" (
                                                             uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
                                                             def Xform "link_SG3_gripper_body" (
-                                                                instanceable = true
                                                                 prepend references = @./instances.usda@</Instances/link_SG3_gripper_body>
                                                             )
                                                             {
@@ -527,7 +594,6 @@ def Xform "stretch" (
                                                             }
 
                                                             def Xform "link_SG3_gripper_body_collision" (
-                                                                instanceable = true
                                                                 prepend references = @./instances.usda@</Instances/link_SG3_gripper_body_collision>
                                                             )
                                                             {
@@ -552,7 +618,6 @@ def Xform "stretch" (
                                                                     uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
                                                                     def Xform "d405" (
-                                                                        instanceable = true
                                                                         prepend references = @./instances.usda@</Instances/d405>
                                                                     )
                                                                     {
@@ -649,7 +714,6 @@ def Xform "stretch" (
                                                                 uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
                                                                 def Xform "link_SG3_gripper_finger_right" (
-                                                                    instanceable = true
                                                                     prepend references = @./instances.usda@</Instances/link_SG3_gripper_finger_right>
                                                                 )
                                                                 {
@@ -660,7 +724,6 @@ def Xform "stretch" (
                                                                 }
 
                                                                 def Xform "link_SG3_gripper_finger_right_collision" (
-                                                                    instanceable = true
                                                                     prepend references = @./instances.usda@</Instances/link_SG3_gripper_finger_right_collision>
                                                                 )
                                                                 {
@@ -678,7 +741,6 @@ def Xform "stretch" (
                                                                     uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
                                                                     def Xform "link_SG3_gripper_fingertip_right" (
-                                                                        instanceable = true
                                                                         prepend references = @./instances.usda@</Instances/link_SG3_gripper_fingertip_right>
                                                                     )
                                                                     {
@@ -689,7 +751,6 @@ def Xform "stretch" (
                                                                     }
 
                                                                     def Xform "link_SG3_gripper_fingertip_right_collision" (
-                                                                        instanceable = true
                                                                         prepend references = @./instances.usda@</Instances/link_SG3_gripper_fingertip_right_collision>
                                                                     )
                                                                     {
@@ -708,7 +769,6 @@ def Xform "stretch" (
                                                                     uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
                                                                     def Xform "link_SG3_aruco_fingertip_right" (
-                                                                        instanceable = true
                                                                         prepend references = @./instances.usda@</Instances/link_SG3_aruco_fingertip_right>
                                                                     )
                                                                     {
@@ -720,7 +780,6 @@ def Xform "stretch" (
 
                                                                     def Xform "link_SG3_aruco_fingertip_right_1" (
                                                                         displayName = "link_SG3_aruco_fingertip_right"
-                                                                        instanceable = true
                                                                         prepend references = @./instances.usda@</Instances/link_SG3_aruco_fingertip_right_1>
                                                                     )
                                                                     {
@@ -740,7 +799,6 @@ def Xform "stretch" (
                                                                 uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
                                                                 def Xform "link_SG3_gripper_finger_left" (
-                                                                    instanceable = true
                                                                     prepend references = @./instances.usda@</Instances/link_SG3_gripper_finger_left>
                                                                 )
                                                                 {
@@ -751,7 +809,6 @@ def Xform "stretch" (
                                                                 }
 
                                                                 def Xform "link_SG3_gripper_finger_left_collision" (
-                                                                    instanceable = true
                                                                     prepend references = @./instances.usda@</Instances/link_SG3_gripper_finger_left_collision>
                                                                 )
                                                                 {
@@ -769,7 +826,6 @@ def Xform "stretch" (
                                                                     uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
                                                                     def Xform "link_SG3_gripper_fingertip_left" (
-                                                                        instanceable = true
                                                                         prepend references = @./instances.usda@</Instances/link_SG3_gripper_fingertip_left>
                                                                     )
                                                                     {
@@ -780,7 +836,6 @@ def Xform "stretch" (
                                                                     }
 
                                                                     def Xform "link_SG3_gripper_fingertip_left_collision" (
-                                                                        instanceable = true
                                                                         prepend references = @./instances.usda@</Instances/link_SG3_gripper_fingertip_right_collision>
                                                                     )
                                                                     {
@@ -799,7 +854,6 @@ def Xform "stretch" (
                                                                     uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
                                                                     def Xform "link_SG3_aruco_fingertip_left" (
-                                                                        instanceable = true
                                                                         prepend references = @./instances.usda@</Instances/link_SG3_aruco_fingertip_left>
                                                                     )
                                                                     {
@@ -811,7 +865,6 @@ def Xform "stretch" (
 
                                                                     def Xform "link_SG3_aruco_fingertip_left_1" (
                                                                         displayName = "link_SG3_aruco_fingertip_left"
-                                                                        instanceable = true
                                                                         prepend references = @./instances.usda@</Instances/link_SG3_aruco_fingertip_left_1>
                                                                     )
                                                                     {
@@ -831,7 +884,6 @@ def Xform "stretch" (
                                                                 uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
                                                                 def Xform "link_SG3_aruco_d405" (
-                                                                    instanceable = true
                                                                     prepend references = @./instances.usda@</Instances/link_SG3_aruco_d405>
                                                                 )
                                                                 {
@@ -843,7 +895,6 @@ def Xform "stretch" (
 
                                                                 def Xform "link_SG3_aruco_d405_1" (
                                                                     displayName = "link_SG3_aruco_d405"
-                                                                    instanceable = true
                                                                     prepend references = @./instances.usda@</Instances/link_SG3_aruco_d405_1>
                                                                 )
                                                                 {
@@ -875,7 +926,6 @@ def Xform "stretch" (
                                             uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
                                             def Xform "link_aruco_top_wrist" (
-                                                instanceable = true
                                                 prepend references = @./instances.usda@</Instances/link_aruco_top_wrist>
                                             )
                                             {
@@ -887,7 +937,6 @@ def Xform "stretch" (
 
                                             def Xform "link_aruco_top_wrist_1" (
                                                 displayName = "link_aruco_top_wrist"
-                                                instanceable = true
                                                 prepend references = @./instances.usda@</Instances/link_aruco_top_wrist_1>
                                             )
                                             {
@@ -906,7 +955,6 @@ def Xform "stretch" (
                                             uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
                                             def Xform "link_aruco_inner_wrist" (
-                                                instanceable = true
                                                 prepend references = @./instances.usda@</Instances/link_aruco_inner_wrist>
                                             )
                                             {
@@ -918,7 +966,6 @@ def Xform "stretch" (
 
                                             def Xform "link_aruco_inner_wrist_1" (
                                                 displayName = "link_aruco_inner_wrist"
-                                                instanceable = true
                                                 prepend references = @./instances.usda@</Instances/link_aruco_inner_wrist_1>
                                             )
                                             {
@@ -942,7 +989,6 @@ def Xform "stretch" (
                         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
                         def Xform "link_aruco_shoulder" (
-                            instanceable = true
                             prepend references = @./instances.usda@</Instances/link_aruco_shoulder>
                         )
                         {
@@ -954,7 +1000,6 @@ def Xform "stretch" (
 
                         def Xform "link_aruco_shoulder_1" (
                             displayName = "link_aruco_shoulder"
-                            instanceable = true
                             prepend references = @./instances.usda@</Instances/link_aruco_shoulder_1>
                         )
                         {
@@ -974,7 +1019,6 @@ def Xform "stretch" (
                     uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
                     def Xform "link_head" (
-                        instanceable = true
                         prepend references = @./instances.usda@</Instances/link_head>
                     )
                     {
@@ -985,7 +1029,6 @@ def Xform "stretch" (
                     }
 
                     def Xform "link_head_collision" (
-                        instanceable = true
                         prepend references = @./instances.usda@</Instances/link_head_collision>
                     )
                     {
@@ -1003,7 +1046,6 @@ def Xform "stretch" (
                         uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
                         def Xform "link_head_pan" (
-                            instanceable = true
                             prepend references = @./instances.usda@</Instances/link_head_pan>
                         )
                         {
@@ -1014,7 +1056,6 @@ def Xform "stretch" (
                         }
 
                         def Xform "link_head_pan_collision" (
-                            instanceable = true
                             prepend references = @./instances.usda@</Instances/link_head_pan_collision>
                         )
                         {
@@ -1032,7 +1073,6 @@ def Xform "stretch" (
                             uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
                             def Xform "link_head_tilt" (
-                                instanceable = true
                                 prepend references = @./instances.usda@</Instances/link_head_tilt>
                             )
                             {
@@ -1043,7 +1083,6 @@ def Xform "stretch" (
                             }
 
                             def Xform "link_head_tilt_collision" (
-                                instanceable = true
                                 prepend references = @./instances.usda@</Instances/link_head_tilt_collision>
                             )
                             {
@@ -1186,7 +1225,6 @@ def Xform "stretch" (
                                 uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
                                 def Xform "link_SE3_head_nav_cam" (
-                                    instanceable = true
                                     prepend references = @./instances.usda@</Instances/link_SE3_head_nav_cam>
                                 )
                                 {
@@ -1197,7 +1235,6 @@ def Xform "stretch" (
                                 }
 
                                 def Xform "link_SE3_head_nav_cam_collision" (
-                                    instanceable = true
                                     prepend references = @./instances.usda@</Instances/link_SE3_head_nav_cam_collision>
                                 )
                                 {
@@ -1219,7 +1256,6 @@ def Xform "stretch" (
                     uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
                     def Xform "respeaker_base" (
-                        instanceable = true
                         prepend references = @./instances.usda@</Instances/respeaker_base>
                     )
                     {
@@ -1231,7 +1267,6 @@ def Xform "stretch" (
 
                     def Xform "respeaker_base_1" (
                         displayName = "respeaker_base"
-                        instanceable = true
                         prepend references = @./instances.usda@</Instances/respeaker_base_1>
                     )
                     {
@@ -1251,7 +1286,6 @@ def Xform "stretch" (
                 uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
                 def Xform "link_aruco_right_base" (
-                    instanceable = true
                     prepend references = @./instances.usda@</Instances/link_aruco_right_base>
                 )
                 {
@@ -1263,7 +1297,6 @@ def Xform "stretch" (
 
                 def Xform "link_aruco_right_base_1" (
                     displayName = "link_aruco_right_base"
-                    instanceable = true
                     prepend references = @./instances.usda@</Instances/link_aruco_right_base_1>
                 )
                 {
@@ -1282,7 +1315,6 @@ def Xform "stretch" (
                 uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
                 def Xform "link_aruco_left_base" (
-                    instanceable = true
                     prepend references = @./instances.usda@</Instances/link_aruco_left_base>
                 )
                 {
@@ -1294,7 +1326,6 @@ def Xform "stretch" (
 
                 def Xform "link_aruco_left_base_1" (
                     displayName = "link_aruco_left_base"
-                    instanceable = true
                     prepend references = @./instances.usda@</Instances/link_aruco_left_base_1>
                 )
                 {
@@ -1313,7 +1344,6 @@ def Xform "stretch" (
                 uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
                 def Xform "laser" (
-                    instanceable = true
                     prepend references = @./instances.usda@</Instances/laser>
                 )
                 {
@@ -1324,7 +1354,6 @@ def Xform "stretch" (
                 }
 
                 def Xform "laser_collision" (
-                    instanceable = true
                     prepend references = @./instances.usda@</Instances/laser_collision>
                 )
                 {
@@ -1343,7 +1372,6 @@ def Xform "stretch" (
                 uniform token[] xformOpOrder = ["xformOp:translate", "xformOp:orient", "xformOp:scale"]
 
                 def Xform "base_imu" (
-                    instanceable = true
                     prepend references = @./instances.usda@</Instances/base_imu>
                 )
                 {
@@ -1355,7 +1383,6 @@ def Xform "stretch" (
 
                 def Xform "base_imu_1" (
                     displayName = "base_imu"
-                    instanceable = true
                     prepend references = @./instances.usda@</Instances/base_imu_1>
                 )
                 {

@@ -339,11 +339,25 @@ class TeleopHuNavSim(Node):
                 "wheel_radius": 0.14,
                 "wheel_base": 0.413,
             },
-            # PATCH (isaac-social-nav): Hello Robot Stretch — vendored USD, chassis-only drive.
+            # PATCH (isaac-social-nav): Hello Robot Stretch — vendored USD.
+            # Two selectable drives:
+            #   stretch           — kinematic chassis_only (no wall collision; arm visual-only)
+            #   stretch_wheeled   — PhysX WheeledRobot + DifferentialController (collides)
             "stretch": {
                 "name": "Stretch",
                 "usd_relative_path": find_robot_config_path("stretch/stretch.usd"),
                 "drive": "chassis_only",
+            },
+            "stretch_wheeled": {
+                "name": "Stretch",
+                "usd_relative_path": find_robot_config_path("stretch/stretch.usd"),
+                "wheel_dof_names": ["joint_left_wheel", "joint_right_wheel"],
+                # URDF: wheel centers at y=±0.17035, z=0.0508 → radius 0.0508, base ~0.3407
+                "wheel_radius": 0.0508,
+                "wheel_base": 0.3407,
+                # PATCH (isaac-social-nav): slight lift so sphere tires settle onto ground
+                # instead of spawning in penetration (z=0 put tire bottoms exactly at floor).
+                "spawn_z_lift": 0.002,
             },
         }
 
@@ -352,10 +366,11 @@ class TeleopHuNavSim(Node):
 
         robot_config = robot_configs[robot_name]
         robot_init = _load_robot_init_pose(hunav_config)
+        spawn_z = robot_init["z"] + float(robot_config.get("spawn_z_lift", 0.0))
         spawn_position = [
             robot_init["x"],
             robot_init["y"],
-            robot_init["z"],
+            spawn_z,
         ]
         spawn_orientation = _yaw_to_orientation(robot_init["h"])
         
@@ -371,6 +386,7 @@ class TeleopHuNavSim(Node):
         robot_prim_path = f"/World/{robot_config['name']}"
         # ORIGINALLY (upstream v2.0): always WheeledRobot + DifferentialController at [0,0,0].
         # PATCH (isaac-social-nav): Stretch uses chassis_only kinematic base; optional robot_init_pose.
+        # stretch_wheeled keeps PhysX WheeledRobot + DifferentialController (walls collide).
         if robot_config.get("drive") == "chassis_only":
             self._chassis_drive = True
             self.robot = ChassisDriveRobot(

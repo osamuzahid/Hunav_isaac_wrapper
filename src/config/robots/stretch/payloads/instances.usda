@@ -1,0 +1,774 @@
+#usda 1.0
+(
+    customLayerData = {
+        string creator = "URDF USD Converter v0.1.3"
+    }
+    doc = """Generated from Composed Stage of root layer /tmp/tmpkhsgent6/stretch.usdc
+
+
+Generated from Composed Stage of root layer /tmp/urdf_import_stretch_b7s_ly_i/usdex_stretch/stretch.usdc
+
+
+Generated from Composed Stage of root layer /tmp/urdf_import_stretch_b7s_ly_i/temp_stretch/stretch.usd
+"""
+    kilogramsPerUnit = 1
+    metersPerUnit = 1
+    upAxis = "Z"
+)
+
+def Scope "Instances"
+{
+    def Xform "base_link" (
+        prepend references = @./geometries.usd@</Geometries/base_link>
+    )
+    {
+        over "base_link"
+        {
+        }
+    }
+
+    def Xform "base_link_collision" (
+        prepend references = @./geometries.usd@</Geometries/base_link_collision>
+    )
+    {
+        over "base_link_collision" (
+            apiSchemas = ["PhysicsCollisionAPI", "NewtonCollisionAPI", "PhysicsMeshCollisionAPI", "NewtonMeshCollisionAPI"]
+        )
+        {
+            token physics:approximation = "convexHull"
+            token purpose = "guide"
+        }
+    }
+
+    def Xform "link_right_wheel" (
+        prepend references = @./geometries.usd@</Geometries/link_right_wheel>
+    )
+    {
+        over "link_right_wheel"
+        {
+        }
+    }
+
+    def Xform "link_right_wheel_collision" (
+        prepend references = @./geometries.usd@</Geometries/link_right_wheel_collision>
+    )
+    {
+        over "link_right_wheel_collision" (
+            apiSchemas = ["PhysicsCollisionAPI", "NewtonCollisionAPI", "PhysicsMeshCollisionAPI", "NewtonMeshCollisionAPI"]
+        )
+        {
+            token physics:approximation = "convexHull"
+            token purpose = "guide"
+        }
+    }
+
+    def Xform "link_left_wheel" (
+        prepend references = @./geometries.usd@</Geometries/link_left_wheel>
+    )
+    {
+        over "link_left_wheel"
+        {
+        }
+    }
+
+    def Xform "link_left_wheel_collision" (
+        prepend references = @./geometries.usd@</Geometries/link_left_wheel_collision>
+    )
+    {
+        over "link_left_wheel_collision" (
+            apiSchemas = ["PhysicsCollisionAPI", "NewtonCollisionAPI", "PhysicsMeshCollisionAPI", "NewtonMeshCollisionAPI"]
+        )
+        {
+            token physics:approximation = "convexHull"
+            token purpose = "guide"
+        }
+    }
+
+    def Xform "omni_wheel_m" (
+        prepend references = @./geometries.usd@</Geometries/omni_wheel_m>
+    )
+    {
+        over "omni_wheel_m"
+        {
+        }
+    }
+
+    def Xform "link_mast" (
+        prepend references = @./geometries.usd@</Geometries/link_mast>
+    )
+    {
+        over "link_mast"
+        {
+        }
+    }
+
+    def Xform "link_mast_collision" (
+        prepend references = @./geometries.usd@</Geometries/link_mast_collision>
+    )
+    {
+        over "link_mast_collision" (
+            apiSchemas = ["PhysicsCollisionAPI", "NewtonCollisionAPI", "PhysicsMeshCollisionAPI", "NewtonMeshCollisionAPI"]
+        )
+        {
+            token physics:approximation = "convexHull"
+            token purpose = "guide"
+        }
+    }
+
+    def Xform "link_lift" (
+        prepend references = @./geometries.usd@</Geometries/link_lift>
+    )
+    {
+        over "link_lift"
+        {
+        }
+    }
+
+    def Xform "link_lift_collision" (
+        prepend references = @./geometries.usd@</Geometries/link_lift_collision>
+    )
+    {
+        over "link_lift_collision" (
+            apiSchemas = ["PhysicsCollisionAPI", "NewtonCollisionAPI", "PhysicsMeshCollisionAPI", "NewtonMeshCollisionAPI"]
+        )
+        {
+            token physics:approximation = "convexHull"
+            token purpose = "guide"
+        }
+    }
+
+    def Xform "link_arm_l4" (
+        prepend references = @./geometries.usd@</Geometries/link_arm_l4>
+    )
+    {
+        over "link_arm_l4"
+        {
+        }
+    }
+
+    def Xform "link_arm_l4_collision" (
+        prepend references = @./geometries.usd@</Geometries/link_arm_l4_collision>
+    )
+    {
+        over "link_arm_l4_collision" (
+            apiSchemas = ["PhysicsCollisionAPI", "NewtonCollisionAPI", "PhysicsMeshCollisionAPI", "NewtonMeshCollisionAPI"]
+        )
+        {
+            token physics:approximation = "convexHull"
+            token purpose = "guide"
+        }
+    }
+
+    def Xform "link_arm_l3" (
+        prepend references = @./geometries.usd@</Geometries/link_arm_l3>
+    )
+    {
+        over "link_arm_l3"
+        {
+        }
+    }
+
+    def Xform "link_arm_l3_collision" (
+        prepend references = @./geometries.usd@</Geometries/link_arm_l3_collision>
+    )
+    {
+        over "link_arm_l3_collision" (
+            apiSchemas = ["PhysicsCollisionAPI", "NewtonCollisionAPI", "PhysicsMeshCollisionAPI", "NewtonMeshCollisionAPI"]
+        )
+        {
+            token physics:approximation = "convexHull"
+            token purpose = "guide"
+        }
+    }
+
+    def Xform "link_arm_l2" (
+        prepend references = @./geometries.usd@</Geometries/link_arm_l2>
+    )
+    {
+        over "link_arm_l2"
+        {
+        }
+    }
+
+    def Xform "link_arm_l2_collision" (
+        prepend references = @./geometries.usd@</Geometries/link_arm_l2_collision>
+    )
+    {
+        over "link_arm_l2_collision" (
+            apiSchemas = ["PhysicsCollisionAPI", "NewtonCollisionAPI", "PhysicsMeshCollisionAPI", "NewtonMeshCollisionAPI"]
+        )
+        {
+            token physics:approximation = "convexHull"
+            token purpose = "guide"
+        }
+    }
+
+    def Xform "link_arm_l1" (
+        prepend references = @./geometries.usd@</Geometries/link_arm_l1>
+    )
+    {
+        over "link_arm_l1"
+        {
+        }
+    }
+
+    def Xform "link_arm_l1_collision" (
+        prepend references = @./geometries.usd@</Geometries/link_arm_l1_collision>
+    )
+    {
+        over "link_arm_l1_collision" (
+            apiSchemas = ["PhysicsCollisionAPI", "NewtonCollisionAPI", "PhysicsMeshCollisionAPI", "NewtonMeshCollisionAPI"]
+        )
+        {
+            token physics:approximation = "convexHull"
+            token purpose = "guide"
+        }
+    }
+
+    def Xform "link_arm_l0" (
+        prepend references = @./geometries.usd@</Geometries/link_arm_l0>
+    )
+    {
+        over "link_arm_l0"
+        {
+        }
+    }
+
+    def Xform "link_arm_l0_collision" (
+        prepend references = @./geometries.usd@</Geometries/link_arm_l0_collision>
+    )
+    {
+        over "link_arm_l0_collision" (
+            apiSchemas = ["PhysicsCollisionAPI", "NewtonCollisionAPI", "PhysicsMeshCollisionAPI", "NewtonMeshCollisionAPI"]
+        )
+        {
+            token physics:approximation = "convexHull"
+            token purpose = "guide"
+        }
+    }
+
+    def Xform "link_wrist_yaw" (
+        prepend references = @./geometries.usd@</Geometries/link_wrist_yaw>
+    )
+    {
+        over "link_wrist_yaw"
+        {
+        }
+    }
+
+    def Xform "link_wrist_yaw_collision" (
+        prepend references = @./geometries.usd@</Geometries/link_wrist_yaw_collision>
+    )
+    {
+        over "link_wrist_yaw_collision" (
+            apiSchemas = ["PhysicsCollisionAPI", "NewtonCollisionAPI", "PhysicsMeshCollisionAPI", "NewtonMeshCollisionAPI"]
+        )
+        {
+            token physics:approximation = "convexHull"
+            token purpose = "guide"
+        }
+    }
+
+    def Xform "link_DW3_wrist_yaw_bottom" (
+        prepend references = @./geometries.usd@</Geometries/link_DW3_wrist_yaw_bottom>
+    )
+    {
+        over "link_DW3_wrist_yaw_bottom"
+        {
+        }
+    }
+
+    def Xform "link_DW3_wrist_yaw_bottom_collision" (
+        prepend references = @./geometries.usd@</Geometries/link_DW3_wrist_yaw_bottom_collision>
+    )
+    {
+        over "link_DW3_wrist_yaw_bottom_collision" (
+            apiSchemas = ["PhysicsCollisionAPI", "NewtonCollisionAPI", "PhysicsMeshCollisionAPI", "NewtonMeshCollisionAPI"]
+        )
+        {
+            token physics:approximation = "convexHull"
+            token purpose = "guide"
+        }
+    }
+
+    def Xform "link_DW3_wrist_pitch" (
+        prepend references = @./geometries.usd@</Geometries/link_DW3_wrist_pitch>
+    )
+    {
+        over "link_DW3_wrist_pitch"
+        {
+        }
+    }
+
+    def Xform "link_DW3_wrist_pitch_collision" (
+        prepend references = @./geometries.usd@</Geometries/link_DW3_wrist_pitch_collision>
+    )
+    {
+        over "link_DW3_wrist_pitch_collision" (
+            apiSchemas = ["PhysicsCollisionAPI", "NewtonCollisionAPI", "PhysicsMeshCollisionAPI", "NewtonMeshCollisionAPI"]
+        )
+        {
+            token physics:approximation = "convexHull"
+            token purpose = "guide"
+        }
+    }
+
+    def Xform "link_DW3_wrist_roll" (
+        prepend references = @./geometries.usd@</Geometries/link_DW3_wrist_roll>
+    )
+    {
+        over "link_DW3_wrist_roll"
+        {
+        }
+    }
+
+    def Xform "link_DW3_wrist_roll_collision" (
+        prepend references = @./geometries.usd@</Geometries/link_DW3_wrist_roll_collision>
+    )
+    {
+        over "link_DW3_wrist_roll_collision" (
+            apiSchemas = ["PhysicsCollisionAPI", "NewtonCollisionAPI", "PhysicsMeshCollisionAPI", "NewtonMeshCollisionAPI"]
+        )
+        {
+            token physics:approximation = "convexHull"
+            token purpose = "guide"
+        }
+    }
+
+    def Xform "link_SG3_gripper_body" (
+        prepend references = @./geometries.usd@</Geometries/link_SG3_gripper_body>
+    )
+    {
+        over "link_SG3_gripper_body"
+        {
+        }
+    }
+
+    def Xform "link_SG3_gripper_body_collision" (
+        prepend references = @./geometries.usd@</Geometries/link_SG3_gripper_body_collision>
+    )
+    {
+        over "link_SG3_gripper_body_collision" (
+            apiSchemas = ["PhysicsCollisionAPI", "NewtonCollisionAPI", "PhysicsMeshCollisionAPI", "NewtonMeshCollisionAPI"]
+        )
+        {
+            token physics:approximation = "convexHull"
+            token purpose = "guide"
+        }
+    }
+
+    def Xform "d405" (
+        prepend references = @./geometries.usd@</Geometries/d405>
+    )
+    {
+        over "d405"
+        {
+        }
+    }
+
+    def Xform "link_SG3_gripper_finger_right" (
+        prepend references = @./geometries.usd@</Geometries/link_SG3_gripper_finger_right>
+    )
+    {
+        over "link_SG3_gripper_finger_right"
+        {
+        }
+    }
+
+    def Xform "link_SG3_gripper_finger_right_collision" (
+        prepend references = @./geometries.usd@</Geometries/link_SG3_gripper_finger_right_collision>
+    )
+    {
+        over "link_SG3_gripper_finger_right_collision" (
+            apiSchemas = ["PhysicsCollisionAPI", "NewtonCollisionAPI", "PhysicsMeshCollisionAPI", "NewtonMeshCollisionAPI"]
+        )
+        {
+            token physics:approximation = "convexHull"
+            token purpose = "guide"
+        }
+    }
+
+    def Xform "link_SG3_gripper_fingertip_right" (
+        prepend references = @./geometries.usd@</Geometries/link_SG3_gripper_fingertip_right>
+    )
+    {
+        over "link_SG3_gripper_fingertip_right"
+        {
+        }
+    }
+
+    def Xform "link_SG3_gripper_fingertip_right_collision" (
+        prepend references = @./geometries.usd@</Geometries/link_SG3_gripper_fingertip_right_collision>
+    )
+    {
+        over "link_SG3_gripper_fingertip_right_collision" (
+            apiSchemas = ["PhysicsCollisionAPI", "NewtonCollisionAPI", "PhysicsMeshCollisionAPI", "NewtonMeshCollisionAPI"]
+        )
+        {
+            token physics:approximation = "convexHull"
+            token purpose = "guide"
+        }
+    }
+
+    def Xform "link_SG3_aruco_fingertip_right" (
+        prepend references = @./geometries.usd@</Geometries/link_SG3_aruco_fingertip_right>
+    )
+    {
+        over "link_SG3_aruco_fingertip_right"
+        {
+        }
+    }
+
+    def Xform "link_SG3_aruco_fingertip_right_1" (
+        prepend references = @./geometries.usd@</Geometries/link_SG3_aruco_fingertip_right>
+    )
+    {
+        over "link_SG3_aruco_fingertip_right" (
+            apiSchemas = ["PhysicsCollisionAPI", "NewtonCollisionAPI", "PhysicsMeshCollisionAPI", "NewtonMeshCollisionAPI"]
+        )
+        {
+            token physics:approximation = "convexHull"
+            token purpose = "guide"
+        }
+    }
+
+    def Xform "link_SG3_gripper_finger_left" (
+        prepend references = @./geometries.usd@</Geometries/link_SG3_gripper_finger_left>
+    )
+    {
+        over "link_SG3_gripper_finger_left"
+        {
+        }
+    }
+
+    def Xform "link_SG3_gripper_finger_left_collision" (
+        prepend references = @./geometries.usd@</Geometries/link_SG3_gripper_finger_left_collision>
+    )
+    {
+        over "link_SG3_gripper_finger_left_collision" (
+            apiSchemas = ["PhysicsCollisionAPI", "NewtonCollisionAPI", "PhysicsMeshCollisionAPI", "NewtonMeshCollisionAPI"]
+        )
+        {
+            token physics:approximation = "convexHull"
+            token purpose = "guide"
+        }
+    }
+
+    def Xform "link_SG3_gripper_fingertip_left" (
+        prepend references = @./geometries.usd@</Geometries/link_SG3_gripper_fingertip_left>
+    )
+    {
+        over "link_SG3_gripper_fingertip_left"
+        {
+        }
+    }
+
+    def Xform "link_SG3_aruco_fingertip_left" (
+        prepend references = @./geometries.usd@</Geometries/link_SG3_aruco_fingertip_left>
+    )
+    {
+        over "link_SG3_aruco_fingertip_left"
+        {
+        }
+    }
+
+    def Xform "link_SG3_aruco_fingertip_left_1" (
+        prepend references = @./geometries.usd@</Geometries/link_SG3_aruco_fingertip_left>
+    )
+    {
+        over "link_SG3_aruco_fingertip_left" (
+            apiSchemas = ["PhysicsCollisionAPI", "NewtonCollisionAPI", "PhysicsMeshCollisionAPI", "NewtonMeshCollisionAPI"]
+        )
+        {
+            token physics:approximation = "convexHull"
+            token purpose = "guide"
+        }
+    }
+
+    def Xform "link_SG3_aruco_d405" (
+        prepend references = @./geometries.usd@</Geometries/link_SG3_aruco_d405>
+    )
+    {
+        over "link_SG3_aruco_d405"
+        {
+        }
+    }
+
+    def Xform "link_SG3_aruco_d405_1" (
+        prepend references = @./geometries.usd@</Geometries/link_SG3_aruco_d405>
+    )
+    {
+        over "link_SG3_aruco_d405" (
+            apiSchemas = ["PhysicsCollisionAPI", "NewtonCollisionAPI", "PhysicsMeshCollisionAPI", "NewtonMeshCollisionAPI"]
+        )
+        {
+            token physics:approximation = "convexHull"
+            token purpose = "guide"
+        }
+    }
+
+    def Xform "link_aruco_top_wrist" (
+        prepend references = @./geometries.usd@</Geometries/link_aruco_top_wrist>
+    )
+    {
+        over "link_aruco_top_wrist"
+        {
+        }
+    }
+
+    def Xform "link_aruco_top_wrist_1" (
+        prepend references = @./geometries.usd@</Geometries/link_aruco_top_wrist>
+    )
+    {
+        over "link_aruco_top_wrist" (
+            apiSchemas = ["PhysicsCollisionAPI", "NewtonCollisionAPI", "PhysicsMeshCollisionAPI", "NewtonMeshCollisionAPI"]
+        )
+        {
+            token physics:approximation = "convexHull"
+            token purpose = "guide"
+        }
+    }
+
+    def Xform "link_aruco_inner_wrist" (
+        prepend references = @./geometries.usd@</Geometries/link_aruco_inner_wrist>
+    )
+    {
+        over "link_aruco_inner_wrist"
+        {
+        }
+    }
+
+    def Xform "link_aruco_inner_wrist_1" (
+        prepend references = @./geometries.usd@</Geometries/link_aruco_inner_wrist>
+    )
+    {
+        over "link_aruco_inner_wrist" (
+            apiSchemas = ["PhysicsCollisionAPI", "NewtonCollisionAPI", "PhysicsMeshCollisionAPI", "NewtonMeshCollisionAPI"]
+        )
+        {
+            token physics:approximation = "convexHull"
+            token purpose = "guide"
+        }
+    }
+
+    def Xform "link_aruco_shoulder" (
+        prepend references = @./geometries.usd@</Geometries/link_aruco_shoulder>
+    )
+    {
+        over "link_aruco_shoulder"
+        {
+        }
+    }
+
+    def Xform "link_aruco_shoulder_1" (
+        prepend references = @./geometries.usd@</Geometries/link_aruco_shoulder>
+    )
+    {
+        over "link_aruco_shoulder" (
+            apiSchemas = ["PhysicsCollisionAPI", "NewtonCollisionAPI", "PhysicsMeshCollisionAPI", "NewtonMeshCollisionAPI"]
+        )
+        {
+            token physics:approximation = "convexHull"
+            token purpose = "guide"
+        }
+    }
+
+    def Xform "link_head" (
+        prepend references = @./geometries.usd@</Geometries/link_head>
+    )
+    {
+        over "link_head"
+        {
+        }
+    }
+
+    def Xform "link_head_collision" (
+        prepend references = @./geometries.usd@</Geometries/link_head_collision>
+    )
+    {
+        over "link_head_collision" (
+            apiSchemas = ["PhysicsCollisionAPI", "NewtonCollisionAPI", "PhysicsMeshCollisionAPI", "NewtonMeshCollisionAPI"]
+        )
+        {
+            token physics:approximation = "convexHull"
+            token purpose = "guide"
+        }
+    }
+
+    def Xform "link_head_pan" (
+        prepend references = @./geometries.usd@</Geometries/link_head_pan>
+    )
+    {
+        over "link_head_pan"
+        {
+        }
+    }
+
+    def Xform "link_head_pan_collision" (
+        prepend references = @./geometries.usd@</Geometries/link_head_pan_collision>
+    )
+    {
+        over "link_head_pan_collision" (
+            apiSchemas = ["PhysicsCollisionAPI", "NewtonCollisionAPI", "PhysicsMeshCollisionAPI", "NewtonMeshCollisionAPI"]
+        )
+        {
+            token physics:approximation = "convexHull"
+            token purpose = "guide"
+        }
+    }
+
+    def Xform "link_head_tilt" (
+        prepend references = @./geometries.usd@</Geometries/link_head_tilt>
+    )
+    {
+        over "link_head_tilt"
+        {
+        }
+    }
+
+    def Xform "link_head_tilt_collision" (
+        prepend references = @./geometries.usd@</Geometries/link_head_tilt_collision>
+    )
+    {
+        over "link_head_tilt_collision" (
+            apiSchemas = ["PhysicsCollisionAPI", "NewtonCollisionAPI", "PhysicsMeshCollisionAPI", "NewtonMeshCollisionAPI"]
+        )
+        {
+            token physics:approximation = "convexHull"
+            token purpose = "guide"
+        }
+    }
+
+    def Xform "link_SE3_head_nav_cam" (
+        prepend references = @./geometries.usd@</Geometries/link_SE3_head_nav_cam>
+    )
+    {
+        over "link_SE3_head_nav_cam"
+        {
+        }
+    }
+
+    def Xform "link_SE3_head_nav_cam_collision" (
+        prepend references = @./geometries.usd@</Geometries/link_SE3_head_nav_cam_collision>
+    )
+    {
+        over "link_SE3_head_nav_cam_collision" (
+            apiSchemas = ["PhysicsCollisionAPI", "NewtonCollisionAPI", "PhysicsMeshCollisionAPI", "NewtonMeshCollisionAPI"]
+        )
+        {
+            token physics:approximation = "convexHull"
+            token purpose = "guide"
+        }
+    }
+
+    def Xform "respeaker_base" (
+        prepend references = @./geometries.usd@</Geometries/respeaker_base>
+    )
+    {
+        over "respeaker_base"
+        {
+        }
+    }
+
+    def Xform "respeaker_base_1" (
+        prepend references = @./geometries.usd@</Geometries/respeaker_base>
+    )
+    {
+        over "respeaker_base" (
+            apiSchemas = ["PhysicsCollisionAPI", "NewtonCollisionAPI", "PhysicsMeshCollisionAPI", "NewtonMeshCollisionAPI"]
+        )
+        {
+            token physics:approximation = "convexHull"
+            token purpose = "guide"
+        }
+    }
+
+    def Xform "link_aruco_right_base" (
+        prepend references = @./geometries.usd@</Geometries/link_aruco_right_base>
+    )
+    {
+        over "link_aruco_right_base"
+        {
+        }
+    }
+
+    def Xform "link_aruco_right_base_1" (
+        prepend references = @./geometries.usd@</Geometries/link_aruco_right_base>
+    )
+    {
+        over "link_aruco_right_base" (
+            apiSchemas = ["PhysicsCollisionAPI", "NewtonCollisionAPI", "PhysicsMeshCollisionAPI", "NewtonMeshCollisionAPI"]
+        )
+        {
+            token physics:approximation = "convexHull"
+            token purpose = "guide"
+        }
+    }
+
+    def Xform "link_aruco_left_base" (
+        prepend references = @./geometries.usd@</Geometries/link_aruco_left_base>
+    )
+    {
+        over "link_aruco_left_base"
+        {
+        }
+    }
+
+    def Xform "link_aruco_left_base_1" (
+        prepend references = @./geometries.usd@</Geometries/link_aruco_left_base>
+    )
+    {
+        over "link_aruco_left_base" (
+            apiSchemas = ["PhysicsCollisionAPI", "NewtonCollisionAPI", "PhysicsMeshCollisionAPI", "NewtonMeshCollisionAPI"]
+        )
+        {
+            token physics:approximation = "convexHull"
+            token purpose = "guide"
+        }
+    }
+
+    def Xform "laser" (
+        prepend references = @./geometries.usd@</Geometries/laser>
+    )
+    {
+        over "laser"
+        {
+        }
+    }
+
+    def Xform "laser_collision" (
+        prepend references = @./geometries.usd@</Geometries/laser_collision>
+    )
+    {
+        over "laser_collision" (
+            apiSchemas = ["PhysicsCollisionAPI", "NewtonCollisionAPI", "PhysicsMeshCollisionAPI", "NewtonMeshCollisionAPI"]
+        )
+        {
+            token physics:approximation = "convexHull"
+            token purpose = "guide"
+        }
+    }
+
+    def Xform "base_imu" (
+        prepend references = @./geometries.usd@</Geometries/base_imu>
+    )
+    {
+        over "base_imu"
+        {
+        }
+    }
+
+    def Xform "base_imu_1" (
+        prepend references = @./geometries.usd@</Geometries/base_imu>
+    )
+    {
+        over "base_imu" (
+            apiSchemas = ["PhysicsCollisionAPI", "NewtonCollisionAPI", "PhysicsMeshCollisionAPI", "NewtonMeshCollisionAPI"]
+        )
+        {
+            token physics:approximation = "convexHull"
+            token purpose = "guide"
+        }
+    }
+}
+

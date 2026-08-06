@@ -42,6 +42,9 @@ simulation_app = SimulationApp(CONFIG)
 import os
 import signal
 import subprocess
+import math
+import yaml
+import numpy as np
 from pathlib import Path
 from rclpy.node import Node
 from geometry_msgs.msg import Twist
@@ -51,6 +54,8 @@ from isaacsim.robot.wheeled_robots.robots import WheeledRobot
 from isaacsim.robot.wheeled_robots.controllers.differential_controller import (
     DifferentialController,
 )
+from isaacsim.core.prims import SingleXFormPrim
+from isaacsim.core.utils.stage import add_reference_to_stage
 import omni
 import omni.graph.core as og
  
@@ -136,6 +141,85 @@ def find_robot_config_path(filename):
             return str(path)
     
     raise FileNotFoundError(f"Robot config file not found: {filename}")
+
+    raise FileNotFoundError(f"Robot config file not found: {filename}")
+
+
+def _load_robot_init_pose(hunav_config_path):
+    """
+    PATCH (isaac-social-nav): optional robot_init_pose from hunav scenario YAML.
+    Returns dict with x,y,z,h (defaults 0).
+    """
+    pose = {"x": 0.0, "y": 0.0, "z": 0.0, "h": 0.0}
+    if not hunav_config_path:
+        return pose
+    config_path = Path(hunav_config_path)
+    if not config_path.is_file():
+        return pose
+    try:
+        with open(config_path, "r", encoding="utf-8") as f:
+            data = yaml.safe_load(f) or {}
+        init = data.get("hunav_loader", {}).get("ros__parameters", {}).get(
+            "robot_init_pose", {}
+        )
+        if isinstance(init, dict):
+            pose.update({k: float(init.get(k, pose[k])) for k in pose})
+    except Exception as exc:
+        print(f"[hunav_isaac_wrapper] WARNING: could not read robot_init_pose: {exc}")
+    return pose
+
+
+def _yaw_to_orientation(h):
+    """Quaternion (w, x, y, z) from yaw about +Z."""
+    return [math.cos(h / 2.0), 0.0, 0.0, math.sin(h / 2.0)]
+
+
+def _yaw_from_orientation(quat):
+    w, x, y, z = quat
+    return math.atan2(2.0 * (w * z + x * y), 1.0 - 2.0 * (y * y + z * z))
+
+
+class ChassisDriveRobot:
+    """
+    PATCH (isaac-social-nav): kinematic planar base for Stretch.
+    Spawns a vendored USD and integrates /cmd_vel on the root Xform each step.
+    Arm / manipulator DOFs are not driven (visual-only articulation).
+    """
+
+    def __init__(self, prim_path, usd_path, position, orientation):
+        add_reference_to_stage(usd_path=usd_path, prim_path=prim_path)
+        self._xform = SingleXFormPrim(
+            prim_path=prim_path,
+            name="Robot",
+            position=position,
+            orientation=orientation,
+        )
+        self._lin_vel = np.zeros(3, dtype=float)
+        self._ang_vel = np.zeros(3, dtype=float)
+
+    def apply_cmd_vel(self, lin_x, ang_z, dt):
+        pos, quat = self._xform.get_world_pose()
+        yaw = _yaw_from_orientation(quat)
+        yaw += ang_z * dt
+        pos = np.asarray(pos, dtype=float)
+        pos[0] += lin_x * math.cos(yaw) * dt
+        pos[1] += lin_x * math.sin(yaw) * dt
+        new_quat = np.asarray(_yaw_to_orientation(yaw), dtype=float)
+        self._xform.set_world_pose(position=pos, orientation=new_quat)
+        self._lin_vel = np.array(
+            [lin_x * math.cos(yaw), lin_x * math.sin(yaw), 0.0], dtype=float
+        )
+        self._ang_vel = np.array([0.0, 0.0, ang_z], dtype=float)
+
+    def get_world_pose(self):
+        return self._xform.get_world_pose()
+
+    def get_linear_velocity(self):
+        return self._lin_vel.copy()
+
+    def get_angular_velocity(self):
+        return self._ang_vel.copy()
+
 
 class TeleopHuNavSim(Node):
     """
@@ -255,12 +339,25 @@ class TeleopHuNavSim(Node):
                 "wheel_radius": 0.14,
                 "wheel_base": 0.413,
             },
+            # PATCH (isaac-social-nav): Hello Robot Stretch — vendored USD, chassis-only drive.
+            "stretch": {
+                "name": "Stretch",
+                "usd_relative_path": find_robot_config_path("stretch/stretch.usd"),
+                "drive": "chassis_only",
+            },
         }
 
         if robot_name not in robot_configs:
             raise ValueError(f"Unsupported robot_name: {robot_name}")
 
         robot_config = robot_configs[robot_name]
+        robot_init = _load_robot_init_pose(hunav_config)
+        spawn_position = [
+            robot_init["x"],
+            robot_init["y"],
+            robot_init["z"],
+        ]
+        spawn_orientation = _yaw_to_orientation(robot_init["h"])
         
         # Handle absolute vs relative paths for robot USD files
         if os.path.isabs(robot_config["usd_relative_path"]):
@@ -272,24 +369,37 @@ class TeleopHuNavSim(Node):
 
         # Add robot to world
         robot_prim_path = f"/World/{robot_config['name']}"
-        self.robot = self.world.scene.add(
-            WheeledRobot(
+        # ORIGINALLY (upstream v2.0): always WheeledRobot + DifferentialController at [0,0,0].
+        # PATCH (isaac-social-nav): Stretch uses chassis_only kinematic base; optional robot_init_pose.
+        if robot_config.get("drive") == "chassis_only":
+            self._chassis_drive = True
+            self.robot = ChassisDriveRobot(
                 prim_path=robot_prim_path,
-                name="Robot",
-                wheel_dof_names=robot_config["wheel_dof_names"],
-                create_robot=True,
                 usd_path=robot_path,
-                position=[0.0, 0.0, 0.0],
-                orientation=[0, 0, 0, 1],
+                position=spawn_position,
+                orientation=spawn_orientation,
             )
-        )
+            self.diff_controller = None
+        else:
+            self._chassis_drive = False
+            self.robot = self.world.scene.add(
+                WheeledRobot(
+                    prim_path=robot_prim_path,
+                    name="Robot",
+                    wheel_dof_names=robot_config["wheel_dof_names"],
+                    create_robot=True,
+                    usd_path=robot_path,
+                    position=spawn_position,
+                    orientation=spawn_orientation,
+                )
+            )
 
-        # Create differential drive controller
-        self.diff_controller = DifferentialController(
-            name="diff_drive_controller",
-            wheel_radius=robot_config["wheel_radius"],
-            wheel_base=robot_config["wheel_base"],
-        )
+            # Create differential drive controller
+            self.diff_controller = DifferentialController(
+                name="diff_drive_controller",
+                wheel_radius=robot_config["wheel_radius"],
+                wheel_base=robot_config["wheel_base"],
+            )
 
         # ROS2 cmd_vel subscriber
         self.cmd_lin = 0.00
@@ -407,5 +517,9 @@ class TeleopHuNavSim(Node):
         self.hunav.send_agents_msg()
         while simulation_app.is_running():
             self.world.step(render=True)
-            wheel_action = self.diff_controller.forward([self.cmd_lin, self.cmd_ang])
-            self.robot.apply_wheel_actions(wheel_action)
+            if self._chassis_drive:
+                dt = self.world.get_physics_dt()
+                self.robot.apply_cmd_vel(self.cmd_lin, self.cmd_ang, dt)
+            else:
+                wheel_action = self.diff_controller.forward([self.cmd_lin, self.cmd_ang])
+                self.robot.apply_wheel_actions(wheel_action)

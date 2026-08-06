@@ -2,7 +2,7 @@
 
 Sections are in **discovery order** (how we found each failure on the Isaac 6.0.1 + Jazzy port, then how we fixed it). Code markers: search `ORIGINALLY` / `PATCH (isaac-social-nav)` in `hunav_manager.py` and `animation_utils.py`.
 
-Parent handoff / validation IDs: main repo `docs/ENVIRONMENT.md` (Validated **#26–#28**, port **6b–6d**).
+Parent handoff / validation IDs: main repo `docs/ENVIRONMENT.md` (Validated **#26–#28**, **#32**, port **6b–6d**).
 
 ---
 
@@ -133,3 +133,19 @@ Logs to skim on launch:
 - Runtime `enable_extension` + `app.update()` for anim  
 - Empty `Agent.goals` on first `/compute_agents`  
 - Leaving character mesh colliders enabled for HuNav raycast obstacles  
+- Isaac `_update_agents` inventing agent yaw / hard near-robot XY freeze (180° flips, mid-turn lock)  
+- Zeroing Curious/approach `velocity.linear` while the agent is still translating (WalkLoop dies → slide)  
+
+---
+
+## 7. Near-robot reactions vs WalkLoop (Validated #32)
+
+Parent log: main repo `docs/TROUBLESHOOTING.md` (2026-08-06 near-robot entries) and ENVIRONMENT Validated **#32**.
+
+| | |
+|---|---|
+| **Symptom** | Near Stretch: Scared freeze / flee-loop; Curious thrash or slide without WalkLoop; Threatening walk-into + strafe; random ~180° frames. |
+| **Cause (anim-related)** | (1) Isaac `_update_agents` rewrote orientation / froze XY and fought HuNav quats. (2) Stop-and-look / Curious paths zeroed `velocity.linear` while XY still moved → AnimGraph `speed≈0` → Idle/slide while translating. (3) Behaviour thrash (Scared LOS, Curious SFM) looked like “broken anim” in GUI. |
+| **Fix** | Revert Isaac near-robot yaw invent; idle yaw freeze only when `speed_xy` is tiny. In `hunav_agent_manager`: absolute look-at; Scared omnidirectional LOS + `once` visibility latch + flee goal; Curious radial approach + stop hysteresis/pin + **restore planar velocity** for WalkLoop; Threatening pin at front stand-off. YAML: stronger Scared flee, Curious stop ~2 m. |
+| **Logging** | Optional CSV: `HUNAV_REACTION_LOG=/tmp/hunav_reaction.csv` from `hunav_manager`. Analyze with `tools/analyze_reaction_log.py`. Probe: `tools/near_robot_reaction_probe.py`. |
+| **Status** | DONE — headless PASS gates + GUI sign-off (2026-08-06). |

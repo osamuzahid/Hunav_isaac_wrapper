@@ -58,7 +58,7 @@ from isaacsim.core.prims import SingleXFormPrim
 from isaacsim.core.utils.stage import add_reference_to_stage
 import omni
 import omni.graph.core as og
- 
+
 # Import the WorldBuilder and HuNavManager modules.
 from .world_builder import WorldBuilder
 from .hunav_manager import HuNavManager
@@ -183,11 +183,24 @@ class ChassisDriveRobot:
     """
     PATCH (isaac-social-nav): kinematic planar base for Stretch.
     Spawns a vendored USD and integrates /cmd_vel on the root Xform each step.
-    Arm / manipulator DOFs are not driven (visual-only articulation).
+    Uses Physics variant ``none`` so arm/lift joints are not PhysX-simulated
+    (shared wheeled USD otherwise collapses under gravity — and SingleArticulation
+    on this asset fails to resolve `/World/Stretch/Geometry/base_link`).
     """
 
     def __init__(self, prim_path, usd_path, position, orientation):
         add_reference_to_stage(usd_path=usd_path, prim_path=prim_path)
+        stage = omni.usd.get_context().get_stage()
+        prim = stage.GetPrimAtPath(prim_path)
+        if prim and prim.IsValid():
+            vsets = prim.GetVariantSets()
+            if vsets.HasVariantSet("Physics"):
+                # Keep mesh hierarchy, drop ArticulationRoot / rigid bodies.
+                vsets.GetVariantSet("Physics").SetVariantSelection("none")
+                print(
+                    f"[ChassisDriveRobot] {prim_path}: Physics variant → none "
+                    "(kinematic visual; no joint collapse)"
+                )
         self._xform = SingleXFormPrim(
             prim_path=prim_path,
             name="Robot",
@@ -355,9 +368,9 @@ class TeleopHuNavSim(Node):
                 # URDF: wheel centers at y=±0.17035, z=0.0508 → radius 0.0508, base ~0.3407
                 "wheel_radius": 0.0508,
                 "wheel_base": 0.3407,
-                # PATCH (isaac-social-nav): slight lift so sphere tires settle onto ground
-                # instead of spawning in penetration (z=0 put tire bottoms exactly at floor).
-                "spawn_z_lift": 0.002,
+                # PATCH (isaac-social-nav): museum floor + free arm DOFs need clearance;
+                # 2 mm was enough on a flat ground plane smoke but collapses into cucr museum mesh.
+                "spawn_z_lift": 0.12,
             },
         }
 
@@ -396,6 +409,9 @@ class TeleopHuNavSim(Node):
                 orientation=spawn_orientation,
             )
             self.diff_controller = None
+            self._hold_non_wheel_dofs = False
+            self._held_joint_positions = None
+            self._wheel_dof_indices = None
         else:
             self._chassis_drive = False
             self.robot = self.world.scene.add(
@@ -416,6 +432,13 @@ class TeleopHuNavSim(Node):
                 wheel_radius=robot_config["wheel_radius"],
                 wheel_base=robot_config["wheel_base"],
             )
+            # PATCH (isaac-social-nav): Stretch articulates lift/arm/head/gripper. Only the
+            # two wheel DOFs are driven; unheld joints fall under gravity and the mesh
+            # looks collapsed / detached from the root gizmo. Hold non-wheel DOFs at the
+            # post-reset pose every control step.
+            self._hold_non_wheel_dofs = robot_name == "stretch_wheeled"
+            self._held_joint_positions = None
+            self._wheel_dof_indices = None
 
         # ROS2 cmd_vel subscriber
         self.cmd_lin = 0.00
@@ -530,6 +553,16 @@ class TeleopHuNavSim(Node):
         self.physx_sub = self.physx_interface.subscribe_physics_step_events(
             self._on_physics_step
         )
+        # Capture default Stretch pose after reset; re-apply non-wheel DOFs every step.
+        if self._hold_non_wheel_dofs:
+            names = list(self.robot.dof_names)
+            self._wheel_dof_indices = {
+                names.index("joint_left_wheel"),
+                names.index("joint_right_wheel"),
+            }
+            self._held_joint_positions = np.array(
+                self.robot.get_joint_positions(), dtype=float, copy=True
+            )
         self.hunav.send_agents_msg()
         while simulation_app.is_running():
             self.world.step(render=True)
@@ -537,5 +570,13 @@ class TeleopHuNavSim(Node):
                 dt = self.world.get_physics_dt()
                 self.robot.apply_cmd_vel(self.cmd_lin, self.cmd_ang, dt)
             else:
+                if self._hold_non_wheel_dofs and self._held_joint_positions is not None:
+                    current = np.array(
+                        self.robot.get_joint_positions(), dtype=float, copy=True
+                    )
+                    held = self._held_joint_positions.copy()
+                    for wi in self._wheel_dof_indices:
+                        held[wi] = current[wi]
+                    self.robot.set_joint_positions(held)
                 wheel_action = self.diff_controller.forward([self.cmd_lin, self.cmd_ang])
                 self.robot.apply_wheel_actions(wheel_action)

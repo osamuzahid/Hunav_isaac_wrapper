@@ -9,6 +9,7 @@ setting up animations (including retargeting), and handling physics.
 import os
 import math
 import random
+import time
 import yaml
 import numpy as np
 import subprocess, signal
@@ -32,6 +33,7 @@ import carb
 
 # Import auxiliary animation functions
 from .animation_utils import *
+from .occupancy_path import OccupancyMap, resolve_map_yaml
 
 # ---------------------------------------------------------------------------
 # ORIGINALLY (upstream v2.0): only retarget was enabled here, then graph imported:
@@ -126,11 +128,20 @@ class HuNavManager:
         # Orientation smoothing
         self.agent_previous_orientations = {}  # Store previous orientations for smoothing
         self.orientation_smoothing_factor = 0.15  # Lower = smoother but more lag (0.05-0.3 range)
+        # PATCH (isaac-social-nav): near-robot diagnostics / prior XY for logging.
+        self.agent_previous_positions = {}
+        self.agent_previous_deltas = {}
+        self._reaction_log_prev = {}
+        self._reaction_log_warned = False
 
         self.robot_prim = None
+        # PATCH (isaac-social-nav): occupancy A* goal expansion cache (per agent name).
+        self._occupancy_map = None
+        self._planned_goals_cache = {}
 
         if config_file_path is not None:
             self.config = self._load_yaml(config_file_path)
+            self._maybe_load_occupancy_map()
         else:
             self.config = None
 
@@ -161,6 +172,60 @@ class HuNavManager:
         full_path = os.path.join(os.path.dirname(__file__), relative_path)
         with open(full_path, "r") as file:
             return yaml.safe_load(file)
+
+    def _find_maps_dir(self) -> str:
+        """Locate share/.../maps or source src/maps without importing teleop (circular)."""
+        try:
+            result = subprocess.run(
+                ["ros2", "pkg", "prefix", "hunav_isaac_wrapper"],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            share_maps = os.path.join(
+                result.stdout.strip(), "share", "hunav_isaac_wrapper", "maps"
+            )
+            if os.path.isdir(share_maps):
+                return share_maps
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            pass
+        # Development: .../src/hunav_isaac_wrapper/hunav_manager.py → .../src/maps
+        src_maps = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "..", "maps")
+        )
+        if os.path.isdir(src_maps):
+            return src_maps
+        raise FileNotFoundError("Could not locate hunav_isaac_wrapper maps/ directory")
+
+    def _maybe_load_occupancy_map(self) -> None:
+        """
+        PATCH (isaac-social-nav): optional A* on ROS occupancy maps.
+
+        When ``plan_goals_on_map`` is true, sparse YAML goals are expanded into
+        corridor-following waypoint chains so SFM no longer takes wall-cutting chords.
+        """
+        self._occupancy_map = None
+        self._planned_goals_cache = {}
+        if self.config is None:
+            return
+        params = self.config.get("hunav_loader", {}).get("ros__parameters", {})
+        if not params.get("plan_goals_on_map", False):
+            return
+        map_key = params.get("map_yaml") or params.get("map") or "museum"
+        inflation = float(params.get("plan_inflation_radius_m", 0.35))
+        try:
+            maps_dir = self._find_maps_dir()
+            yaml_path = resolve_map_yaml(str(map_key), maps_dir)
+            self._occupancy_map = OccupancyMap.from_yaml(
+                yaml_path, inflation_radius_m=inflation
+            )
+            print(
+                f"[HuNavManager] Occupancy planner loaded: {yaml_path} "
+                f"(inflation={inflation} m)"
+            )
+        except Exception as exc:
+            print(f"[HuNavManager] WARNING: plan_goals_on_map enabled but map load failed: {exc}")
+            self._occupancy_map = None
 
     def slerp_quaternions(self, q1: Gf.Quatf, q2: Gf.Quatf, t: float) -> Gf.Quatf:
         """
@@ -443,6 +508,8 @@ class HuNavManager:
             agent.GetAttribute("xformOp:orient").Set(init_state["orientation"])
         
         self.agent_previous_orientations.clear()
+        self.agent_previous_positions.clear()
+        self.agent_previous_deltas.clear()
         print("[HuNavManager] agent states reset.")
 
     def clear_simulation(self):
@@ -455,7 +522,9 @@ class HuNavManager:
         self.robot = None
         self.agent_initial_states.clear()
         self.animationDict.clear()
-        self.agent_previous_orientations.clear()  # Clean up orientation tracking
+        self.agent_previous_orientations.clear()
+        self.agent_previous_positions.clear()
+        self.agent_previous_deltas.clear()
 
     def _disable_collisions_recursive(self, root_prim) -> None:
         """Turn off collision on an agent prim tree (HuNav moves agents kinematically)."""
@@ -532,6 +601,9 @@ class HuNavManager:
                     )
                     if "/World/Characters/" in coll_path:
                         continue
+                    # Floor / ground plane scrapes are not useful SFM obstacles.
+                    if "Ground" in coll_path or "/ground" in coll_path.lower():
+                        continue
                     distance = hit.get("distance", max_distance)
                     if distance < 0.15:
                         continue
@@ -590,9 +662,15 @@ class HuNavManager:
             agents_msg.agents.append(agent_msg)
 
         # Wait for the compute_agents service and call it
-        if not self.compute_agents_client.wait_for_service(timeout_sec=2.0):
-            print("[HuNavManager] /compute_agents not available.")
-            return
+        # PATCH (isaac-social-nav): first wait can be slow (loader spawn); do not
+        # burn 2s on every physics tick after failure — use short polls.
+        if not self.compute_agents_client.service_is_ready():
+            if not self.compute_agents_client.wait_for_service(timeout_sec=0.0):
+                if not getattr(self, "_compute_wait_logged", False):
+                    print("[HuNavManager] waiting for /compute_agents …")
+                    self._compute_wait_logged = True
+                return
+            print("[HuNavManager] /compute_agents ready.")
         self._call_compute(agents_msg, robot_msg)
 
     @staticmethod
@@ -643,7 +721,10 @@ class HuNavManager:
 
     def _resolve_agent_goals(self, agent_cfg, agent_name):
         """Build geometry_msgs/Pose[] goals for /compute_agents initialization."""
-        goals = []
+        if agent_name in self._planned_goals_cache:
+            return list(self._planned_goals_cache[agent_name])
+
+        key_cfgs = []
         for goal_id in agent_cfg.get("goals", []) or []:
             gcfg = self._lookup_goal_cfg(goal_id, agent_cfg)
             if gcfg is None:
@@ -651,23 +732,69 @@ class HuNavManager:
                     f"[HuNavManager] {agent_name}: unknown goal id {goal_id!r}; skipping"
                 )
                 continue
-            pose = Pose()
-            pose.position.x = float(gcfg["x"])
-            pose.position.y = float(gcfg["y"])
-            pose.position.z = float(gcfg.get("z", 0.0))
-            if "h" in gcfg:
-                q = Gf.Rotation(Gf.Vec3d(0, 0, 1), float(gcfg["h"]) * 180.0 / math.pi).GetQuat()
-                pose.orientation.w = float(q.GetReal())
-                imag = q.GetImaginary()
-                pose.orientation.x = float(imag[0])
-                pose.orientation.y = float(imag[1])
-                pose.orientation.z = float(imag[2])
-            goals.append(pose)
+            key_cfgs.append(gcfg)
+
+        params = self.config["hunav_loader"]["ros__parameters"]
+        planned_xy = None
+        if self._occupancy_map is not None and key_cfgs:
+            spacing = float(params.get("plan_waypoint_spacing_m", 1.0))
+            keys = [(float(g["x"]), float(g["y"])) for g in key_cfgs]
+            route_keys = list(keys)
+            if params.get("plan_from_init_pose", True):
+                init = agent_cfg.get("init_pose") or {}
+                route_keys = [(float(init["x"]), float(init["y"]))] + route_keys
+            # Close the loop for cyclic patrols so the return leg is also corridor-safe.
+            if agent_cfg.get("cyclic_goals", False) and len(keys) >= 2:
+                if route_keys[-1] != keys[0]:
+                    route_keys = route_keys + [keys[0]]
+            planned_xy = self._occupancy_map.plan_route(
+                route_keys, waypoint_spacing_m=spacing
+            )
+            if planned_xy is None:
+                print(
+                    f"[HuNavManager] WARNING: {agent_name} occupancy plan failed; "
+                    "falling back to sparse YAML goals (straight chords)."
+                )
+            else:
+                # Drop the init-pose vertex — HuNav goals are destinations only.
+                if params.get("plan_from_init_pose", True) and len(planned_xy) > 1:
+                    planned_xy = planned_xy[1:]
+                print(
+                    f"[HuNavManager] {agent_name}: planned {len(planned_xy)} waypoints "
+                    f"from {len(key_cfgs)} key goals (spacing={spacing} m)"
+                )
+
+        goals = []
+        if planned_xy:
+            for x, y in planned_xy:
+                pose = Pose()
+                pose.position.x = float(x)
+                pose.position.y = float(y)
+                pose.position.z = 0.0
+                goals.append(pose)
+        else:
+            for gcfg in key_cfgs:
+                pose = Pose()
+                pose.position.x = float(gcfg["x"])
+                pose.position.y = float(gcfg["y"])
+                pose.position.z = float(gcfg.get("z", 0.0))
+                if "h" in gcfg:
+                    q = Gf.Rotation(
+                        Gf.Vec3d(0, 0, 1), float(gcfg["h"]) * 180.0 / math.pi
+                    ).GetQuat()
+                    pose.orientation.w = float(q.GetReal())
+                    imag = q.GetImaginary()
+                    pose.orientation.x = float(imag[0])
+                    pose.orientation.y = float(imag[1])
+                    pose.orientation.z = float(imag[2])
+                goals.append(pose)
+
         if not goals:
             print(
                 f"[HuNavManager] WARNING: {agent_name} has no resolvable goals; "
                 "SFM will leave the agent idle."
             )
+        self._planned_goals_cache[agent_name] = list(goals)
         return goals
 
     def _create_robot_msg(self):
@@ -828,8 +955,11 @@ class HuNavManager:
             other_force_factor=sfm_params["other_force_factor"],
         )
         
-        # Obstacle detection. Museum mesh + occupancy often disagree with SFM's
-        # local avoidance → agents walk into walls and spin. Opt out via YAML.
+        # Obstacle detection.
+        # PATCH (isaac-social-nav): character meshes used to poison rays → spin.
+        # get_closest_obstacles skips /World/Characters/*; prefer rays ON with
+        # occupancy-planned goals. YAML ``ignore_obstacle_rays: true`` remains
+        # an emergency opt-out (museum bring-up used it before map planning).
         agent.closest_obs = []
         params = self.config["hunav_loader"]["ros__parameters"]
         if params.get("ignore_obstacle_rays", False):
@@ -907,16 +1037,41 @@ class HuNavManager:
                 upd.position.position.y,
                 init_z,
             )
-            agent_prim.GetAttribute("xformOp:translate").Set(new_pos)
 
             # Planar velocity only — never feed PhysX /people a huge Z component.
             lin = Gf.Vec3d(upd.velocity.linear.x, upd.velocity.linear.y, 0.0)
             speed_xy = float(math.hypot(lin[0], lin[1]))
 
-            # Set orientation with smoothing. When nearly stopped (wall jam /
-            # goal wait), keep prior yaw — SFM obstacle thrash otherwise spins
-            # the character in place.
             agent_path = agent_prim.GetPath()
+            # PATCH (isaac-social-nav): do NOT rewrite near-robot XY/yaw here.
+            # Fighting HuNav poses caused 180° flickers, mid-turn freezes, and
+            # Curious "bumping". Behaviour fixes belong in hunav_agent_manager;
+            # Isaac only applies poses + freezes yaw when nearly stopped.
+            prev_xy = self.agent_previous_positions.get(agent_path)
+            dist_robot = None
+            rx = ry = None
+            dx = dy = 0.0
+            try:
+                rpos, _ = self.robot_obj.get_world_pose()
+                rx, ry = float(rpos[0]), float(rpos[1])
+                dist_robot = math.hypot(
+                    rx - float(new_pos[0]),
+                    ry - float(new_pos[1]),
+                )
+            except Exception:
+                dist_robot = None
+
+            if prev_xy is not None:
+                dx = float(new_pos[0]) - prev_xy[0]
+                dy = float(new_pos[1]) - prev_xy[1]
+
+            self.agent_previous_positions[agent_path] = (
+                float(new_pos[0]),
+                float(new_pos[1]),
+            )
+            agent_prim.GetAttribute("xformOp:translate").Set(new_pos)
+
+            # HuNav orientation (tf2 RPY yaw) + character axis correction.
             new_quat = Gf.Quatf(
                 upd.position.orientation.w,
                 upd.position.orientation.x,
@@ -932,8 +1087,9 @@ class HuNavManager:
             rotZQ_anim = Gf.Quatf(Gf.Rotation(Gf.Vec3d(1, 0, 0), 0).GetQuat())
             target_anim_quat = new_quat * rotXQ * rotZQ_anim
 
-            # Freeze yaw below walk speed — male was spinning at |v|~0.2–0.4.
-            if speed_xy < 0.2 and agent_path in self.agent_previous_orientations:
+            # Freeze yaw only when truly idle — raising this threshold trapped
+            # Scared mid-turn. Slerp when moving.
+            if speed_xy < 0.12 and agent_path in self.agent_previous_orientations:
                 smoothed_prim_quat, smoothed_anim_quat = (
                     self.agent_previous_orientations[agent_path]
                 )
@@ -976,6 +1132,21 @@ class HuNavManager:
             ang = Gf.Vec3d(0.0, 0.0, float(upd.velocity.angular.z))
             agent_prim.GetAttribute("physics:angularVelocity").Set(ang)
 
+            # Optional headless diagnosis: HUNAV_REACTION_LOG=/tmp/reaction.csv
+            log_path = os.environ.get("HUNAV_REACTION_LOG", "").strip()
+            if log_path:
+                self._append_reaction_log(
+                    log_path,
+                    upd=upd,
+                    x=float(new_pos[0]),
+                    y=float(new_pos[1]),
+                    speed_xy=speed_xy,
+                    dx=dx,
+                    dy=dy,
+                    dist_robot=dist_robot,
+                    yaw=float(getattr(upd, "yaw", 0.0) or 0.0),
+                )
+
             # Set animation based on agent's planar speed
             speed = speed_xy
             max_expected_speed = 1.5
@@ -986,6 +1157,51 @@ class HuNavManager:
                 )
             else:
                 print(f"No AnimationGraph bound for {agent_prim.GetPath()}")
+
+    def _append_reaction_log(
+        self,
+        log_path,
+        *,
+        upd,
+        x,
+        y,
+        speed_xy,
+        dx,
+        dy,
+        dist_robot,
+        yaw,
+    ):
+        """Append one CSV row for near-robot reaction diagnosis (headless)."""
+        write_header = not os.path.isfile(log_path) or os.path.getsize(log_path) == 0
+        try:
+            beh = int(getattr(getattr(upd, "behavior", None), "type", 0) or 0)
+            with open(log_path, "a", encoding="utf-8") as fh:
+                if write_header:
+                    fh.write(
+                        "t_wall,agent_id,beh,x,y,yaw,speed_xy,dx,dy,dist_robot,"
+                        "yaw_jump_deg\n"
+                    )
+                prev = self._reaction_log_prev.get(upd.id)
+                yaw_jump = 0.0
+                if prev is not None:
+                    dyaw = yaw - prev["yaw"]
+                    while dyaw > math.pi:
+                        dyaw -= 2.0 * math.pi
+                    while dyaw < -math.pi:
+                        dyaw += 2.0 * math.pi
+                    yaw_jump = abs(math.degrees(dyaw))
+                self._reaction_log_prev[upd.id] = {"yaw": yaw}
+                fh.write(
+                    f"{time.time():.3f},{upd.id},{beh},{x:.4f},{y:.4f},{yaw:.4f},"
+                    f"{speed_xy:.4f},{dx:.4f},{dy:.4f},"
+                    f"{(dist_robot if dist_robot is not None else -1):.4f},"
+                    f"{yaw_jump:.2f}\n"
+                )
+        except Exception as exc:
+            # Logging must never break the sim loop.
+            if not getattr(self, "_reaction_log_warned", False):
+                print(f"[HuNavManager] reaction log failed: {exc}")
+                self._reaction_log_warned = True
 
     def get_character_model_from_skin(self, skin_value):
         """

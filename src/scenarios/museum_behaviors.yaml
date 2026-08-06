@@ -4,45 +4,51 @@ hunav_loader:
     simulator: Isaac Sim
     map: museum
     publish_people: true
-    # SFM is local (no global planner). PhysX rays against the museum mesh were
-    # pinning agents to walls and spinning yaw — disable until Nav2/navmesh.
-    ignore_obstacle_rays: true
-    # Single open room (mutual LOS on maps/museum.png): x∈[-8,4], y∈[-9.5,2.5].
-    # Do not place goals across corridors/walls — agents walk straight lines.
-    # Stretch spawn near agents for social-reaction demos (wired by wrapper teleop).
+    # PATCH (isaac-social-nav): same building-scale motion stack as museum_agents.
+    plan_goals_on_map: true
+    map_yaml: museum.yaml
+    plan_waypoint_spacing_m: 1.0
+    plan_inflation_radius_m: 0.35
+    plan_from_init_pose: true
+    ignore_obstacle_rays: false
+    # Stretch starts at room edge so agents can patrol first. Drive toward them
+    # to trigger Curious/Scared/Surprised/Threatening.
     robot_init_pose:
-      x: -4.0
-      y: -3.0
+      x: 2.0
+      y: -8.0
       z: 0.0
-      h: 0.0
+      h: 1.57
     global_goals:
       1:
         x: -6.5
         y: -3.5
       2:
-        x: -6.5
-        y: -1.5
-      3:
-        x: -6.5
-        y: 0.5
-      4:
-        x: -5.0
-        y: -2.5
-      5:
-        x: -5.5
+        x: -18.0
         y: -5.0
+      3:
+        x: 10.0
+        y: 5.0
+      4:
+        x: 2.0
+        y: -8.0
+      5:
+        x: -15.0
+        y: 8.0
       6:
-        x: -8.0
-        y: -2.5
+        x: 0.0
+        y: 10.0
       7:
-        x: -3.0
-        y: -4.0
-      8:
-        x: -7.0
-        y: 1.0
-      9:
-        x: -2.0
+        x: 8.0
         y: -2.0
+      8:
+        x: -20.0
+        y: 0.0
+      9:
+        x: 11.0
+        y: -10.0
+      10:
+        x: -4.0
+        y: 14.0
     agents:
       - agent1
       - agent2
@@ -55,7 +61,7 @@ hunav_loader:
       skin: 1
       max_vel: 1.0
       radius: 0.4
-      goal_radius: 0.5
+      goal_radius: 0.6
       cyclic_goals: true
       init_pose:
         x: -6.5
@@ -63,8 +69,9 @@ hunav_loader:
         z: 0.0
         h: 1.57
       behavior:
-        # hunav_loader declares behavior.type as int (1=Regular). String "Regular" crashes the loader.
-        type: 1
+        # Impassive (2): treat robot as obstacle — Regular (1) social-force weave
+        # against the robot caused rapid left/right shuffling when close.
+        type: 2
         configuration: 0
         goal_force_factor: 10.0
         obstacle_force_factor: 2.0
@@ -81,7 +88,7 @@ hunav_loader:
       skin: 3
       max_vel: 0.9
       radius: 0.4
-      goal_radius: 0.5
+      goal_radius: 0.6
       cyclic_goals: true
       init_pose:
         x: -5.0
@@ -89,20 +96,21 @@ hunav_loader:
         z: 0.0
         h: -1.57
       behavior:
+        # Curious: approach then stop+look at dist (2.0 m — 1.5 overshot to <1 m).
         type: 5
         configuration: 1
         duration: 35.0
         once: true
-        vel: 0.7
-        dist: 1.5
+        vel: 0.45
+        dist: 2.0
         goal_force_factor: 10.0
         obstacle_force_factor: 2.0
         social_force_factor: 5.0
         other_force_factor: 20.0
       goals:
-        - "4"
         - "7"
-        - "2"
+        - "5"
+        - "6"
         - "9"
     agent3:
       id: 3
@@ -110,7 +118,7 @@ hunav_loader:
       skin: 5
       max_vel: 1.0
       radius: 0.4
-      goal_radius: 0.5
+      goal_radius: 0.6
       cyclic_goals: true
       init_pose:
         x: -7.0
@@ -118,28 +126,30 @@ hunav_loader:
         z: 0.0
         h: 0.0
       behavior:
+        # Scared: HuNav adds robot repulsion (not a sprint turn). Stronger
+        # force + higher runaway vel so shy-away reads as flee in GUI.
         type: 4
         configuration: 1
         duration: 40.0
         once: true
-        vel: 0.6
-        dist: 3.0
-        goal_force_factor: 10.0
+        vel: 1.1
+        dist: 5.0
+        goal_force_factor: 6.0
         obstacle_force_factor: 2.0
         social_force_factor: 5.0
-        other_force_factor: 20.0
+        other_force_factor: 45.0
       goals:
-        - "6"
-        - "1"
-        - "5"
         - "8"
+        - "2"
+        - "4"
+        - "1"
     agent4:
       id: 4
       group_id: -1
       skin: 7
       max_vel: 0.85
       radius: 0.4
-      goal_radius: 0.5
+      goal_radius: 0.6
       cyclic_goals: true
       init_pose:
         x: -4.0
@@ -158,17 +168,17 @@ hunav_loader:
         social_force_factor: 5.0
         other_force_factor: 20.0
       goals:
+        - "6"
+        - "10"
         - "3"
-        - "8"
-        - "2"
-        - "9"
+        - "7"
     agent5:
       id: 5
       group_id: -1
       skin: 9
       max_vel: 0.95
       radius: 0.4
-      goal_radius: 0.5
+      goal_radius: 0.6
       cyclic_goals: true
       init_pose:
         x: -6.0
@@ -187,7 +197,7 @@ hunav_loader:
         social_force_factor: 5.0
         other_force_factor: 20.0
       goals:
-        - "5"
-        - "7"
         - "4"
-        - "1"
+        - "9"
+        - "5"
+        - "8"

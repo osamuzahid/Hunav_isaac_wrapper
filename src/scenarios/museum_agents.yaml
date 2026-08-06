@@ -4,30 +4,49 @@ hunav_loader:
     simulator: Isaac Sim
     map: museum
     publish_people: true
-    # SFM is local (no global planner). PhysX rays against the museum mesh were
-    # pinning agents to walls and spinning yaw — disable until Nav2/navmesh.
-    ignore_obstacle_rays: true
-    # Single open room (mutual LOS on maps/museum.png): x∈[-8,4], y∈[-9.5,2.5].
-    # Do not place goals across corridors/walls — agents walk straight lines.
+    # PATCH (isaac-social-nav): building-scale motion stack
+    # - plan_goals_on_map: A* on maps/museum.yaml densifies sparse goals so SFM
+    #   follows corridors instead of wall-cutting straight chords.
+    # - ignore_obstacle_rays: false restores local wall avoidance; character
+    #   mesh hits are filtered in hunav_manager.get_closest_obstacles.
+    plan_goals_on_map: true
+    map_yaml: museum.yaml
+    plan_waypoint_spacing_m: 1.0
+    plan_inflation_radius_m: 0.35
+    plan_from_init_pose: true
+    ignore_obstacle_rays: false
+    # Key poses (sparse). Runtime planner expands them to ~1 m waypoints.
+    # Spawns stay in free space (maps/museum.png white cells).
+    robot_init_pose:
+      x: 2.0
+      y: -8.0
+      z: 0.0
+      h: 1.57
     global_goals:
       1:
         x: -6.5
         y: -3.5
       2:
-        x: -6.5
-        y: -1.5
-      3:
-        x: -6.5
-        y: 0.5
-      4:
-        x: -5.0
-        y: -2.5
-      5:
-        x: -5.5
+        x: -18.0
         y: -5.0
+      3:
+        x: 10.0
+        y: 5.0
+      4:
+        x: 2.0
+        y: -8.0
+      5:
+        x: -15.0
+        y: 8.0
       6:
-        x: -8.0
-        y: -2.5
+        x: 0.0
+        y: 10.0
+      7:
+        x: 8.0
+        y: -2.0
+      8:
+        x: -20.0
+        y: 0.0
     agents:
       - agent1
       - agent2
@@ -37,7 +56,7 @@ hunav_loader:
       skin: 1
       max_vel: 1.0
       radius: 0.4
-      goal_radius: 0.5
+      goal_radius: 0.6
       cyclic_goals: true
       init_pose:
         x: -6.5
@@ -64,7 +83,7 @@ hunav_loader:
       skin: 3
       max_vel: 0.9
       radius: 0.4
-      goal_radius: 0.5
+      goal_radius: 0.6
       cyclic_goals: true
       init_pose:
         x: -5.0
@@ -79,7 +98,7 @@ hunav_loader:
         social_force_factor: 5.0
         other_force_factor: 20.0
       goals:
-        - "4"
+        - "7"
         - "5"
         - "6"
-        - "2"
+        - "8"

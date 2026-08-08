@@ -52,6 +52,9 @@ _HUNAV_EXTRA_ARGS = [
     "omni.anim.retarget.core",
     "--enable",
     "isaacsim.ros2.bridge",
+    # Viewport DrawLabel overlays for HuNav behavior names (operator demos).
+    "--enable",
+    "omni.graph.visualization.nodes",
 ]
 
 # Lab / workstation: original wrapper settings (RaytracedLighting @ 1280x720).

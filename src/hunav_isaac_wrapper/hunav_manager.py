@@ -34,6 +34,7 @@ import carb
 # Import auxiliary animation functions
 from .animation_utils import *
 from .occupancy_path import OccupancyMap, resolve_map_yaml
+from .behavior_labels import BehaviorLabelOverlay, behavior_labels_enabled
 
 # ---------------------------------------------------------------------------
 # ORIGINALLY (upstream v2.0): only retarget was enabled here, then graph imported:
@@ -138,6 +139,9 @@ class HuNavManager:
         # PATCH (isaac-social-nav): occupancy A* goal expansion cache (per agent name).
         self._occupancy_map = None
         self._planned_goals_cache = {}
+        # Viewport behavior name overlays (GUI demos; off when headless).
+        self._behavior_labels = BehaviorLabelOverlay()
+        self._behavior_labels.set_enabled(behavior_labels_enabled())
 
         if config_file_path is not None:
             self.config = self._load_yaml(config_file_path)
@@ -512,6 +516,31 @@ class HuNavManager:
         else:
             print("[HuNavManager] no robot_prim_path provided")
 
+        # Viewport labels: A{id} · BEHAVIOR (DrawLabel above each agent).
+        if behavior_labels_enabled():
+            self._behavior_labels.set_enabled(True)
+            agent_ids = []
+            params = self.config["hunav_loader"]["ros__parameters"]
+            for name in params.get("agents") or []:
+                cfg = params.get(name) or {}
+                agent_ids.append(int(cfg.get("id", len(agent_ids) + 1)))
+            if not agent_ids:
+                agent_ids = list(range(1, len(self.agents) + 1))
+            if self._behavior_labels.ensure_labels(agent_ids):
+                for name in params.get("agents") or []:
+                    cfg = params.get(name) or {}
+                    aid = int(cfg.get("id", 0))
+                    init = cfg.get("init_pose") or {}
+                    beh = cfg.get("behavior") or {}
+                    self._behavior_labels.update_label(
+                        aid,
+                        float(init.get("x", 0.0)),
+                        float(init.get("y", 0.0)),
+                        float(init.get("z", 0.0)),
+                        self._parse_behavior_type(beh.get("type", 1)),
+                        0,
+                    )
+
     def reset_agent_states(self):
         for agent, init_state in zip(self.agents, self.agent_initial_states):
             agent.GetAttribute("xformOp:translate").Set(init_state["position"])
@@ -535,6 +564,10 @@ class HuNavManager:
         self.agent_previous_orientations.clear()
         self.agent_previous_positions.clear()
         self.agent_previous_deltas.clear()
+        try:
+            self._behavior_labels.destroy()
+        except Exception:
+            pass
 
     def _disable_collisions_recursive(self, root_prim) -> None:
         """Turn off collision on an agent prim tree (HuNav moves agents kinematically)."""
@@ -951,12 +984,14 @@ class HuNavManager:
                 if param in sfm_params:
                     sfm_params[param] = clamp_value(sfm_params[param], min_val, max_val)
         
+        # state=0 idle; HuNav reaction fns set state=1 while reacting.
+        # once/dist/duration come from YAML (Impassive has no once — default False).
         agent.behavior = AgentBehavior(
             type=self._parse_behavior_type(beh.get("type", 1)),
-            state=1,
+            state=0,
             configuration=configuration,
             duration=float(beh.get("duration", 40.0)),
-            once=bool(beh.get("once", True)),
+            once=bool(beh.get("once", False)),
             vel=float(beh.get("vel", 0.6)),
             dist=float(beh.get("dist", 0.0)),
             social_force_factor=sfm_params["social_force_factor"],
@@ -1167,6 +1202,20 @@ class HuNavManager:
                 )
             else:
                 print(f"No AnimationGraph bound for {agent_prim.GetPath()}")
+
+            # Behavior name overlay (viewport DrawLabel).
+            if self._behavior_labels.enabled:
+                beh = getattr(upd, "behavior", None)
+                beh_type = int(getattr(beh, "type", 0) or 0)
+                beh_state = int(getattr(beh, "state", 0) or 0)
+                self._behavior_labels.update_label(
+                    int(upd.id),
+                    float(new_pos[0]),
+                    float(new_pos[1]),
+                    float(new_pos[2]),
+                    beh_type,
+                    beh_state,
+                )
 
     def _append_reaction_log(
         self,

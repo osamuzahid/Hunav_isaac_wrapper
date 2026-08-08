@@ -382,6 +382,7 @@ Examples:
 
 SimulationApp profiles: default|lab (1280x720 windowed) or debug|laptop (960x540 headless).
 Also: HUNAV_ISAAC_PROFILE, HUNAV_ISAAC_HEADLESS=0|1, --headless, --no-headless.
+Behavior labels: on for windowed GUI (HUNAV_BEHAVIOR_LABELS / --behavior-labels / --no-behavior-labels).
 
 Configuration files are searched in: {CONFIG_DIR}
         """
@@ -438,6 +439,18 @@ Configuration files are searched in: {CONFIG_DIR}
         "--verbose", "-v", 
         action="store_true", 
         help="Enable verbose output"
+    )
+    # PATCH (isaac-social-nav): viewport HuNav behavior name overlays.
+    label_group = parser.add_mutually_exclusive_group()
+    label_group.add_argument(
+        "--behavior-labels",
+        action="store_true",
+        help="Force on floating A{id}·BEHAVIOR labels above agents (also HUNAV_BEHAVIOR_LABELS=1)",
+    )
+    label_group.add_argument(
+        "--no-behavior-labels",
+        action="store_true",
+        help="Disable behavior labels (also HUNAV_BEHAVIOR_LABELS=0). Default: on for windowed GUI, off when headless.",
     )
 
     # PATCH (isaac-social-nav): NEW argparse flags for SimulationApp profiles.
@@ -615,7 +628,16 @@ def main():
         f"{preview.get('width')}x{preview.get('height')} "
         f"headless={preview.get('headless')} renderer={preview.get('renderer')}"
     )
-    
+    # Behavior overlays: CLI overrides; else default on for windowed / off headless.
+    if getattr(args, "behavior_labels", False):
+        os.environ["HUNAV_BEHAVIOR_LABELS"] = "1"
+    elif getattr(args, "no_behavior_labels", False):
+        os.environ["HUNAV_BEHAVIOR_LABELS"] = "0"
+    print_info(
+        f"Behavior labels: "
+        f"{os.environ.get('HUNAV_BEHAVIOR_LABELS', '(default from headless)')}"
+    )
+
     # Launch simulation
     launch_simulation(world, config_path, robot, args.verbose)
 

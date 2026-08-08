@@ -23,6 +23,8 @@ os.environ.setdefault("HUNAV_ISAAC_PROFILE", "debug")
 os.environ.setdefault("ROS_DOMAIN_ID", "0")
 # Avoid evaluator ABI crash under Isaac unless explicitly requested.
 os.environ.setdefault("HUNAV_START_EVALUATOR", "0")
+# Headless Nav2 smoke: no viewport behavior overlays.
+os.environ.setdefault("HUNAV_BEHAVIOR_LABELS", "0")
 
 REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 SRC = os.path.join(REPO, "src")

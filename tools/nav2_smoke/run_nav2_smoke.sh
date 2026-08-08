@@ -167,6 +167,22 @@ n_prog = blog.count("Failed to make progress")
 print(f"progress_fail_count={n_prog}")
 PY
 
+# Abort diagnostics — survive /tmp wipe if summary was copied; always leave clues.
+log "=== abort diagnostics (nav2_bringup.log) ==="
+DIAG="$OUT/nav2_abort_diag.txt"
+: >"$DIAG"
+if [[ -f "$OUT/nav2_bringup.log" ]]; then
+  {
+    echo "--- progress / TF / collision_monitor / abort ---"
+    grep -E 'Failed to make progress|TF_ERROR|Transform|collision_monitor|Collision Monitor|Aborting|Goal failed|invalid source|timed out|No valid|control loop missed' \
+      "$OUT/nav2_bringup.log" 2>/dev/null | tail -n 80 || true
+    echo "--- last 40 lines ---"
+    tail -n 40 "$OUT/nav2_bringup.log"
+  } | tee -a "$DIAG" | tee -a "$SUMMARY"
+else
+  log "no nav2_bringup.log" | tee -a "$DIAG"
+fi
+
 kill $PC2_PID $NAV_PID 2>/dev/null || true
 wait $PC2_PID $NAV_PID 2>/dev/null || true
 log "=== done ==="

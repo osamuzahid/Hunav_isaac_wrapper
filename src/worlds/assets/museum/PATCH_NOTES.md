@@ -13,3 +13,10 @@ from the Gazebo source.
 
 Search `ORIGINALLY` / `PATCH (isaac-social-nav)` in `tools/isaac_convert_museum.py`.
 Re-run that script after changing source meshes so patches are reapplied.
+
+## Props / art
+
+CUCR Gazebo `museum.world` only includes `museum` + `museum_floor` (no separate
+art/bench model includes). Benches/art visible in Isaac come from geometry
+already baked into `new_museum.dae` → `museum_mesh.usd`. There is no deferred
+museum prop port beyond optional `museum_sealing` (not referenced by the world).

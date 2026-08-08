@@ -17,7 +17,11 @@ Usage:
 
 from __future__ import annotations
 
+import argparse
+import json
+import math
 import os
+import re
 import sys
 import time
 
@@ -40,10 +44,14 @@ from omni.kit.async_engine import run_coroutine
 from pxr import Gf, PhysxSchema, Sdf, Usd, UsdGeom, UsdPhysics, UsdShade
 
 SRC_OBJ_DIR = os.environ.get("HUNAV_HOSPITAL_OBJ_DIR", "/tmp/cucr_hospital_src/obj")
+PROPS_OBJ_DIR = os.environ.get(
+    "HUNAV_HOSPITAL_PROPS_OBJ_DIR", "/tmp/cucr_hospital_src/obj_props"
+)
 OUT_DIR = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "..", "src", "worlds")
 )
 ASSETS_DIR = os.path.join(OUT_DIR, "assets", "hospital")
+PROPS_USD_DIR = os.path.join(ASSETS_DIR, "props")
 CONVERT_TIMEOUT_S = 300.0
 # ORIGINALLY: 5000 (museum copy) — white AWS hospital + Assimp Ke→emissive washed out.
 # PATCH: lower intensity; also zero emissive on PreviewSurfaces after convert.
@@ -154,13 +162,28 @@ def _mark_static_colliders(root_prim) -> None:
             PhysxSchema.PhysxCollisionAPI.Apply(prim)
 
 
-def _add_payload(stage, path: str, rel_usd: str, translate: Gf.Vec3d) -> None:
-    """Hospital Assimp OBJs are already Z-up (floor in XY) — translate only."""
+def _add_payload(
+    stage,
+    path: str,
+    rel_usd: str,
+    translate: Gf.Vec3d,
+    rpy_rad: tuple[float, float, float] | None = None,
+) -> None:
+    """Hospital meshes are Z-up (floor in XY). Optional Gazebo RPY on props."""
     xf = UsdGeom.Xform.Define(stage, path)
     xf.ClearXformOpOrder()
     xf.AddTranslateOp(UsdGeom.XformOp.PrecisionDouble).Set(translate)
+    if rpy_rad is not None:
+        r, p, y = rpy_rad
+        xf.AddRotateXYZOp(UsdGeom.XformOp.PrecisionDouble).Set(
+            Gf.Vec3d(math.degrees(r), math.degrees(p), math.degrees(y))
+        )
     child = UsdGeom.Xform.Define(stage, f"{path}/geometry")
     child.GetPrim().GetReferences().AddReference(rel_usd)
+
+
+def _safe_prim_token(name: str) -> str:
+    return re.sub(r"[^A-Za-z0-9_]", "_", name)
 
 
 def compose_hospital_stage(
@@ -168,6 +191,7 @@ def compose_hospital_stage(
     walls_usd: str,
     out_usd: str,
     nurses_usd: str | None = None,
+    prop_instances: list[dict] | None = None,
 ) -> None:
     if os.path.exists(out_usd):
         os.remove(out_usd)
@@ -194,14 +218,39 @@ def compose_hospital_stage(
             POSE_NURSES,
         )
 
-    stage.GetRootLayer().Save()
-
-    stage = Usd.Stage.Open(out_usd)
-    for path in (
+    collider_paths = [
         "/World/hospital_floor/geometry",
         "/World/hospital_walls/geometry",
         "/World/hospital_nursesstation/geometry",
-    ):
+    ]
+
+    if prop_instances:
+        props_xf = UsdGeom.Xform.Define(stage, "/World/hospital_props")
+        for inst in prop_instances:
+            model = inst["model"]
+            suffix = inst.get("prim_suffix", "0")
+            rel = f"./assets/hospital/props/{_safe_prim_token(model)}.usd"
+            abs_usd = os.path.join(PROPS_USD_DIR, f"{_safe_prim_token(model)}.usd")
+            if not os.path.isfile(abs_usd):
+                print(f"[compose] skip missing usd for {model}", flush=True)
+                continue
+            tx, ty, tz = inst["translate"]
+            r, p, y = inst["rpy_rad"]
+            prim_path = f"/World/hospital_props/{_safe_prim_token(model)}_{suffix}"
+            _add_payload(
+                stage,
+                prim_path,
+                rel,
+                Gf.Vec3d(tx, ty, tz),
+                rpy_rad=(r, p, y),
+            )
+            collider_paths.append(f"{prim_path}/geometry")
+        _ = props_xf  # keep define for hierarchy clarity
+
+    stage.GetRootLayer().Save()
+
+    stage = Usd.Stage.Open(out_usd)
+    for path in collider_paths:
         root = stage.GetPrimAtPath(path)
         if root and root.IsValid():
             _mark_static_colliders(root)
@@ -210,39 +259,107 @@ def compose_hospital_stage(
     bbox = UsdGeom.BBoxCache(
         Usd.TimeCode.Default(), ["default", "render"]
     ).ComputeWorldBound(stage.GetPrimAtPath("/World"))
-    print(f"[compose] wrote {out_usd}", flush=True)
+    n_props = len(prop_instances) if prop_instances else 0
+    print(f"[compose] wrote {out_usd} props_instances={n_props}", flush=True)
     print(f"[compose] bbox={bbox.GetRange()}", flush=True)
     print(f"[compose] prims={len(list(stage.Traverse()))}", flush=True)
 
 
-def main() -> int:
-    os.makedirs(ASSETS_DIR, exist_ok=True)
-    floor_src = os.path.join(SRC_OBJ_DIR, "floor.obj")
-    walls_src = os.path.join(SRC_OBJ_DIR, "walls.obj")
-    nurses_src = os.path.join(SRC_OBJ_DIR, "nursesstation.obj")
+def _convert_props(manifest_path: str) -> list[dict]:
+    with open(manifest_path, "r", encoding="utf-8") as f:
+        man = json.load(f)
+    os.makedirs(PROPS_USD_DIR, exist_ok=True)
+    models = man.get("models_staged") or sorted(
+        {i["model"] for i in man.get("instances", [])}
+    )
+    for model in models:
+        obj = os.path.join(PROPS_OBJ_DIR, model, f"{model}.obj")
+        if not os.path.isfile(obj):
+            # fall back to path recorded in first instance
+            for inst in man.get("instances", []):
+                if inst["model"] == model and os.path.isfile(inst.get("obj", "")):
+                    obj = inst["obj"]
+                    break
+        if not os.path.isfile(obj):
+            print(f"[props] missing obj for {model}", flush=True)
+            continue
+        out = os.path.join(PROPS_USD_DIR, f"{_safe_prim_token(model)}.usd")
+        if os.path.isfile(out) and os.path.getsize(out) > 1000:
+            print(f"[props] reuse {out}", flush=True)
+        else:
+            convert_asset(obj, out)
+            _zero_preview_emissive(out)
+    return man.get("instances", [])
 
+
+def main() -> int:
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument(
+        "--building",
+        action="store_true",
+        help="(Re)convert floor/walls/nurses from HUNAV_HOSPITAL_OBJ_DIR",
+    )
+    ap.add_argument(
+        "--props",
+        action="store_true",
+        help="Convert staged props + compose into hospital.usd",
+    )
+    ap.add_argument(
+        "--props-manifest",
+        default=os.path.join(PROPS_OBJ_DIR, "instances.json"),
+        help="instances.json from prepare_hospital_props.py",
+    )
+    args = ap.parse_args()
+    # Default: building-only (legacy). Prefer explicit --props for ship compose.
+    if not args.building and not args.props:
+        args.building = True
+
+    os.makedirs(ASSETS_DIR, exist_ok=True)
     floor_out = os.path.join(ASSETS_DIR, "hospital_floor.usd")
     walls_out = os.path.join(ASSETS_DIR, "hospital_walls.usd")
     nurses_out = os.path.join(ASSETS_DIR, "hospital_nursesstation.usd")
     final_out = os.path.join(OUT_DIR, "hospital.usd")
 
-    # Keep Isaac-stock bake out of the way if still present as hospital.usd
     if os.path.isfile(final_out) and os.path.getsize(final_out) > 1_000_000:
-        bak = final_out + ".bak_hunav_isaac_stock"
-        if not os.path.isfile(bak):
-            os.rename(final_out, bak)
-            print(f"[compose] moved stock Isaac hospital → {bak}", flush=True)
+        # Only auto-backup huge stock Isaac bake; prop-rich compose can also be large.
+        if not os.path.isdir(os.path.join(ASSETS_DIR, "props")):
+            bak = final_out + ".bak_hunav_isaac_stock"
+            if not os.path.isfile(bak):
+                os.rename(final_out, bak)
+                print(f"[compose] moved stock Isaac hospital → {bak}", flush=True)
 
-    convert_asset(floor_src, floor_out)
-    convert_asset(walls_src, walls_out)
-    nurses = None
-    if os.path.isfile(nurses_src):
-        convert_asset(nurses_src, nurses_out)
-        nurses = nurses_out
-    for path in (floor_out, walls_out, nurses_out if nurses else None):
-        if path:
-            _zero_preview_emissive(path)
-    compose_hospital_stage(floor_out, walls_out, final_out, nurses)
+    nurses = nurses_out if os.path.isfile(nurses_out) else None
+    if args.building:
+        floor_src = os.path.join(SRC_OBJ_DIR, "floor.obj")
+        walls_src = os.path.join(SRC_OBJ_DIR, "walls.obj")
+        nurses_src = os.path.join(SRC_OBJ_DIR, "nursesstation.obj")
+        convert_asset(floor_src, floor_out)
+        convert_asset(walls_src, walls_out)
+        if os.path.isfile(nurses_src):
+            convert_asset(nurses_src, nurses_out)
+            nurses = nurses_out
+        for path in (floor_out, walls_out, nurses_out if nurses else None):
+            if path:
+                _zero_preview_emissive(path)
+    else:
+        if not (os.path.isfile(floor_out) and os.path.isfile(walls_out)):
+            raise FileNotFoundError(
+                "Building USDs missing; run with --building once or provide assets"
+            )
+        if os.path.isfile(nurses_out):
+            nurses = nurses_out
+
+    prop_instances = None
+    if args.props:
+        if not os.path.isfile(args.props_manifest):
+            raise FileNotFoundError(
+                f"Missing {args.props_manifest}; run tools/prepare_hospital_props.py first"
+            )
+        prop_instances = _convert_props(args.props_manifest)
+
+    compose_hospital_stage(
+        floor_out, walls_out, final_out, nurses, prop_instances=prop_instances
+    )
     return 0
 
 

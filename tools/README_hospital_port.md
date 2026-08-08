@@ -6,11 +6,12 @@ Source: `CardiffUniversityComputationalRobotics/cucr_worlds` / `cucr_worlds_hosp
 
 **Not** NVIDIA Isaac `Environments/Hospital` (that was a wrong interim path).
 
-## v1 scope
+## Scope
 
 - Building: `aws_robomaker_hospital_floor_01_floor` + `_walls` (+ nurses station)
 - Occupancy: CUCR `maps/hospital.pgm` / `hospital.yaml` (`origin: [-12.5, -35]`)
-- Props from `hospital.world` deferred (beds, carts, …)
+- **Props:** Gazebo `hospital.world` furniture/equipment (chairs, carts, curtains, …)
+  via `prepare_hospital_props.py` + `isaac_convert_hospital.py --props`
 
 ## Convert
 
@@ -39,9 +40,28 @@ cp /tmp/cucr_hospital_src/cucr_worlds/cucr_worlds_hospital/maps/hospital.yaml \
    src/maps/hospital.yaml
 ```
 
+### Props (furniture / equipment)
+
+```bash
+# Sparse-checkout models + worlds (see prepare script defaults under /tmp/cucr_hospital_src)
+python3 tools/prepare_hospital_props.py \
+  --cucr-root /tmp/cucr_hospital_src/cucr_worlds \
+  --out /tmp/cucr_hospital_src/obj_props
+
+# Reuse existing building USDs; convert unique prop meshes + recompose
+OMNI_KIT_ACCEPT_EULA=YES HUNAV_HOSPITAL_PROPS_OBJ_DIR=/tmp/cucr_hospital_src/obj_props \
+  ~/isaacsim/python.sh tools/isaac_convert_hospital.py --props
+```
+
 Outputs:
 - `src/worlds/assets/hospital/hospital_{floor,walls,nursesstation}.usd`
-- `src/worlds/hospital.usd` (composed Z-up stage + static colliders)
+- `src/worlds/assets/hospital/props/*.usd` (unique models)
+- `src/worlds/hospital.usd` (building + `/World/hospital_props/*` + static colliders)
+
+**Nav2 smoke (after keepalive `--world hospital --config hospital_agents`):**
+`./tools/nav2_smoke/run_hospital_nav2_smoke.sh`  
+Default goal `(8.4,-18.8)` ≈ 2 m along `robot_init_pose` yaw. Avoid `(10,-17)` —
+CUCR map obstacles near `y≈-18.8` plus `inflation_radius: 0.55` make that plan fail.
 
 **Look / washout:** Assimp MTL `Ke` becomes `UsdPreviewSurface` `emissiveColor` (walls glow).
 The convert tool zeros emissive after convert and uses `DistantLight` intensity **1800**

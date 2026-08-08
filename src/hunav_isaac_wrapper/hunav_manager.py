@@ -307,12 +307,22 @@ class HuNavManager:
             ],
             preexec_fn=os.setsid,
         )
-        process_3 = subprocess.Popen(
-            ["ros2", "run", "hunav_evaluator", "hunav_evaluator_node"],
-            preexec_fn=os.setsid,
-        )
-
-        self._hunav_processes = [process_1, process_2] #, process_3]
+        # PATCH (isaac-social-nav): do not auto-start hunav_evaluator under Isaac.
+        # Isaac's bundled Python hits pandas/numpy ABI errors; run the evaluator
+        # from a system ROS shell when collecting metrics (HUNAV_START_EVALUATOR=1
+        # opts back into the old spawn for Gazebo-style workflows).
+        self._hunav_processes = [process_1, process_2]
+        if os.environ.get("HUNAV_START_EVALUATOR", "").strip().lower() in (
+            "1",
+            "true",
+            "yes",
+            "on",
+        ):
+            process_3 = subprocess.Popen(
+                ["ros2", "run", "hunav_evaluator", "hunav_evaluator_node"],
+                preexec_fn=os.setsid,
+            )
+            self._hunav_processes.append(process_3)
 
     def close_hunav_nodes(self):
         for process in self._hunav_processes:

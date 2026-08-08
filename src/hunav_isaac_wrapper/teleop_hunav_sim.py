@@ -514,8 +514,9 @@ class TeleopHuNavSim(Node):
                 ],
                 keys.SET_VALUES: [
                     # For the simulation time node.
+                    # ORIGINALLY also set inputs:swhFrameNumber=0 — removed on Isaac 6.0
+                    # (attr gone; only resetOnStop / referenceTime* remain).
                     ("isaac_read_simulation_time.inputs:resetOnStop", True),
-                    ("isaac_read_simulation_time.inputs:swhFrameNumber", 0),
                     # For the ROS2PublishClock node.
                     ("ros2_publish_clock.inputs:nodeNamespace", ""),
                     ("ros2_publish_clock.inputs:qosProfile", ""),

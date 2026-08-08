@@ -168,8 +168,9 @@ def _add_payload(
     rel_usd: str,
     translate: Gf.Vec3d,
     rpy_rad: tuple[float, float, float] | None = None,
+    scale: tuple[float, float, float] | None = None,
 ) -> None:
-    """Hospital meshes are Z-up (floor in XY). Optional Gazebo RPY on props."""
+    """Hospital meshes are Z-up (floor in XY). Optional Gazebo RPY + mesh scale."""
     xf = UsdGeom.Xform.Define(stage, path)
     xf.ClearXformOpOrder()
     xf.AddTranslateOp(UsdGeom.XformOp.PrecisionDouble).Set(translate)
@@ -177,6 +178,10 @@ def _add_payload(
         r, p, y = rpy_rad
         xf.AddRotateXYZOp(UsdGeom.XformOp.PrecisionDouble).Set(
             Gf.Vec3d(math.degrees(r), math.degrees(p), math.degrees(y))
+        )
+    if scale is not None and any(abs(s - 1.0) > 1e-9 for s in scale):
+        xf.AddScaleOp(UsdGeom.XformOp.PrecisionDouble).Set(
+            Gf.Vec3d(scale[0], scale[1], scale[2])
         )
     child = UsdGeom.Xform.Define(stage, f"{path}/geometry")
     child.GetPrim().GetReferences().AddReference(rel_usd)
@@ -236,6 +241,7 @@ def compose_hospital_stage(
                 continue
             tx, ty, tz = inst["translate"]
             r, p, y = inst["rpy_rad"]
+            sc = inst.get("scale") or [1.0, 1.0, 1.0]
             prim_path = f"/World/hospital_props/{_safe_prim_token(model)}_{suffix}"
             _add_payload(
                 stage,
@@ -243,6 +249,7 @@ def compose_hospital_stage(
                 rel,
                 Gf.Vec3d(tx, ty, tz),
                 rpy_rad=(r, p, y),
+                scale=(float(sc[0]), float(sc[1]), float(sc[2])),
             )
             collider_paths.append(f"{prim_path}/geometry")
         _ = props_xf  # keep define for hierarchy clarity

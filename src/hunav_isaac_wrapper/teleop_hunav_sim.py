@@ -145,6 +145,105 @@ def find_robot_config_path(filename):
     raise FileNotFoundError(f"Robot config file not found: {filename}")
 
 
+def _expand_nova_carter_body_instances(robot_root: str = "/World/Nova_Carter") -> int:
+    """Un-instance Carter body/wheel visuals so they render and select as real meshes.
+
+    Full_Merged ships chassis/wheel `visual` prims as USD instances. Selecting the
+    empty `/World/Nova_Carter` wrapper then highlights a useless map-sized bound;
+    expanding instances makes `chassis_link/visual/top_body` ordinary Mesh prims.
+    Call after Configuration=Full_Merged and ideally before world.reset().
+    """
+    try:
+        import omni.usd
+        from pxr import Usd
+    except Exception:
+        return 0
+    stage = omni.usd.get_context().get_stage()
+    if stage is None:
+        return 0
+    root = stage.GetPrimAtPath(robot_root)
+    if not root or not root.IsValid():
+        return 0
+    n = 0
+    for prim in Usd.PrimRange(root):
+        path = str(prim.GetPath()).lower()
+        if "/visual" not in path:
+            continue
+        if not (prim.IsInstanceable() or prim.IsInstance()):
+            continue
+        try:
+            prim.SetInstanceable(False)
+            n += 1
+        except Exception:
+            pass
+    if n:
+        print(
+            f"[hunav_isaac_wrapper] expanded {n} Nova_Carter visual instance(s) "
+            f"under {robot_root}",
+            flush=True,
+        )
+    return n
+
+
+def _ensure_nova_carter_visual_config(
+    robot_prim_path: str, selection: str = "Full_Merged"
+) -> str | None:
+    """Nova Carter USD defaults to Skirt_only / No_Internals — nearly invisible body.
+
+    Select Configuration=Full_Merged so chassis top_body + skirt + wheels exist,
+    then expand instanceable visuals into real Mesh prims.
+    Call after spawn and again after world.reset().
+    """
+    try:
+        import omni.usd
+    except Exception:
+        return None
+    stage = omni.usd.get_context().get_stage()
+    if stage is None:
+        return None
+    # Variant lives on the robot root after WheeledRobot flatten.
+    candidates = [robot_prim_path]
+    root = stage.GetPrimAtPath(robot_prim_path)
+    if root and root.IsValid():
+        for child in root.GetChildren():
+            candidates.append(str(child.GetPath()))
+    applied = None
+    for path in candidates:
+        prim = stage.GetPrimAtPath(path)
+        if not prim or not prim.IsValid():
+            continue
+        vsets = prim.GetVariantSets()
+        if not vsets.HasVariantSet("Configuration"):
+            continue
+        vs = vsets.GetVariantSet("Configuration")
+        opts = list(vs.GetVariantNames())
+        sel = selection
+        if sel not in opts:
+            # Prefer a solid silhouette over Skirt_only.
+            for fallback in ("Full_Merged", "No_Internals", "Base"):
+                if fallback in opts:
+                    sel = fallback
+                    break
+            else:
+                continue
+        prev = vs.GetVariantSelection()
+        vs.SetVariantSelection(sel)
+        print(
+            f"[hunav_isaac_wrapper] Nova_Carter Configuration "
+            f"{prev!r} → {sel!r} on {path}",
+            flush=True,
+        )
+        applied = sel
+        break
+    if applied:
+        _expand_nova_carter_body_instances(
+            robot_prim_path
+            if stage.GetPrimAtPath(robot_prim_path)
+            else "/World/Nova_Carter"
+        )
+    return applied
+
+
 def _load_robot_init_pose(hunav_config_path):
     """
     PATCH (isaac-social-nav): optional robot_init_pose from hunav scenario YAML.
@@ -342,6 +441,8 @@ class TeleopHuNavSim(Node):
                 "wheel_dof_names": ["joint_wheel_left", "joint_wheel_right"],
                 "wheel_radius": 0.14,
                 "wheel_base": 0.413,
+                # PATCH: CUCR floors need clearance (same class of issue as Stretch).
+                "spawn_z_lift": 0.08,
             },
             "carter_ROS": {
                 "name": "Nova_Carter",
@@ -351,6 +452,7 @@ class TeleopHuNavSim(Node):
                 "wheel_dof_names": ["joint_wheel_left", "joint_wheel_right"],
                 "wheel_radius": 0.14,
                 "wheel_base": 0.413,
+                "spawn_z_lift": 0.08,
             },
             # PATCH (isaac-social-nav): Hello Robot Stretch — vendored USD.
             # Two selectable drives:
@@ -439,6 +541,10 @@ class TeleopHuNavSim(Node):
             self._hold_non_wheel_dofs = robot_name == "stretch_wheeled"
             self._held_joint_positions = None
             self._wheel_dof_indices = None
+
+        # PATCH: Carter ROS USD ships Configuration=Skirt_only — body almost invisible.
+        if robot_name in ("carter", "carter_ROS"):
+            _ensure_nova_carter_visual_config(robot_prim_path, "Full_Merged")
 
         # ROS2 cmd_vel subscriber
         self.cmd_lin = 0.00

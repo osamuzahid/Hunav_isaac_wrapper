@@ -58,6 +58,13 @@ Outputs:
 - `src/worlds/assets/hospital/props/*.usd` (unique models)
 - `src/worlds/hospital.usd` (building + `/World/hospital_props/*` + static colliders)
 
+Compose applies Gazebo `model.sdf` `<mesh><scale>` (chairs/IV stands are ~0.008).
+`floor_01_ceiling` is skipped so top-down views stay usable.
+
+**GUI Carter:** keepalive sets `Configuration=Full_Merged` and expands body visual
+instances; follow `/World/Nova_Carter/chassis_link` (not the empty root Xform).
+Desktop helper: `~/Desktop/run-hospital-nav2-smoke.sh` (`--frame-robot`).
+
 **Nav2 smoke (after keepalive `--world hospital --config hospital_agents`):**
 `./tools/nav2_smoke/run_hospital_nav2_smoke.sh`  
 Default goal `(8.4,-18.8)` ≈ 2 m along `robot_init_pose` yaw. Avoid `(10,-17)` —

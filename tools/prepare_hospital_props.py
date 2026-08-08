@@ -28,6 +28,8 @@ SKIP_MODELS = {
     "aws_robomaker_hospital_floor_01_floor",
     "aws_robomaker_hospital_floor_01_walls",
     "aws_robomaker_hospital_nursesstation_01",
+    # Opaque ceiling blocks top-down demos; not needed for Nav2/social-nav.
+    "aws_robomaker_hospital_floor_01_ceiling",
     # Upper floor not used in CUCR map / v1 demos.
     "aws_robomaker_hospital_floor_02_floor",
     "aws_robomaker_hospital_floor_02_walls",
@@ -71,6 +73,27 @@ def _parse_includes(world_text: str) -> list[dict]:
             }
         )
     return out
+
+
+def _mesh_scale_from_sdf(model_dir: Path) -> list[float]:
+    """Gazebo <mesh><scale> — many AWS chairs/IV stands are authored oversized."""
+    sdf = model_dir / "model.sdf"
+    if not sdf.is_file():
+        return [1.0, 1.0, 1.0]
+    text = sdf.read_text(errors="ignore")
+    m = re.search(
+        r"<mesh>\s*.*?<scale>\s*([-\d.eE]+)\s+([-\d.eE]+)\s+([-\d.eE]+)\s*</scale>",
+        text,
+        re.S,
+    )
+    if not m:
+        m = re.search(
+            r"<scale>\s*([-\d.eE]+)\s+([-\d.eE]+)\s+([-\d.eE]+)\s*</scale>",
+            text,
+        )
+    if not m:
+        return [1.0, 1.0, 1.0]
+    return [float(m.group(1)), float(m.group(2)), float(m.group(3))]
 
 
 def _pick_visual_mesh(model_dir: Path) -> Path | None:
@@ -228,6 +251,7 @@ def main() -> int:
     for model, incs in by_model.items():
         if model not in staged:
             continue
+        scale = _mesh_scale_from_sdf(models_root / model)
         for i, inc in enumerate(incs):
             x, y, z, roll, pitch, yaw = inc["pose"]
             instances.append(
@@ -236,6 +260,7 @@ def main() -> int:
                     "prim_suffix": f"{i}",
                     "translate": [x, y, z],
                     "rpy_rad": [roll, pitch, yaw],
+                    "scale": scale,
                     "obj": staged[model],
                 }
             )

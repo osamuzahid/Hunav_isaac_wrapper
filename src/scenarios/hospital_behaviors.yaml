@@ -1,0 +1,197 @@
+hunav_loader:
+  ros__parameters:
+    yaml_base_name: hospital_behaviors
+    simulator: Isaac Sim
+    map: hospital
+    publish_people: true
+    # PATCH (isaac-social-nav): CUCR cucr_worlds_hospital + museum-style reaction roster.
+    plan_goals_on_map: true
+    map_yaml: hospital.yaml
+    plan_waypoint_spacing_m: 1.0
+    plan_inflation_radius_m: 0.35
+    plan_from_init_pose: true
+    ignore_obstacle_rays: false
+    # South-east free cell — agents patrol first; drive north/west into wards.
+    robot_init_pose:
+      x: 10.0
+      y: -20.0
+      z: 0.0
+      h: 2.5
+    global_goals:
+      1:
+        x: 1.925
+        y: -27.425
+      2:
+        x: 4.725
+        y: -13.025
+      3:
+        x: -10.875
+        y: -13.425
+      4:
+        x: -0.075
+        y: 14.975
+      5:
+        x: -7.675
+        y: -3.825
+      6:
+        x: -0.875
+        y: -2.225
+      7:
+        x: 9.525
+        y: -6.625
+      8:
+        x: 2.725
+        y: -8.225
+      9:
+        x: -3.275
+        y: 10.175
+      10:
+        x: -9.675
+        y: -17.025
+    agents:
+      - agent1
+      - agent2
+      - agent3
+      - agent4
+      - agent5
+    agent1:
+      id: 1
+      group_id: -1
+      skin: 1
+      max_vel: 1.0
+      radius: 0.4
+      goal_radius: 0.6
+      cyclic_goals: true
+      init_pose:
+        x: 1.925
+        y: -27.425
+        z: 0.0
+        h: 1.57
+      behavior:
+        type: 2
+        configuration: 0
+        goal_force_factor: 10.0
+        obstacle_force_factor: 2.0
+        social_force_factor: 5.0
+        other_force_factor: 20.0
+      goals:
+        - "1"
+        - "2"
+        - "6"
+        - "7"
+    agent2:
+      id: 2
+      group_id: -1
+      skin: 3
+      max_vel: 0.9
+      radius: 0.4
+      goal_radius: 0.6
+      cyclic_goals: true
+      init_pose:
+        x: 4.725
+        y: -13.025
+        z: 0.0
+        h: 3.14
+      behavior:
+        type: 5
+        configuration: 1
+        duration: 35.0
+        once: true
+        vel: 0.45
+        dist: 2.0
+        goal_force_factor: 10.0
+        obstacle_force_factor: 2.0
+        social_force_factor: 5.0
+        other_force_factor: 20.0
+      goals:
+        - "2"
+        - "8"
+        - "6"
+        - "7"
+    agent3:
+      id: 3
+      group_id: -1
+      skin: 5
+      max_vel: 1.0
+      radius: 0.4
+      goal_radius: 0.6
+      cyclic_goals: true
+      init_pose:
+        x: -10.875
+        y: -13.425
+        z: 0.0
+        h: 0.0
+      behavior:
+        type: 4
+        configuration: 1
+        duration: 40.0
+        once: true
+        vel: 1.1
+        dist: 5.0
+        goal_force_factor: 6.0
+        obstacle_force_factor: 2.0
+        social_force_factor: 5.0
+        other_force_factor: 45.0
+      goals:
+        - "3"
+        - "10"
+        - "5"
+        - "6"
+    agent4:
+      id: 4
+      group_id: -1
+      skin: 7
+      max_vel: 0.85
+      radius: 0.4
+      goal_radius: 0.6
+      cyclic_goals: true
+      init_pose:
+        x: -0.075
+        y: 14.975
+        z: 0.0
+        h: -1.57
+      behavior:
+        type: 3
+        configuration: 1
+        duration: 30.0
+        once: true
+        vel: 0.5
+        dist: 4.0
+        goal_force_factor: 10.0
+        obstacle_force_factor: 2.0
+        social_force_factor: 5.0
+        other_force_factor: 20.0
+      goals:
+        - "4"
+        - "9"
+        - "5"
+        - "6"
+    agent5:
+      id: 5
+      group_id: -1
+      skin: 9
+      max_vel: 0.95
+      radius: 0.4
+      goal_radius: 0.6
+      cyclic_goals: true
+      init_pose:
+        x: -7.675
+        y: -3.825
+        z: 0.0
+        h: 0.8
+      behavior:
+        type: 6
+        configuration: 1
+        duration: 38.0
+        once: true
+        vel: 0.5
+        dist: 1.4
+        goal_force_factor: 10.0
+        obstacle_force_factor: 2.0
+        social_force_factor: 5.0
+        other_force_factor: 20.0
+      goals:
+        - "5"
+        - "6"
+        - "8"
+        - "2"

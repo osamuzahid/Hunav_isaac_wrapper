@@ -141,6 +141,7 @@ LAST_CONFIG_FILE = os.path.join(CONFIG_CONFIG_DIR, "last_launch_config.json")
 PRESETS = {
     "warehouse_agents",
     "hospital_agents",
+    "hospital_behaviors",
     "office_agents",
     "empty_world_agents",
     "museum_agents",

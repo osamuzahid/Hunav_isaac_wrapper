@@ -43,7 +43,12 @@ def _orient_opengl_camera_on_optical(stage, cam_prim, optical_path: str) -> None
     OpenGL cameras look along local −Z with +Y up. Solve one local quaternion from
     world bases (no Euler patch stack). Look = optical +Z; up = world +Z projected
     orthogonal to look (so rqt is upright even when optical −Y is horizontal).
-    Used by Stretch after stage poses are settled.
+
+    WARNING: only valid once optical's world xform is final. Stretch attach runs
+    *before* world.reset(), which clears child xforms — using this at attach (or
+    immediately after reset before xforms evaluate) locks identity under optical
+    → OpenGL looks along optical −Z = into the RealSense housing (top-down self-view).
+    Prefer _orient_opengl_camera_stretch_fixed for Stretch.
     """
     from pxr import Gf, Usd, UsdGeom
 
@@ -93,6 +98,30 @@ def _orient_opengl_camera_fixed_optical(cam_prim) -> None:
     from pxr import Gf, UsdGeom
 
     quat = Gf.Quatf(0.0, 1.0, 0.0, 0.0)
+    xf = UsdGeom.Xformable(cam_prim)
+    xf.ClearXformOpOrder()
+    xf.AddTranslateOp().Set(Gf.Vec3d(0.0, 0.0, 0.0))
+    xf.AddOrientOp(UsdGeom.XformOp.PrecisionFloat).Set(quat)
+
+
+def _orient_opengl_camera_stretch_fixed(cam_prim) -> None:
+    """Stretch: fixed optical→OpenGL, no world-pose dependency.
+
+    Rx(180) maps OpenGL −Z ← optical +Z (RealSense look). On parked Stretch,
+    optical −Y is world −Y so Rx(180) alone is sideways in rqt; Rz(−90) about
+    the look axis levels camera +Y to world +Z (USD rest pose probe).
+    Immune to world.reset() clearing xforms / attach-before-reset race.
+    """
+    import math
+
+    from pxr import Gf, UsdGeom
+
+    # Gf.Quatf(real, i, j, k). Apply Rx then Rz in parent (optical) frame.
+    rx = Gf.Quatf(0.0, 1.0, 0.0, 0.0)  # 180° about X
+    hs = math.sin(-math.pi / 4.0)
+    hc = math.cos(-math.pi / 4.0)
+    rz = Gf.Quatf(hc, 0.0, 0.0, hs)  # −90° about Z
+    quat = Gf.Quatf(rz * rx)
     xf = UsdGeom.Xformable(cam_prim)
     xf.ClearXformOpOrder()
     xf.AddTranslateOp().Set(Gf.Vec3d(0.0, 0.0, 0.0))
@@ -501,14 +530,16 @@ def _attach_rgb_optical_camera(
         return False
 
 
-def _attach_stretch_camera(optical_prim: str, width: int = 320, height: int = 240) -> bool:
+def _attach_stretch_camera(
+    optical_prim: str, width: int = 320, height: int = 240
+) -> Optional[Dict[str, str]]:
     # Keep Stretch RGB-D path (depth + legacy topic names).
     if not _env_bool("HUNAV_LAB_CAMERAS", False):
         print("[lab_robot_sensors] cameras off (set HUNAV_LAB_CAMERAS=1 to enable)")
-        return False
+        return None
     if not _prim_exists(optical_prim):
         print(f"[lab_robot_sensors] camera skip: missing {optical_prim}")
-        return False
+        return None
     try:
         import omni.usd
         import usdrt.Sdf
@@ -525,7 +556,9 @@ def _attach_stretch_camera(optical_prim: str, width: int = 320, height: int = 24
 
         cam_path = f"{optical_prim}/rgb_camera"
         cam = UsdGeom.Camera(stage.DefinePrim(cam_path, "Camera"))
-        _orient_opengl_camera_on_optical(stage, cam.GetPrim(), optical_prim)
+        # Fixed optical→OpenGL (no world matrix). World-up solve at attach/reset
+        # raced world.reset() and produced identity-under-optical = head self-view.
+        _orient_opengl_camera_stretch_fixed(cam.GetPrim())
         cam.GetHorizontalApertureAttr().Set(21)
         cam.GetVerticalApertureAttr().Set(16)
         cam.GetProjectionAttr().Set("perspective")
@@ -603,12 +636,39 @@ def _attach_stretch_camera(optical_prim: str, width: int = 320, height: int = 24
         print(
             f"[lab_robot_sensors] RGB-D camera at {cam_path} "
             f"({width}x{height}) → /camera/color/* /camera/depth/* "
-            "(optical +Z look, world-up roll)"
+            "(fixed optical Rx180·Rz-90; reset-safe)"
         )
-        return True
+        return {"cam_path": cam_path, "optical_path": optical_prim}
     except Exception as exc:
         print(f"[lab_robot_sensors] camera attach failed: {exc}")
-        return False
+        return None
+
+
+def refresh_optical_camera_orients(handles: Optional[Dict[str, Any]]) -> None:
+    """Re-apply Stretch fixed optical mount after world.reset() clears child xforms."""
+    if not handles:
+        return
+    specs = handles.get("optical_cam_refresh") or []
+    if not specs:
+        return
+    import omni.usd
+
+    stage = omni.usd.get_context().get_stage()
+    for spec in specs:
+        cam_path = spec.get("cam_path")
+        if not cam_path:
+            continue
+        cam = stage.GetPrimAtPath(cam_path)
+        if not cam or not cam.IsValid():
+            continue
+        try:
+            _orient_opengl_camera_stretch_fixed(cam)
+            print(
+                f"[lab_robot_sensors] re-applied Stretch fixed camera orient on {cam_path} "
+                "(post-reset)"
+            )
+        except Exception as exc:
+            print(f"[lab_robot_sensors] camera refresh failed ({cam_path}): {exc}")
 
 
 def _attach_synthetic_imu_publisher(
@@ -796,28 +856,43 @@ def attach_lab_robot_sensors(
         cam_link = _join(robot_prim_path, _STRETCH_CAMERA_LINK)
         cam_optical = _join(robot_prim_path, _STRETCH_CAMERA_OPTICAL)
 
-        tf_targets = [
-            p
-            for p in (robot_prim_path, base, laser, imu, cam_link)
-            if _prim_exists(p)
-        ]
-        # Prefer articulation root for wheeled so full link tree publishes.
-        _attach_tf_tree("/World/ROS2_LabTF", tf_targets or [robot_prim_path])
-
         if robot_name == "stretch_wheeled":
+            # PhysX bodies present — Isaac PoseTree works. Prefer articulation root.
+            tf_targets = [
+                p
+                for p in (robot_prim_path, base, laser, imu, cam_link)
+                if _prim_exists(p)
+            ]
+            _attach_tf_tree("/World/ROS2_LabTF", tf_targets or [robot_prim_path])
             ok = _attach_joint_state_publisher("/World/ROS2_LabJoints", robot_prim_path)
             if not ok and ros_node is not None:
                 handles["parked_js"] = ParkedJointStatePublisher(ros_node)
         elif ros_node is not None:
+            # Kinematic Physics=none → PoseTree eInvalid flood every frame on those
+            # prims (thousands of warnings; can hitch the sim and make agents look
+            # broken). Same parked rclpy /tf path as Reachy.
             handles["parked_js"] = ParkedJointStatePublisher(ros_node)
+            handles["parked_tf"] = ParkedLinkTfPublisher(
+                ros_node,
+                frames=[
+                    (base, "base_link"),
+                    (laser, "laser"),
+                    (imu, "base_imu"),
+                    (cam_link, "camera_link"),
+                    (cam_optical, "camera_color_optical_frame"),
+                ],
+                parent_frame="world",
+            )
             print(
                 "[lab_robot_sensors] Stretch kinematic: publishing parked "
-                "/joint_states via rclpy (Physics=none)"
+                "/joint_states + /tf via rclpy (Physics=none; no PoseTree)"
             )
 
         handles["lidar"] = _attach_stretch_lidar(laser)
         _attach_synthetic_imu_publisher("/World/ROS2_LabImu", frame_id="base_imu")
-        _attach_stretch_camera(cam_optical)
+        cam_spec = _attach_stretch_camera(cam_optical)
+        if cam_spec:
+            handles.setdefault("optical_cam_refresh", []).append(cam_spec)
         print("[lab_robot_sensors] Stretch: TF + joints + lidar + IMU (+ optional RGB-D)")
         return handles
 

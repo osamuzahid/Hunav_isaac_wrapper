@@ -857,6 +857,15 @@ class TeleopHuNavSim(Node):
 
     def run(self):
         self.world.reset()
+        # Stretch RGB: world.reset() clears camera child xforms; re-apply fixed
+        # optical→OpenGL mount (not the world-up solve — that raced reset).
+        if self._lab_sensor_handles:
+            try:
+                from .lab_robot_sensors import refresh_optical_camera_orients
+
+                refresh_optical_camera_orients(self._lab_sensor_handles)
+            except Exception as exc:
+                print(f"[hunav_isaac_wrapper] camera orient refresh failed: {exc}")
         # ---------------------------------------------------------------------------
         # ORIGINALLY (upstream v2.0):
         # self.physx_interface = omni.physx.acquire_physx_interface()

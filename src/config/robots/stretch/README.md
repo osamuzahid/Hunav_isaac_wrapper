@@ -68,7 +68,7 @@ Attached at runtime by `lab_robot_sensors.py` (not from URDF optics):
 | Joint states | `/joint_states` | parked zeros when `Physics=none`; OmniGraph when wheeled |
 | Lidar | `/scan` | RTX `Example_Rotary_2D` under `Geometry/base_link/laser`. Stock NVIDIA profile aims **−2°**; we set `emitterState:*/elevationDeg` to **0°** so the beam matches a real SE3 RPLidar (horizontal in the `laser` frame) — not a prim pitch hack. Museum sparse “feet” was **world Z** (walls floated): keep `MUSEUM_Z_OFFSET=0.1` — see main-repo TROUBLESHOOTING 2026-08-12 / Validated **#47**. |
 | IMU | `/imu` | synthetic gravity-only (static/kinematic bases) |
-| RGB-D | `/camera/color/*`, `/camera/depth/*` | opt-in: `HUNAV_LAB_CAMERAS=1`; Camera under `camera_color_optical_frame` (look = optical +Z, world-up roll). Do **not** parent under `camera_link` — parked head_tilt origin makes link +X ≠ RealSense look (top-down self-view). See main-repo TROUBLESHOOTING 2026-08-12 / Validated **#46**. |
+| RGB-D | `/camera/color/*`, `/camera/depth/*` | opt-in: `HUNAV_LAB_CAMERAS=1`; Camera under `camera_color_optical_frame` with **fixed** optical→OpenGL `Rx(180)·Rz(−90)` (reset-safe). Do **not** parent under `camera_link` — parked head_tilt origin makes link +X ≠ RealSense look. Kinematic Stretch uses parked rclpy `/tf` (PoseTree `eInvalid` on `Physics=none`). See main-repo TROUBLESHOOTING / Validated **#46** / **#50**. |
 
 Disable all: `HUNAV_LAB_SENSORS=0`. Smoke: `tools/lab_robot_sensor_smoke.py --robot stretch`
 (checks topic presence **and** TF frames `base_link`/`laser`/`base_imu`, parked joint

@@ -341,7 +341,15 @@ class StaticPrimRobot:
     """
 
     def __init__(
-        self, prim_path, usd_path, position, orientation, variants=None
+        self,
+        prim_path,
+        usd_path,
+        position,
+        orientation,
+        variants=None,
+        articulation_prim=None,
+        expand_instances=False,
+        park_kinematic=False,
     ):
         add_reference_to_stage(usd_path=usd_path, prim_path=prim_path)
         stage = omni.usd.get_context().get_stage()
@@ -364,6 +372,35 @@ class StaticPrimRobot:
                     f"[StaticPrimRobot] {prim_path}: {vset_name} "
                     f"{prev!r} → {selection!r}"
                 )
+        if expand_instances and prim and prim.IsValid():
+            from pxr import Usd
+
+            n = 0
+            for p in Usd.PrimRange(prim):
+                if p.IsInstanceable():
+                    p.SetInstanceable(False)
+                    n += 1
+            if n:
+                print(f"[StaticPrimRobot] {prim_path}: expanded {n} instanceable prims")
+        # Parked lab morphologies: freeze PhysX so bad URDF inertias / zero-stiffness
+        # drives cannot fling links apart (Reachy shoulder_x had ixx~1e4).
+        if park_kinematic and prim and prim.IsValid():
+            from pxr import Usd, UsdPhysics
+
+            n_kin = 0
+            for p in Usd.PrimRange(prim):
+                if not p.HasAPI(UsdPhysics.RigidBodyAPI):
+                    continue
+                rb = UsdPhysics.RigidBodyAPI(p)
+                attr = rb.GetKinematicEnabledAttr()
+                if not attr:
+                    attr = rb.CreateKinematicEnabledAttr(True)
+                else:
+                    attr.Set(True)
+                n_kin += 1
+            print(
+                f"[StaticPrimRobot] {prim_path}: kinematic park on {n_kin} rigid bodies"
+            )
         self._xform = SingleXFormPrim(
             prim_path=prim_path,
             name="Robot",
@@ -375,31 +412,51 @@ class StaticPrimRobot:
         self._articulation = None
         self._held_joint_positions = None
         self.prim_path = prim_path
+        # Optional child path with ArticulationRoot (Reachy: Geometry/world).
+        self._articulation_prim = articulation_prim or prim_path
 
     def try_init_articulation(self):
-        """After world.reset(), hold Franka joints at the spawned pose."""
+        """After world.reset(), hold joints at the spawned / zero pose."""
         try:
             from isaacsim.core.prims import SingleArticulation
         except Exception as exc:
             print(f"[StaticPrimRobot] SingleArticulation import failed: {exc}")
             return False
-        try:
-            art = SingleArticulation(self.prim_path)
-            art.initialize()
-            self._articulation = art
-            self._held_joint_positions = np.array(
-                art.get_joint_positions(), dtype=float, copy=True
-            )
-            print(
-                f"[StaticPrimRobot] articulation OK at {self.prim_path} "
-                f"({len(self._held_joint_positions)} DOFs held)"
-            )
-            return True
-        except Exception as exc:
-            print(f"[StaticPrimRobot] articulation init skipped: {exc}")
-            self._articulation = None
-            self._held_joint_positions = None
-            return False
+        candidates = [self._articulation_prim, self.prim_path]
+        # Deduplicate while preserving order.
+        seen = set()
+        paths = []
+        for p in candidates:
+            if p and p not in seen:
+                seen.add(p)
+                paths.append(p)
+        last_exc = None
+        for path in paths:
+            try:
+                art = SingleArticulation(path)
+                art.initialize()
+                self._articulation = art
+                pos = np.array(art.get_joint_positions(), dtype=float, copy=True)
+                # Park at zeros when DOFs are near-zero / unset.
+                if np.allclose(pos, 0.0, atol=1e-3) or not np.isfinite(pos).all():
+                    pos = np.zeros_like(pos)
+                else:
+                    # Still force a quiet park for lab demos.
+                    pos = np.zeros_like(pos)
+                art.set_joint_positions(pos)
+                self._held_joint_positions = pos
+                print(
+                    f"[StaticPrimRobot] articulation OK at {path} "
+                    f"({len(self._held_joint_positions)} DOFs held at zero)"
+                )
+                return True
+            except Exception as exc:
+                last_exc = exc
+                continue
+        print(f"[StaticPrimRobot] articulation init skipped: {last_exc}")
+        self._articulation = None
+        self._held_joint_positions = None
+        return False
 
     def hold_joints(self):
         if self._articulation is None or self._held_joint_positions is None:
@@ -544,14 +601,15 @@ class TeleopHuNavSim(Node):
             # Two selectable drives:
             #   stretch           — kinematic chassis_only (no wall collision; arm visual-only)
             #   stretch_wheeled   — PhysX WheeledRobot + DifferentialController (collides)
+            # usd_package_file resolved after robot_name select (avoid requiring unused assets).
             "stretch": {
                 "name": "Stretch",
-                "usd_relative_path": find_robot_config_path("stretch/stretch.usd"),
+                "usd_package_file": "stretch/stretch.usd",
                 "drive": "chassis_only",
             },
             "stretch_wheeled": {
                 "name": "Stretch",
-                "usd_relative_path": find_robot_config_path("stretch/stretch.usd"),
+                "usd_package_file": "stretch/stretch.usd",
                 "wheel_dof_names": ["joint_left_wheel", "joint_right_wheel"],
                 # URDF: wheel centers at y=±0.17035, z=0.0508 → radius 0.0508, base ~0.3407
                 "wheel_radius": 0.0508,
@@ -573,12 +631,29 @@ class TeleopHuNavSim(Node):
                     "Mesh": "Quality",
                 },
             },
+            # PATCH (isaac-social-nav): Pollen Reachy 2023 (CUCR reachy_2023 description;
+            # Pollen torso xacro — no Zuuu mobile base). Stock: TF/joints + dual head RGB.
+            "reachy": {
+                "name": "Reachy",
+                "usd_package_file": "reachy/reachy.usd",
+                "drive": "static",
+                # Keep PhysX schema (joint tree) but park kinematic — upstream
+                # shoulder_x inertias (~1e4) explode dynamic articulations.
+                "variants": {"Physics": "physx"},
+                "articulation_prim": "Geometry/world",
+                "expand_instances": False,
+                "park_kinematic": True,
+            },
         }
 
         if robot_name not in robot_configs:
             raise ValueError(f"Unsupported robot_name: {robot_name}")
 
-        robot_config = robot_configs[robot_name]
+        robot_config = dict(robot_configs[robot_name])
+        if "usd_package_file" in robot_config:
+            robot_config["usd_relative_path"] = find_robot_config_path(
+                robot_config["usd_package_file"]
+            )
         robot_init = _load_robot_init_pose(hunav_config)
         spawn_z = robot_init["z"] + float(robot_config.get("spawn_z_lift", 0.0))
         spawn_position = [
@@ -621,12 +696,19 @@ class TeleopHuNavSim(Node):
         elif drive == "static":
             self._chassis_drive = False
             self._static_drive = True
+            art_rel = robot_config.get("articulation_prim")
+            art_prim = (
+                f"{robot_prim_path}/{art_rel}" if art_rel else robot_prim_path
+            )
             self.robot = StaticPrimRobot(
                 prim_path=robot_prim_path,
                 usd_path=robot_path,
                 position=spawn_position,
                 orientation=spawn_orientation,
                 variants=robot_config.get("variants"),
+                articulation_prim=art_prim,
+                expand_instances=bool(robot_config.get("expand_instances")),
+                park_kinematic=bool(robot_config.get("park_kinematic")),
             )
             self.diff_controller = None
             self._hold_non_wheel_dofs = False

@@ -142,6 +142,7 @@ PRESETS = {
     "warehouse_agents",
     "hospital_agents",
     "hospital_behaviors",
+    "hospital_lab_park",
     "office_agents",
     "empty_world_agents",
     "museum_agents",
@@ -157,6 +158,7 @@ ROBOTS = [
     "stretch",
     "stretch_wheeled",
     "franka",
+    "reachy",
 ]
 
 # Colors for terminal output
@@ -563,6 +565,7 @@ def main():
             "stretch": "Hello Robot Stretch — kinematic chassis (no wall collision)",
             "stretch_wheeled": "Hello Robot Stretch — PhysX diff-drive (walls collide)",
             "franka": "CUCR lab Franka Panda — parked (TF + joint_states)",
+            "reachy": "CUCR lab Reachy 2023 — parked (TF + joints + dual head RGB)",
         }
         robot = choose(
             "Select robot:",

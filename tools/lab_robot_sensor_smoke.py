@@ -32,18 +32,17 @@ def _repo_root() -> str:
     return os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
 
-# Key Stretch parked joints (must appear on /joint_states).
-_STRETCH_JS_REQUIRED = (
-    "joint_lift",
-    "joint_head_pan",
-    "joint_head_tilt",
-    "joint_arm_l0",
-    "joint_left_wheel",
-    "joint_right_wheel",
+# Key Reachy parked joints (must appear on /joint_states).
+_REACHY_JS_REQUIRED = (
+    "neck_roll",
+    "neck_pitch",
+    "neck_yaw",
+    "r_shoulder_pitch",
+    "l_shoulder_pitch",
 )
 
-# TF child/parent leaf names expected for Stretch stock mounts.
-_STRETCH_TF_LEAVES = ("base_link", "laser", "base_imu")
+# TF child/parent leaf names expected for Reachy stock mounts.
+_REACHY_TF_LEAVES = ("torso", "left_camera_optical", "right_camera_optical")
 
 
 def _finite(xs) -> bool:
@@ -130,7 +129,10 @@ def _external_content_capture(robot: str, out_json: str, wait_s: float = 12.0) -
         while time.time() < deadline:
             rclpy.spin_once(n, timeout_sec=0.1)
             done = n.js is not None and n.frames
-            if robot in ('stretch', 'stretch_wheeled'):
+            if robot == 'reachy':
+                need = {{'torso', 'left_camera_optical', 'right_camera_optical'}}
+                done = n.js is not None and need.issubset(n.frames)
+            elif robot in ('stretch', 'stretch_wheeled'):
                 done = done and n.imu is not None and n.scan is not None
             if done:
                 break
@@ -215,6 +217,14 @@ def _evaluate_captured(robot: str, data: Optional[Dict[str, Any]]) -> List[str]:
             lines.append(
                 f"content /joint_states: PASS (n={len(names)}, parked keys present)"
             )
+    elif robot == "reachy":
+        missing = [j for j in _REACHY_JS_REQUIRED if j not in names]
+        if missing:
+            lines.append(f"content /joint_states: FAIL (missing {missing})")
+        else:
+            lines.append(
+                f"content /joint_states: PASS (n={len(names)}, reachy keys present)"
+            )
     else:
         if len(names) < 5:
             lines.append(f"content /joint_states: FAIL (only {len(names)} joints)")
@@ -236,6 +246,17 @@ def _evaluate_captured(robot: str, data: Optional[Dict[str, Any]]) -> List[str]:
             lines.append(
                 f"content /tf: PASS "
                 f"(base_link/laser/base_imu; {len(frames)} frames)"
+            )
+    elif robot == "reachy":
+        missing = [f for f in _REACHY_TF_LEAVES if f not in frames]
+        if missing:
+            lines.append(
+                f"content /tf: FAIL (missing {missing}; saw {sorted(frames)[:12]})"
+            )
+        else:
+            lines.append(
+                f"content /tf: PASS "
+                f"(torso + head cameras; {len(frames)} frames)"
             )
     else:
         lines.append(f"content /tf: PASS ({len(frames)} frames)")
@@ -278,7 +299,7 @@ def main() -> int:
     ap.add_argument(
         "--robot",
         default="franka",
-        choices=["franka", "stretch", "stretch_wheeled"],
+        choices=["franka", "stretch", "stretch_wheeled", "reachy"],
     )
     ap.add_argument("--world", default="empty_world")
     ap.add_argument("--config", default=None, help="Scenario yaml basename or path")
@@ -420,7 +441,20 @@ def main() -> int:
         "franka": ["/clock", "/tf", "/joint_states"],
         "stretch": ["/clock", "/tf", "/joint_states", "/scan", "/imu"],
         "stretch_wheeled": ["/clock", "/tf", "/joint_states", "/scan", "/imu"],
+        "reachy": ["/clock", "/tf", "/joint_states"],
     }.get(args.robot, ["/clock"])
+    if args.robot == "reachy" and os.environ.get("HUNAV_LAB_CAMERAS", "0") in (
+        "1",
+        "true",
+        "yes",
+        "on",
+    ):
+        want = list(want) + [
+            "/left_camera/image_raw",
+            "/right_camera/image_raw",
+            "/left_camera/camera_info",
+            "/right_camera/camera_info",
+        ]
 
     lines = [
         f"robot={args.robot}",

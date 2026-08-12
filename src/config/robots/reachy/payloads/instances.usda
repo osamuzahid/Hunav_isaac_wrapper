@@ -1,0 +1,1167 @@
+#usda 1.0
+(
+    customLayerData = {
+        string creator = "URDF USD Converter v0.1.3"
+    }
+    doc = """Generated from Composed Stage of root layer /tmp/tmpep5xaoq7/reachy_2023.usdc
+
+
+Generated from Composed Stage of root layer /tmp/urdf_import_reachy_8_n63x1w/usdex_reachy/reachy_2023.usdc
+
+
+Generated from Composed Stage of root layer /tmp/urdf_import_reachy_8_n63x1w/temp_reachy/reachy.usd
+
+
+Generated from Composed Stage of root layer /home/osamuzahid/Projects/isaac-social-nav/ros2_ws/src/Hunav_isaac_wrapper/src/config/robots/reachy/reachy_2/payloads/base.usd
+"""
+    kilogramsPerUnit = 1
+    metersPerUnit = 1
+    upAxis = "Z"
+)
+
+def Scope "Instances"
+{
+    def Xform "tn__mesh1019_meshmesh_mP_1" (
+        prepend references = @./geometries.usd@</Geometries/tn__mesh1019_meshmesh_mP_1>
+    )
+    {
+        over "tn__mesh1019_meshmesh_mP_1"
+        {
+            token purpose = "default"
+            token subsetFamily:materialBind:familyType = "nonOverlapping"
+
+            over "MJF_painted" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh1019_meshmesh_mP_1/VisualMaterials/MJF_painted>
+            }
+
+            over "Pollen_color" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh1019_meshmesh_mP_1/VisualMaterials/Pollen_color>
+            }
+
+            over "Pollen_dark_blue_color" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh1019_meshmesh_mP_1/VisualMaterials/Pollen_dark_blue_color>
+            }
+
+            over "Pollen_light_blue_color" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh1019_meshmesh_mP_1/VisualMaterials/Pollen_light_blue_color>
+            }
+
+            over "Pollen_red_color" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh1019_meshmesh_mP_1/VisualMaterials/Pollen_red_color>
+            }
+
+            over "Pollen_yellow_color" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh1019_meshmesh_mP_1/VisualMaterials/Pollen_yellow_color>
+            }
+
+            over "plastic_black_matte" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh1019_meshmesh_mP_1/VisualMaterials/plastic_black_matte>
+            }
+
+            over "plastic_diffuse_white" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh1019_meshmesh_mP_1/VisualMaterials/plastic_diffuse_white>
+            }
+        }
+
+        def Scope "VisualMaterials"
+        {
+            def Material "MJF_painted" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/MJF_painted>
+            )
+            {
+            }
+
+            def Material "Pollen_color" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/Pollen_color>
+            )
+            {
+            }
+
+            def Material "Pollen_dark_blue_color" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/Pollen_dark_blue_color>
+            )
+            {
+            }
+
+            def Material "Pollen_light_blue_color" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/Pollen_light_blue_color>
+            )
+            {
+            }
+
+            def Material "Pollen_red_color" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/Pollen_red_color>
+            )
+            {
+            }
+
+            def Material "Pollen_yellow_color" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/Pollen_yellow_color>
+            )
+            {
+            }
+
+            def Material "plastic_black_matte" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/plastic_black_matte>
+            )
+            {
+            }
+
+            def Material "plastic_diffuse_white" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/plastic_diffuse_white>
+            )
+            {
+            }
+        }
+    }
+
+    def Xform "tn__mesh0_meshmesh_YL_1" (
+        prepend references = @./geometries.usd@</Geometries/tn__mesh0_meshmesh_YL_1>
+    )
+    {
+        over "tn__mesh0_meshmesh_YL_1"
+        {
+            token purpose = "default"
+            token subsetFamily:materialBind:familyType = "nonOverlapping"
+
+            over "MJF_painted_1" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh0_meshmesh_YL_1/VisualMaterials/MJF_painted_1>
+            }
+
+            over "metal_screw" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh0_meshmesh_YL_1/VisualMaterials/metal_screw>
+            }
+        }
+
+        def Scope "VisualMaterials"
+        {
+            def Material "MJF_painted_1" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/MJF_painted>
+            )
+            {
+            }
+
+            def Material "metal_screw" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/metal_screw>
+            )
+            {
+            }
+        }
+    }
+
+    def Xform "tn__mesh709_meshmesh_XO_1" (
+        prepend references = @./geometries.usd@</Geometries/tn__mesh709_meshmesh_XO_1>
+    )
+    {
+        over "tn__mesh709_meshmesh_XO_1"
+        {
+            token purpose = "default"
+            token subsetFamily:materialBind:familyType = "nonOverlapping"
+
+            over "Dynamixel_body" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh709_meshmesh_XO_1/VisualMaterials/Dynamixel_body>
+            }
+
+            over "Dynamixel_horn" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh709_meshmesh_XO_1/VisualMaterials/Dynamixel_horn>
+            }
+
+            over "MJF_painted_2" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh709_meshmesh_XO_1/VisualMaterials/MJF_painted_2>
+            }
+
+            over "aluminium" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh709_meshmesh_XO_1/VisualMaterials/aluminium>
+            }
+
+            over "metal_screw_1" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh709_meshmesh_XO_1/VisualMaterials/metal_screw_1>
+            }
+        }
+
+        def Scope "VisualMaterials"
+        {
+            def Material "Dynamixel_body" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/Dynamixel_body>
+            )
+            {
+            }
+
+            def Material "Dynamixel_horn" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/Dynamixel_horn>
+            )
+            {
+            }
+
+            def Material "MJF_painted_2" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/MJF_painted>
+            )
+            {
+            }
+
+            def Material "aluminium" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/aluminium>
+            )
+            {
+            }
+
+            def Material "metal_screw_1" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/metal_screw>
+            )
+            {
+            }
+        }
+    }
+
+    def Xform "tn__mesh691_mesh_003mesh_VU_1" (
+        prepend references = @./geometries.usd@</Geometries/tn__mesh691_mesh_003mesh_VU_1>
+    )
+    {
+        over "tn__mesh691_mesh_003mesh_VU_1"
+        {
+            token purpose = "default"
+            token subsetFamily:materialBind:familyType = "nonOverlapping"
+
+            over "Dynamixel_body_1" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh691_mesh_003mesh_VU_1/VisualMaterials/Dynamixel_body_1>
+            }
+
+            over "Dynamixel_horn_1" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh691_mesh_003mesh_VU_1/VisualMaterials/Dynamixel_horn_1>
+            }
+
+            over "MJF_painted_3" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh691_mesh_003mesh_VU_1/VisualMaterials/MJF_painted_3>
+            }
+
+            over "aluminium_1" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh691_mesh_003mesh_VU_1/VisualMaterials/aluminium_1>
+            }
+
+            over "bearing_needle" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh691_mesh_003mesh_VU_1/VisualMaterials/bearing_needle>
+            }
+
+            over "bearing_support" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh691_mesh_003mesh_VU_1/VisualMaterials/bearing_support>
+            }
+
+            over "metal_screw_2" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh691_mesh_003mesh_VU_1/VisualMaterials/metal_screw_2>
+            }
+        }
+
+        def Scope "VisualMaterials"
+        {
+            def Material "Dynamixel_body_1" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/Dynamixel_body>
+            )
+            {
+            }
+
+            def Material "Dynamixel_horn_1" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/Dynamixel_horn>
+            )
+            {
+            }
+
+            def Material "MJF_painted_3" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/MJF_painted>
+            )
+            {
+            }
+
+            def Material "aluminium_1" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/aluminium>
+            )
+            {
+            }
+
+            def Material "bearing_needle" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/bearing_needle>
+            )
+            {
+            }
+
+            def Material "bearing_support" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/bearing_support>
+            )
+            {
+            }
+
+            def Material "metal_screw_2" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/metal_screw>
+            )
+            {
+            }
+        }
+    }
+
+    def Xform "tn__mesh21_mesh_001mesh_lS_1" (
+        prepend references = @./geometries.usd@</Geometries/tn__mesh21_mesh_001mesh_lS_1>
+    )
+    {
+        over "tn__mesh21_mesh_001mesh_lS_1"
+        {
+            token purpose = "default"
+            token subsetFamily:materialBind:familyType = "nonOverlapping"
+
+            over "Dynamixel_body_2" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh21_mesh_001mesh_lS_1/VisualMaterials/Dynamixel_body_2>
+            }
+
+            over "MJF_painted_4" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh21_mesh_001mesh_lS_1/VisualMaterials/MJF_painted_4>
+            }
+
+            over "bearing_needle_1" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh21_mesh_001mesh_lS_1/VisualMaterials/bearing_needle_1>
+            }
+
+            over "bearing_support_1" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh21_mesh_001mesh_lS_1/VisualMaterials/bearing_support_1>
+            }
+
+            over "metal_screw_3" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh21_mesh_001mesh_lS_1/VisualMaterials/metal_screw_3>
+            }
+        }
+
+        def Scope "VisualMaterials"
+        {
+            def Material "Dynamixel_body_2" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/Dynamixel_body>
+            )
+            {
+            }
+
+            def Material "MJF_painted_4" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/MJF_painted>
+            )
+            {
+            }
+
+            def Material "bearing_needle_1" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/bearing_needle>
+            )
+            {
+            }
+
+            def Material "bearing_support_1" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/bearing_support>
+            )
+            {
+            }
+
+            def Material "metal_screw_3" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/metal_screw>
+            )
+            {
+            }
+        }
+    }
+
+    def Xform "tn__mesh48_meshmesh_nM_1" (
+        prepend references = @./geometries.usd@</Geometries/tn__mesh48_meshmesh_nM_1>
+    )
+    {
+        over "tn__mesh48_meshmesh_nM_1"
+        {
+            token purpose = "default"
+            token subsetFamily:materialBind:familyType = "nonOverlapping"
+
+            over "Dynamixel_body_3" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh48_meshmesh_nM_1/VisualMaterials/Dynamixel_body_3>
+            }
+
+            over "Dynamixel_horn_2" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh48_meshmesh_nM_1/VisualMaterials/Dynamixel_horn_2>
+            }
+
+            over "MJF_painted_5" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh48_meshmesh_nM_1/VisualMaterials/MJF_painted_5>
+            }
+
+            over "aluminium_2" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh48_meshmesh_nM_1/VisualMaterials/aluminium_2>
+            }
+
+            over "metal_screw_4" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh48_meshmesh_nM_1/VisualMaterials/metal_screw_4>
+            }
+        }
+
+        def Scope "VisualMaterials"
+        {
+            def Material "Dynamixel_body_3" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/Dynamixel_body>
+            )
+            {
+            }
+
+            def Material "Dynamixel_horn_2" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/Dynamixel_horn>
+            )
+            {
+            }
+
+            def Material "MJF_painted_5" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/MJF_painted>
+            )
+            {
+            }
+
+            def Material "aluminium_2" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/aluminium>
+            )
+            {
+            }
+
+            def Material "metal_screw_4" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/metal_screw>
+            )
+            {
+            }
+        }
+    }
+
+    def Xform "tn__mesh0_meshmesh_YL_1_1" (
+        prepend references = @./geometries.usd@</Geometries/tn__mesh0_meshmesh_YL_1_1>
+    )
+    {
+        over "tn__mesh0_meshmesh_YL_1_1"
+        {
+            token purpose = "default"
+            token subsetFamily:materialBind:familyType = "nonOverlapping"
+
+            over "MJF_painted_6" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh0_meshmesh_YL_1_1/VisualMaterials/MJF_painted_6>
+            }
+
+            over "metal_screw_5" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh0_meshmesh_YL_1_1/VisualMaterials/metal_screw_5>
+            }
+        }
+
+        def Scope "VisualMaterials"
+        {
+            def Material "MJF_painted_6" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/MJF_painted>
+            )
+            {
+            }
+
+            def Material "metal_screw_5" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/metal_screw>
+            )
+            {
+            }
+        }
+    }
+
+    def Xform "tn__mesh1028_meshmesh_mP_1" (
+        prepend references = @./geometries.usd@</Geometries/tn__mesh1028_meshmesh_mP_1>
+    )
+    {
+        over "tn__mesh1028_meshmesh_mP_1"
+        {
+            token purpose = "default"
+            token subsetFamily:materialBind:familyType = "nonOverlapping"
+
+            over "MJF_painted_8" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh1028_meshmesh_mP_1/VisualMaterials/MJF_painted_8>
+            }
+
+            over "metal_screw_7" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh1028_meshmesh_mP_1/VisualMaterials/metal_screw_7>
+            }
+
+            over "rubber_black_1" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh1028_meshmesh_mP_1/VisualMaterials/rubber_black_1>
+            }
+        }
+
+        def Scope "VisualMaterials"
+        {
+            def Material "MJF_painted_8" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/MJF_painted>
+            )
+            {
+            }
+
+            def Material "metal_screw_7" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/metal_screw>
+            )
+            {
+            }
+
+            def Material "rubber_black_1" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/rubber_black_1>
+            )
+            {
+            }
+        }
+    }
+
+    def Xform "tn__mesh1028_meshmesh_mP_2" (
+        prepend references = @./geometries.usd@</Geometries/tn__mesh1028_meshmesh_mP_2>
+    )
+    {
+        over "tn__mesh1028_meshmesh_mP_2" (
+            apiSchemas = ["PhysicsCollisionAPI", "NewtonCollisionAPI", "PhysicsMeshCollisionAPI", "NewtonMeshCollisionAPI"]
+        )
+        {
+            token physics:approximation = "convexHull"
+            token purpose = "guide"
+        }
+    }
+
+    def Xform "tn__mesh1064_meshmesh_mP_1" (
+        prepend references = @./geometries.usd@</Geometries/tn__mesh1064_meshmesh_mP_1>
+    )
+    {
+        over "tn__mesh1064_meshmesh_mP_1"
+        {
+            token purpose = "default"
+            token subsetFamily:materialBind:familyType = "nonOverlapping"
+
+            over "Dynamixel_body_4" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh1064_meshmesh_mP_1/VisualMaterials/Dynamixel_body_4>
+            }
+
+            over "MJF_painted_7" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh1064_meshmesh_mP_1/VisualMaterials/MJF_painted_7>
+            }
+
+            over "aluminium_3" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh1064_meshmesh_mP_1/VisualMaterials/aluminium_3>
+            }
+
+            over "metal_screw_6" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh1064_meshmesh_mP_1/VisualMaterials/metal_screw_6>
+            }
+
+            over "rubber_black" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh1064_meshmesh_mP_1/VisualMaterials/rubber_black>
+            }
+        }
+
+        def Scope "VisualMaterials"
+        {
+            def Material "Dynamixel_body_4" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/Dynamixel_body>
+            )
+            {
+            }
+
+            def Material "MJF_painted_7" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/MJF_painted>
+            )
+            {
+            }
+
+            def Material "aluminium_3" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/aluminium>
+            )
+            {
+            }
+
+            def Material "metal_screw_6" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/metal_screw>
+            )
+            {
+            }
+
+            def Material "rubber_black" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/rubber_black_1>
+            )
+            {
+            }
+        }
+    }
+
+    def Xform "tn__mesh1064_meshmesh_mP_2" (
+        prepend references = @./geometries.usd@</Geometries/tn__mesh1064_meshmesh_mP_2>
+    )
+    {
+        over "tn__mesh1064_meshmesh_mP_2" (
+            apiSchemas = ["PhysicsCollisionAPI", "NewtonCollisionAPI", "PhysicsMeshCollisionAPI", "NewtonMeshCollisionAPI"]
+        )
+        {
+            token physics:approximation = "convexHull"
+            token purpose = "guide"
+        }
+    }
+
+    def Xform "tn__mesh1028_meshmesh_mP_1_1" (
+        prepend references = @./geometries.usd@</Geometries/tn__mesh1028_meshmesh_mP_1_1>
+    )
+    {
+        over "tn__mesh1028_meshmesh_mP_1_1"
+        {
+            token purpose = "default"
+            token subsetFamily:materialBind:familyType = "nonOverlapping"
+
+            over "MJF_painted_10" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh1028_meshmesh_mP_1_1/VisualMaterials/MJF_painted_10>
+            }
+
+            over "metal_screw_9" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh1028_meshmesh_mP_1_1/VisualMaterials/metal_screw_9>
+            }
+
+            over "rubber_black_3" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh1028_meshmesh_mP_1_1/VisualMaterials/rubber_black_3>
+            }
+        }
+
+        def Scope "VisualMaterials"
+        {
+            def Material "MJF_painted_10" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/MJF_painted>
+            )
+            {
+            }
+
+            def Material "metal_screw_9" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/metal_screw>
+            )
+            {
+            }
+
+            def Material "rubber_black_3" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/rubber_black_1>
+            )
+            {
+            }
+        }
+    }
+
+    def Xform "tn__mesh1028_meshmesh_mP_2_1" (
+        prepend references = @./geometries.usd@</Geometries/tn__mesh1028_meshmesh_mP_2_1>
+    )
+    {
+        over "tn__mesh1028_meshmesh_mP_2_1" (
+            apiSchemas = ["PhysicsCollisionAPI", "NewtonCollisionAPI", "PhysicsMeshCollisionAPI", "NewtonMeshCollisionAPI"]
+        )
+        {
+            token physics:approximation = "convexHull"
+            token purpose = "guide"
+        }
+    }
+
+    def Xform "tn__mesh1064_meshmesh_mP_1_1" (
+        prepend references = @./geometries.usd@</Geometries/tn__mesh1064_meshmesh_mP_1_1>
+    )
+    {
+        over "tn__mesh1064_meshmesh_mP_1_1"
+        {
+            token purpose = "default"
+            token subsetFamily:materialBind:familyType = "nonOverlapping"
+
+            over "Dynamixel_body_5" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh1064_meshmesh_mP_1_1/VisualMaterials/Dynamixel_body_5>
+            }
+
+            over "MJF_painted_9" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh1064_meshmesh_mP_1_1/VisualMaterials/MJF_painted_9>
+            }
+
+            over "aluminium_4" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh1064_meshmesh_mP_1_1/VisualMaterials/aluminium_4>
+            }
+
+            over "metal_screw_8" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh1064_meshmesh_mP_1_1/VisualMaterials/metal_screw_8>
+            }
+
+            over "rubber_black_2" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh1064_meshmesh_mP_1_1/VisualMaterials/rubber_black_2>
+            }
+        }
+
+        def Scope "VisualMaterials"
+        {
+            def Material "Dynamixel_body_5" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/Dynamixel_body>
+            )
+            {
+            }
+
+            def Material "MJF_painted_9" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/MJF_painted>
+            )
+            {
+            }
+
+            def Material "aluminium_4" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/aluminium>
+            )
+            {
+            }
+
+            def Material "metal_screw_8" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/metal_screw>
+            )
+            {
+            }
+
+            def Material "rubber_black_2" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/rubber_black_1>
+            )
+            {
+            }
+        }
+    }
+
+    def Xform "tn__mesh1064_meshmesh_mP_2_1" (
+        prepend references = @./geometries.usd@</Geometries/tn__mesh1064_meshmesh_mP_2_1>
+    )
+    {
+        over "tn__mesh1064_meshmesh_mP_2_1" (
+            apiSchemas = ["PhysicsCollisionAPI", "NewtonCollisionAPI", "PhysicsMeshCollisionAPI", "NewtonMeshCollisionAPI"]
+        )
+        {
+            token physics:approximation = "convexHull"
+            token purpose = "guide"
+        }
+    }
+
+    def Xform "tn__ID519mesh_qD_1" (
+        prepend references = @./geometries.usd@</Geometries/tn__ID519mesh_qD_1>
+    )
+    {
+        over "tn__ID519mesh_qD_1"
+        {
+            token purpose = "default"
+            token subsetFamily:materialBind:familyType = "nonOverlapping"
+
+            over "MJF_painted_11" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__ID519mesh_qD_1/VisualMaterials/MJF_painted_11>
+            }
+
+            over "glass" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__ID519mesh_qD_1/VisualMaterials/glass>
+            }
+
+            over "iris_color" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__ID519mesh_qD_1/VisualMaterials/iris_color>
+            }
+
+            over "lens_body" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__ID519mesh_qD_1/VisualMaterials/lens_body>
+            }
+
+            over "metal_screw_10" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__ID519mesh_qD_1/VisualMaterials/metal_screw_10>
+            }
+
+            over "plastic_black_matte_1" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__ID519mesh_qD_1/VisualMaterials/plastic_black_matte_1>
+            }
+        }
+
+        def Scope "VisualMaterials"
+        {
+            def Material "MJF_painted_11" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/MJF_painted>
+            )
+            {
+            }
+
+            def Material "glass" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/plastic_diffuse_white>
+            )
+            {
+            }
+
+            def Material "iris_color" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/iris_color>
+            )
+            {
+            }
+
+            def Material "lens_body" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/lens_body>
+            )
+            {
+            }
+
+            def Material "metal_screw_10" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/metal_screw>
+            )
+            {
+            }
+
+            def Material "plastic_black_matte_1" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/plastic_black_matte>
+            )
+            {
+            }
+        }
+    }
+
+    def Xform "tn__mesh15_meshmesh_nM_1" (
+        prepend references = @./geometries.usd@</Geometries/tn__mesh15_meshmesh_nM_1>
+    )
+    {
+        over "tn__mesh15_meshmesh_nM_1"
+        {
+            token purpose = "default"
+            token subsetFamily:materialBind:familyType = "nonOverlapping"
+
+            over "MJF_painted_12" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh15_meshmesh_nM_1/VisualMaterials/MJF_painted_12>
+            }
+
+            over "aluminium_5" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh15_meshmesh_nM_1/VisualMaterials/aluminium_5>
+            }
+
+            over "plastic_glossy_black" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__mesh15_meshmesh_nM_1/VisualMaterials/plastic_glossy_black>
+            }
+        }
+
+        def Scope "VisualMaterials"
+        {
+            def Material "MJF_painted_12" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/MJF_painted>
+            )
+            {
+            }
+
+            def Material "aluminium_5" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/aluminium>
+            )
+            {
+            }
+
+            def Material "plastic_glossy_black" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/plastic_glossy_black>
+            )
+            {
+            }
+        }
+    }
+
+    def Xform "orbita_arm" (
+        prepend references = @./geometries.usd@</Geometries/orbita_arm>
+    )
+    {
+        over "orbita_arm" (
+            apiSchemas = ["MaterialBindingAPI"]
+        )
+        {
+            custom rel material:binding
+            prepend rel material:binding = </Instances/orbita_arm/VisualMaterials/ID10>
+            custom string urdf:name = ""
+        }
+
+        def Scope "VisualMaterials"
+        {
+            def Material "ID10" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/ID10>
+            )
+            {
+            }
+        }
+    }
+}
+

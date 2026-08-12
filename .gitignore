@@ -23,3 +23,7 @@ src/worlds/hospital.usd.cdn_compose_WRONG
 src/maps/hospital_isaac_stock.*
 src/config/robots/stretch/payloads/base.usda.bak_instanceable
 tools/remap_hospital_isaac60_assets.py
+
+# Reachy: baked OBJs (assimp -ptv) — regenerate with tools/bake_reachy_meshes.sh
+src/config/robots/reachy/meshes/*.obj
+src/config/robots/reachy/meshes/*.mtl

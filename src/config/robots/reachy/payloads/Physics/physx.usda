@@ -1,0 +1,176 @@
+#usda 1.0
+(
+    customLayerData = {
+        string creator = "URDF USD Converter v0.1.3"
+    }
+    defaultPrim = "reachy_2023"
+    doc = """Generated from Composed Stage of root layer /tmp/tmpep5xaoq7/reachy_2023.usdc
+
+
+Generated from Composed Stage of root layer /tmp/urdf_import_reachy_8_n63x1w/usdex_reachy/reachy_2023.usdc
+
+
+Generated from Composed Stage of root layer /tmp/urdf_import_reachy_8_n63x1w/temp_reachy/reachy.usd
+
+
+Generated from Composed Stage of root layer /home/osamuzahid/Projects/isaac-social-nav/ros2_ws/src/Hunav_isaac_wrapper/src/config/robots/reachy/reachy_2/payloads/base.usd
+"""
+    kilogramsPerUnit = 1
+    metersPerUnit = 1
+    subLayers = [
+        @./physics.usda@
+    ]
+    upAxis = "Z"
+)
+
+over "reachy_2023"
+{
+    over "Physics"
+    {
+        over "r_shoulder_pitch" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+            float physxJoint:jointFriction = 0.1
+        }
+
+        over "r_shoulder_roll" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+            float physxJoint:jointFriction = 0.1
+        }
+
+        over "r_arm_yaw" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+            float physxJoint:jointFriction = 0.1
+        }
+
+        over "r_elbow_pitch" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+            float physxJoint:jointFriction = 0.1
+        }
+
+        over "r_forearm_yaw" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+            float physxJoint:jointFriction = 0.1
+        }
+
+        over "r_wrist_pitch" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+            float physxJoint:jointFriction = 0.1
+        }
+
+        over "r_wrist_roll" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+            float physxJoint:jointFriction = 0.1
+        }
+
+        over "r_gripper" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+            float physxJoint:jointFriction = 0.1
+        }
+
+        over "l_shoulder_pitch" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+            float physxJoint:jointFriction = 0.1
+        }
+
+        over "l_shoulder_roll" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+            float physxJoint:jointFriction = 0.1
+        }
+
+        over "l_arm_yaw" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+            float physxJoint:jointFriction = 0.1
+        }
+
+        over "l_elbow_pitch" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+            float physxJoint:jointFriction = 0.1
+        }
+
+        over "l_forearm_yaw" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+            float physxJoint:jointFriction = 0.1
+        }
+
+        over "l_wrist_pitch" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+            float physxJoint:jointFriction = 0.1
+        }
+
+        over "l_wrist_roll" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+            float physxJoint:jointFriction = 0.1
+        }
+
+        over "l_gripper" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+            float physxJoint:jointFriction = 0.1
+        }
+
+        over "neck_roll" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+            float physxJoint:jointFriction = 0.1
+        }
+
+        over "neck_pitch" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+            float physxJoint:jointFriction = 0.1
+        }
+
+        over "neck_yaw" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+            float physxJoint:jointFriction = 0.1
+        }
+
+        over "l_antenna" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+        }
+
+        over "r_antenna" (
+            prepend apiSchemas = ["PhysxJointAPI"]
+        )
+        {
+        }
+    }
+}
+

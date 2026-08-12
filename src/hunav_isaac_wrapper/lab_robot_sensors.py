@@ -43,6 +43,7 @@ def _orient_opengl_camera_on_optical(stage, cam_prim, optical_path: str) -> None
     OpenGL cameras look along local −Z with +Y up. Solve one local quaternion from
     world bases (no Euler patch stack). Look = optical +Z; up = world +Z projected
     orthogonal to look (so rqt is upright even when optical −Y is horizontal).
+    Used by Stretch after stage poses are settled.
     """
     from pxr import Gf, Usd, UsdGeom
 
@@ -86,6 +87,17 @@ def _orient_opengl_camera_on_optical(stage, cam_prim, optical_path: str) -> None
     xf.AddTranslateOp().Set(Gf.Vec3d(0.0, 0.0, 0.0))
     xf.AddOrientOp(UsdGeom.XformOp.PrecisionFloat).Set(quat)
 
+
+def _orient_opengl_camera_fixed_optical(cam_prim) -> None:
+    """Fixed optical→OpenGL: 180° about +X (Reachy; avoids attach-time world-pose race)."""
+    from pxr import Gf, UsdGeom
+
+    quat = Gf.Quatf(0.0, 1.0, 0.0, 0.0)
+    xf = UsdGeom.Xformable(cam_prim)
+    xf.ClearXformOpOrder()
+    xf.AddTranslateOp().Set(Gf.Vec3d(0.0, 0.0, 0.0))
+    xf.AddOrientOp(UsdGeom.XformOp.PrecisionFloat).Set(quat)
+
 # Parked Stretch joint names (kinematic Physics=none has no articulation).
 _STRETCH_PARKED_JOINTS = [
     "joint_left_wheel",
@@ -105,6 +117,36 @@ _STRETCH_PARKED_JOINTS = [
     "joint_gripper_finger_right",
 ]
 
+# Reachy 2023 full_kit (no gripper-force topic — not in Phase 0 bar yet).
+_REACHY_BASE = "Geometry/world"
+_REACHY_TORSO = f"{_REACHY_BASE}/torso"
+_REACHY_HEAD = f"{_REACHY_TORSO}/head_x/head_y/head_z/head"
+_REACHY_LEFT_OPTICAL = f"{_REACHY_HEAD}/left_camera/left_camera_optical"
+_REACHY_RIGHT_OPTICAL = f"{_REACHY_HEAD}/right_camera/right_camera_optical"
+_REACHY_PARKED_JOINTS = [
+    "r_shoulder_pitch",
+    "r_shoulder_roll",
+    "r_arm_yaw",
+    "r_elbow_pitch",
+    "r_forearm_yaw",
+    "r_wrist_pitch",
+    "r_wrist_roll",
+    "r_gripper",
+    "l_shoulder_pitch",
+    "l_shoulder_roll",
+    "l_arm_yaw",
+    "l_elbow_pitch",
+    "l_forearm_yaw",
+    "l_wrist_pitch",
+    "l_wrist_roll",
+    "l_gripper",
+    "neck_roll",
+    "neck_pitch",
+    "neck_yaw",
+    "l_antenna",
+    "r_antenna",
+]
+
 
 def _env_bool(name: str, default: bool) -> bool:
     raw = os.environ.get(name)
@@ -114,7 +156,7 @@ def _env_bool(name: str, default: bool) -> bool:
 
 
 def lab_sensors_enabled(robot_name: str) -> bool:
-    if robot_name not in ("franka", "stretch", "stretch_wheeled"):
+    if robot_name not in ("franka", "stretch", "stretch_wheeled", "reachy"):
         return False
     return _env_bool("HUNAV_LAB_SENSORS", True)
 
@@ -349,7 +391,18 @@ def _attach_stretch_lidar(laser_prim: str) -> Optional[Any]:
         return None
 
 
-def _attach_stretch_camera(optical_prim: str, width: int = 320, height: int = 240) -> bool:
+def _attach_rgb_optical_camera(
+    optical_prim: str,
+    *,
+    graph_path: str,
+    topic_ns: str,
+    frame_id: str,
+    width: int = 320,
+    height: int = 240,
+    with_depth: bool = False,
+    fixed_optical_orient: bool = False,
+) -> bool:
+    """Mount OpenGL Camera under a ROS optical frame and publish RGB (+ optional depth)."""
     if not _env_bool("HUNAV_LAB_CAMERAS", False):
         print("[lab_robot_sensors] cameras off (set HUNAV_LAB_CAMERAS=1 to enable)")
         return False
@@ -362,7 +415,106 @@ def _attach_stretch_camera(optical_prim: str, width: int = 320, height: int = 24
         from pxr import Sdf, UsdGeom
 
         stage = omni.usd.get_context().get_stage()
-        # Drop stale mounts (camera_link and prior optical).
+        cam_path = f"{optical_prim}/rgb_camera"
+        if stage.GetPrimAtPath(cam_path):
+            stage.RemovePrim(cam_path)
+        cam = UsdGeom.Camera(stage.DefinePrim(cam_path, "Camera"))
+        if fixed_optical_orient:
+            _orient_opengl_camera_fixed_optical(cam.GetPrim())
+        else:
+            _orient_opengl_camera_on_optical(stage, cam.GetPrim(), optical_prim)
+        cam.GetHorizontalApertureAttr().Set(21)
+        cam.GetVerticalApertureAttr().Set(16)
+        cam.GetProjectionAttr().Set("perspective")
+        cam.GetFocalLengthAttr().Set(24)
+        cam.GetPrim().CreateAttribute("exposure:time", Sdf.ValueTypeNames.Float).Set(0.02)
+
+        keys = og.Controller.Keys
+        create_nodes = [
+            ("OnPlaybackTick", "omni.graph.action.OnPlaybackTick"),
+            ("createRenderProduct", "isaacsim.core.nodes.IsaacCreateRenderProduct"),
+            ("cameraHelperRgb", "isaacsim.ros2.bridge.ROS2CameraHelper"),
+            ("cameraHelperInfo", "isaacsim.ros2.bridge.ROS2CameraInfoHelper"),
+        ]
+        connect = [
+            ("OnPlaybackTick.outputs:tick", "createRenderProduct.inputs:execIn"),
+            ("createRenderProduct.outputs:execOut", "cameraHelperRgb.inputs:execIn"),
+            ("createRenderProduct.outputs:execOut", "cameraHelperInfo.inputs:execIn"),
+            (
+                "createRenderProduct.outputs:renderProductPath",
+                "cameraHelperRgb.inputs:renderProductPath",
+            ),
+            (
+                "createRenderProduct.outputs:renderProductPath",
+                "cameraHelperInfo.inputs:renderProductPath",
+            ),
+        ]
+        set_values = [
+            ("createRenderProduct.inputs:cameraPrim", [usdrt.Sdf.Path(cam_path)]),
+            ("createRenderProduct.inputs:width", width),
+            ("createRenderProduct.inputs:height", height),
+            ("cameraHelperRgb.inputs:frameId", frame_id),
+            ("cameraHelperRgb.inputs:topicName", f"{topic_ns}/image_raw"),
+            ("cameraHelperRgb.inputs:type", "rgb"),
+            ("cameraHelperInfo.inputs:frameId", frame_id),
+            ("cameraHelperInfo.inputs:topicName", f"{topic_ns}/camera_info"),
+        ]
+        if with_depth:
+            create_nodes.append(
+                ("cameraHelperDepth", "isaacsim.ros2.bridge.ROS2CameraHelper")
+            )
+            connect.extend(
+                [
+                    (
+                        "createRenderProduct.outputs:execOut",
+                        "cameraHelperDepth.inputs:execIn",
+                    ),
+                    (
+                        "createRenderProduct.outputs:renderProductPath",
+                        "cameraHelperDepth.inputs:renderProductPath",
+                    ),
+                ]
+            )
+            set_values.extend(
+                [
+                    ("cameraHelperDepth.inputs:frameId", frame_id),
+                    ("cameraHelperDepth.inputs:topicName", f"{topic_ns}/depth"),
+                    ("cameraHelperDepth.inputs:type", "depth"),
+                ]
+            )
+
+        og.Controller.edit(
+            {"graph_path": graph_path, "evaluator_name": "execution"},
+            {
+                keys.CREATE_NODES: create_nodes,
+                keys.CONNECT: connect,
+                keys.SET_VALUES: set_values,
+            },
+        )
+        print(
+            f"[lab_robot_sensors] RGB camera at {cam_path} "
+            f"({width}x{height}) → /{topic_ns}/* (frame={frame_id})"
+        )
+        return True
+    except Exception as exc:
+        print(f"[lab_robot_sensors] camera attach failed ({topic_ns}): {exc}")
+        return False
+
+
+def _attach_stretch_camera(optical_prim: str, width: int = 320, height: int = 240) -> bool:
+    # Keep Stretch RGB-D path (depth + legacy topic names).
+    if not _env_bool("HUNAV_LAB_CAMERAS", False):
+        print("[lab_robot_sensors] cameras off (set HUNAV_LAB_CAMERAS=1 to enable)")
+        return False
+    if not _prim_exists(optical_prim):
+        print(f"[lab_robot_sensors] camera skip: missing {optical_prim}")
+        return False
+    try:
+        import omni.usd
+        import usdrt.Sdf
+        from pxr import Sdf, UsdGeom
+
+        stage = omni.usd.get_context().get_stage()
         link_prim = optical_prim.rsplit("/camera_color_frame", 1)[0]
         for stale in (
             f"{link_prim}/rgb_camera",
@@ -522,6 +674,100 @@ class ParkedJointStatePublisher:
         self._pub.publish(msg)
 
 
+class ParkedLinkTfPublisher:
+    """rclpy /tf from USD Xform world poses (PoseTree needs RigidBody; opticals don't)."""
+
+    def __init__(
+        self,
+        node,
+        frames: Sequence[tuple],
+        parent_frame: str = "world",
+    ):
+        """
+        frames: sequence of (prim_path, child_frame_id).
+        Each pose is published as parent_frame → child_frame_id.
+        """
+        from geometry_msgs.msg import TransformStamped
+        from tf2_msgs.msg import TFMessage
+        from rclpy.qos import (
+            DurabilityPolicy,
+            HistoryPolicy,
+            QoSProfile,
+            ReliabilityPolicy,
+        )
+
+        self._TransformStamped = TransformStamped
+        self._TFMessage = TFMessage
+        self._parent = parent_frame
+        self._frames = [(p, f) for p, f in frames if _prim_exists(p)]
+        # Match Isaac bridge / external smoke BEST_EFFORT TF subscribers.
+        tf_qos = QoSProfile(
+            reliability=ReliabilityPolicy.BEST_EFFORT,
+            durability=DurabilityPolicy.VOLATILE,
+            history=HistoryPolicy.KEEP_LAST,
+            depth=50,
+        )
+        self._pub = node.create_publisher(TFMessage, "/tf", tf_qos)
+        self._logged_ok = False
+        self._logged_err = False
+        if not self._frames:
+            print("[lab_robot_sensors] parked TF: no valid prims")
+        else:
+            print(
+                f"[lab_robot_sensors] parked TF frames: "
+                + ", ".join(f for _, f in self._frames)
+            )
+
+    def publish(self, stamp_sec: float = 0.0) -> None:
+        if not self._frames:
+            return
+        try:
+            import omni.usd
+            from pxr import Usd, UsdGeom
+
+            stage = omni.usd.get_context().get_stage()
+            if stage is None:
+                return
+            sec = int(stamp_sec)
+            nsec = int((stamp_sec % 1.0) * 1e9)
+            out = self._TFMessage()
+            for prim_path, frame_id in self._frames:
+                prim = stage.GetPrimAtPath(prim_path)
+                if not prim or not prim.IsValid():
+                    continue
+                mw = UsdGeom.Xformable(prim).ComputeLocalToWorldTransform(
+                    Usd.TimeCode.Default()
+                )
+                t = mw.ExtractTranslation()
+                q = mw.ExtractRotation().GetQuat()
+                imag = q.GetImaginary()
+                ts = self._TransformStamped()
+                ts.header.stamp.sec = sec
+                ts.header.stamp.nanosec = nsec
+                ts.header.frame_id = self._parent
+                ts.child_frame_id = frame_id
+                ts.transform.translation.x = float(t[0])
+                ts.transform.translation.y = float(t[1])
+                ts.transform.translation.z = float(t[2])
+                ts.transform.rotation.x = float(imag[0])
+                ts.transform.rotation.y = float(imag[1])
+                ts.transform.rotation.z = float(imag[2])
+                ts.transform.rotation.w = float(q.GetReal())
+                out.transforms.append(ts)
+            if out.transforms:
+                self._pub.publish(out)
+                if not self._logged_ok:
+                    print(
+                        f"[lab_robot_sensors] parked TF publishing "
+                        f"{len(out.transforms)} transforms"
+                    )
+                    self._logged_ok = True
+        except Exception as exc:
+            if not self._logged_err:
+                print(f"[lab_robot_sensors] parked TF publish failed: {exc}")
+                self._logged_err = True
+
+
 def attach_lab_robot_sensors(
     robot_name: str,
     robot_prim_path: str,
@@ -575,6 +821,49 @@ def attach_lab_robot_sensors(
         print("[lab_robot_sensors] Stretch: TF + joints + lidar + IMU (+ optional RGB-D)")
         return handles
 
+    if robot_name == "reachy":
+        # Stock non-mobile Reachy 2023: TF + joints + dual head RGB (no gripper force).
+        # PoseTree eInvalid on optical Xforms / root — publish parked TF from USD poses.
+        torso = _join(robot_prim_path, _REACHY_TORSO)
+        left_opt = _join(robot_prim_path, _REACHY_LEFT_OPTICAL)
+        right_opt = _join(robot_prim_path, _REACHY_RIGHT_OPTICAL)
+        if ros_node is not None:
+            handles["parked_js"] = ParkedJointStatePublisher(
+                ros_node, joint_names=_REACHY_PARKED_JOINTS
+            )
+            handles["parked_tf"] = ParkedLinkTfPublisher(
+                ros_node,
+                frames=[
+                    (torso, "torso"),
+                    (left_opt, "left_camera_optical"),
+                    (right_opt, "right_camera_optical"),
+                ],
+                parent_frame="world",
+            )
+            print(
+                "[lab_robot_sensors] Reachy: publishing parked "
+                "/joint_states + /tf via rclpy"
+            )
+        _attach_rgb_optical_camera(
+            left_opt,
+            graph_path="/World/ROS2_ReachyLeftCam",
+            topic_ns="left_camera",
+            frame_id="left_camera_optical",
+            fixed_optical_orient=True,
+        )
+        _attach_rgb_optical_camera(
+            right_opt,
+            graph_path="/World/ROS2_ReachyRightCam",
+            topic_ns="right_camera",
+            frame_id="right_camera_optical",
+            fixed_optical_orient=True,
+        )
+        print(
+            "[lab_robot_sensors] Reachy: TF + joints + dual head RGB "
+            "(gripper force skipped)"
+        )
+        return handles
+
     return handles
 
 
@@ -584,3 +873,6 @@ def tick_lab_sensor_handles(handles: Optional[Dict[str, Any]], sim_time: float =
     parked = handles.get("parked_js")
     if parked is not None:
         parked.publish(sim_time)
+    parked_tf = handles.get("parked_tf")
+    if parked_tf is not None:
+        parked_tf.publish(sim_time)

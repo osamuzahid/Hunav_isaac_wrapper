@@ -1,0 +1,805 @@
+#usda 1.0
+(
+    customLayerData = {
+        string creator = "URDF USD Converter v0.1.3"
+    }
+    defaultPrim = "reachy_2023"
+    doc = """Generated from Composed Stage of root layer /tmp/tmpep5xaoq7/reachy_2023.usdc
+
+
+Generated from Composed Stage of root layer /tmp/urdf_import_reachy_8_n63x1w/usdex_reachy/reachy_2023.usdc
+
+
+Generated from Composed Stage of root layer /tmp/urdf_import_reachy_8_n63x1w/temp_reachy/reachy.usd
+
+
+Generated from Composed Stage of root layer /home/osamuzahid/Projects/isaac-social-nav/ros2_ws/src/Hunav_isaac_wrapper/src/config/robots/reachy/reachy_2/payloads/base.usd
+"""
+    kilogramsPerUnit = 1
+    metersPerUnit = 1
+    subLayers = [
+        @./physics.usda@
+    ]
+    upAxis = "Z"
+)
+
+over "reachy_2023"
+{
+    over "Physics"
+    {
+        def MjcActuator "r_shoulder_pitch_actuator"
+        {
+            uniform double[] mjc:biasPrm = [0, 0, -0.10000000149011612, 0, 0, 0, 0, 0, 0, 0]
+            uniform token mjc:biasType = "affine"
+            uniform double mjc:forceRange:max = 10
+            uniform double mjc:forceRange:min = -10
+            uniform double[] mjc:gainPrm = [0.10000000149011612, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            uniform token mjc:gainType = "fixed"
+            custom rel mjc:target
+            prepend rel mjc:target = </reachy_2023/Physics/r_shoulder_pitch>
+        }
+
+        def MjcActuator "r_shoulder_roll_actuator"
+        {
+            uniform double[] mjc:biasPrm = [0, 0, -0.10000000149011612, 0, 0, 0, 0, 0, 0, 0]
+            uniform token mjc:biasType = "affine"
+            uniform double mjc:forceRange:max = 10
+            uniform double mjc:forceRange:min = -10
+            uniform double[] mjc:gainPrm = [0.10000000149011612, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            uniform token mjc:gainType = "fixed"
+            custom rel mjc:target
+            prepend rel mjc:target = </reachy_2023/Physics/r_shoulder_roll>
+        }
+
+        def MjcActuator "r_arm_yaw_actuator"
+        {
+            uniform double[] mjc:biasPrm = [0, 0, -0.10000000149011612, 0, 0, 0, 0, 0, 0, 0]
+            uniform token mjc:biasType = "affine"
+            uniform double mjc:forceRange:max = 10
+            uniform double mjc:forceRange:min = -10
+            uniform double[] mjc:gainPrm = [0.10000000149011612, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            uniform token mjc:gainType = "fixed"
+            custom rel mjc:target
+            prepend rel mjc:target = </reachy_2023/Physics/r_arm_yaw>
+        }
+
+        def MjcActuator "r_elbow_pitch_actuator"
+        {
+            uniform double[] mjc:biasPrm = [0, 0, -0.10000000149011612, 0, 0, 0, 0, 0, 0, 0]
+            uniform token mjc:biasType = "affine"
+            uniform double mjc:forceRange:max = 10
+            uniform double mjc:forceRange:min = -10
+            uniform double[] mjc:gainPrm = [0.10000000149011612, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            uniform token mjc:gainType = "fixed"
+            custom rel mjc:target
+            prepend rel mjc:target = </reachy_2023/Physics/r_elbow_pitch>
+        }
+
+        def MjcActuator "r_forearm_yaw_actuator"
+        {
+            uniform double[] mjc:biasPrm = [0, 0, -0.10000000149011612, 0, 0, 0, 0, 0, 0, 0]
+            uniform token mjc:biasType = "affine"
+            uniform double mjc:forceRange:max = 10
+            uniform double mjc:forceRange:min = -10
+            uniform double[] mjc:gainPrm = [0.10000000149011612, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            uniform token mjc:gainType = "fixed"
+            custom rel mjc:target
+            prepend rel mjc:target = </reachy_2023/Physics/r_forearm_yaw>
+        }
+
+        def MjcActuator "r_wrist_pitch_actuator"
+        {
+            uniform double[] mjc:biasPrm = [0, 0, -0.10000000149011612, 0, 0, 0, 0, 0, 0, 0]
+            uniform token mjc:biasType = "affine"
+            uniform double mjc:forceRange:max = 10
+            uniform double mjc:forceRange:min = -10
+            uniform double[] mjc:gainPrm = [0.10000000149011612, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            uniform token mjc:gainType = "fixed"
+            custom rel mjc:target
+            prepend rel mjc:target = </reachy_2023/Physics/r_wrist_pitch>
+        }
+
+        def MjcActuator "r_wrist_roll_actuator"
+        {
+            uniform double[] mjc:biasPrm = [0, 0, -0.10000000149011612, 0, 0, 0, 0, 0, 0, 0]
+            uniform token mjc:biasType = "affine"
+            uniform double mjc:forceRange:max = 10
+            uniform double mjc:forceRange:min = -10
+            uniform double[] mjc:gainPrm = [0.10000000149011612, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            uniform token mjc:gainType = "fixed"
+            custom rel mjc:target
+            prepend rel mjc:target = </reachy_2023/Physics/r_wrist_roll>
+        }
+
+        def MjcActuator "r_gripper_actuator"
+        {
+            uniform double[] mjc:biasPrm = [0, 0, -0.10000000149011612, 0, 0, 0, 0, 0, 0, 0]
+            uniform token mjc:biasType = "affine"
+            uniform double mjc:forceRange:max = 10
+            uniform double mjc:forceRange:min = -10
+            uniform double[] mjc:gainPrm = [0.10000000149011612, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            uniform token mjc:gainType = "fixed"
+            custom rel mjc:target
+            prepend rel mjc:target = </reachy_2023/Physics/r_gripper>
+        }
+
+        def MjcActuator "l_shoulder_pitch_actuator"
+        {
+            uniform double[] mjc:biasPrm = [0, 0, -0.10000000149011612, 0, 0, 0, 0, 0, 0, 0]
+            uniform token mjc:biasType = "affine"
+            uniform double mjc:forceRange:max = 10
+            uniform double mjc:forceRange:min = -10
+            uniform double[] mjc:gainPrm = [0.10000000149011612, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            uniform token mjc:gainType = "fixed"
+            custom rel mjc:target
+            prepend rel mjc:target = </reachy_2023/Physics/l_shoulder_pitch>
+        }
+
+        def MjcActuator "l_shoulder_roll_actuator"
+        {
+            uniform double[] mjc:biasPrm = [0, 0, -0.10000000149011612, 0, 0, 0, 0, 0, 0, 0]
+            uniform token mjc:biasType = "affine"
+            uniform double mjc:forceRange:max = 10
+            uniform double mjc:forceRange:min = -10
+            uniform double[] mjc:gainPrm = [0.10000000149011612, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            uniform token mjc:gainType = "fixed"
+            custom rel mjc:target
+            prepend rel mjc:target = </reachy_2023/Physics/l_shoulder_roll>
+        }
+
+        def MjcActuator "l_arm_yaw_actuator"
+        {
+            uniform double[] mjc:biasPrm = [0, 0, -0.10000000149011612, 0, 0, 0, 0, 0, 0, 0]
+            uniform token mjc:biasType = "affine"
+            uniform double mjc:forceRange:max = 10
+            uniform double mjc:forceRange:min = -10
+            uniform double[] mjc:gainPrm = [0.10000000149011612, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            uniform token mjc:gainType = "fixed"
+            custom rel mjc:target
+            prepend rel mjc:target = </reachy_2023/Physics/l_arm_yaw>
+        }
+
+        def MjcActuator "l_elbow_pitch_actuator"
+        {
+            uniform double[] mjc:biasPrm = [0, 0, -0.10000000149011612, 0, 0, 0, 0, 0, 0, 0]
+            uniform token mjc:biasType = "affine"
+            uniform double mjc:forceRange:max = 10
+            uniform double mjc:forceRange:min = -10
+            uniform double[] mjc:gainPrm = [0.10000000149011612, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            uniform token mjc:gainType = "fixed"
+            custom rel mjc:target
+            prepend rel mjc:target = </reachy_2023/Physics/l_elbow_pitch>
+        }
+
+        def MjcActuator "l_forearm_yaw_actuator"
+        {
+            uniform double[] mjc:biasPrm = [0, 0, -0.10000000149011612, 0, 0, 0, 0, 0, 0, 0]
+            uniform token mjc:biasType = "affine"
+            uniform double mjc:forceRange:max = 10
+            uniform double mjc:forceRange:min = -10
+            uniform double[] mjc:gainPrm = [0.10000000149011612, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            uniform token mjc:gainType = "fixed"
+            custom rel mjc:target
+            prepend rel mjc:target = </reachy_2023/Physics/l_forearm_yaw>
+        }
+
+        def MjcActuator "l_wrist_pitch_actuator"
+        {
+            uniform double[] mjc:biasPrm = [0, 0, -0.10000000149011612, 0, 0, 0, 0, 0, 0, 0]
+            uniform token mjc:biasType = "affine"
+            uniform double mjc:forceRange:max = 10
+            uniform double mjc:forceRange:min = -10
+            uniform double[] mjc:gainPrm = [0.10000000149011612, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            uniform token mjc:gainType = "fixed"
+            custom rel mjc:target
+            prepend rel mjc:target = </reachy_2023/Physics/l_wrist_pitch>
+        }
+
+        def MjcActuator "l_wrist_roll_actuator"
+        {
+            uniform double[] mjc:biasPrm = [0, 0, -0.10000000149011612, 0, 0, 0, 0, 0, 0, 0]
+            uniform token mjc:biasType = "affine"
+            uniform double mjc:forceRange:max = 10
+            uniform double mjc:forceRange:min = -10
+            uniform double[] mjc:gainPrm = [0.10000000149011612, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            uniform token mjc:gainType = "fixed"
+            custom rel mjc:target
+            prepend rel mjc:target = </reachy_2023/Physics/l_wrist_roll>
+        }
+
+        def MjcActuator "l_gripper_actuator"
+        {
+            uniform double[] mjc:biasPrm = [0, 0, -0.10000000149011612, 0, 0, 0, 0, 0, 0, 0]
+            uniform token mjc:biasType = "affine"
+            uniform double mjc:forceRange:max = 10
+            uniform double mjc:forceRange:min = -10
+            uniform double[] mjc:gainPrm = [0.10000000149011612, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            uniform token mjc:gainType = "fixed"
+            custom rel mjc:target
+            prepend rel mjc:target = </reachy_2023/Physics/l_gripper>
+        }
+
+        def MjcActuator "neck_roll_actuator"
+        {
+            uniform double[] mjc:biasPrm = [0, 0, -0.10000000149011612, 0, 0, 0, 0, 0, 0, 0]
+            uniform token mjc:biasType = "affine"
+            uniform double mjc:forceRange:max = 10
+            uniform double mjc:forceRange:min = -10
+            uniform double[] mjc:gainPrm = [0.10000000149011612, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            uniform token mjc:gainType = "fixed"
+            custom rel mjc:target
+            prepend rel mjc:target = </reachy_2023/Physics/neck_roll>
+        }
+
+        def MjcActuator "neck_pitch_actuator"
+        {
+            uniform double[] mjc:biasPrm = [0, 0, -0.10000000149011612, 0, 0, 0, 0, 0, 0, 0]
+            uniform token mjc:biasType = "affine"
+            uniform double mjc:forceRange:max = 10
+            uniform double mjc:forceRange:min = -10
+            uniform double[] mjc:gainPrm = [0.10000000149011612, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            uniform token mjc:gainType = "fixed"
+            custom rel mjc:target
+            prepend rel mjc:target = </reachy_2023/Physics/neck_pitch>
+        }
+
+        def MjcActuator "neck_yaw_actuator"
+        {
+            uniform double[] mjc:biasPrm = [0, 0, -0.10000000149011612, 0, 0, 0, 0, 0, 0, 0]
+            uniform token mjc:biasType = "affine"
+            uniform double mjc:forceRange:max = 10
+            uniform double mjc:forceRange:min = -10
+            uniform double[] mjc:gainPrm = [0.10000000149011612, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            uniform token mjc:gainType = "fixed"
+            custom rel mjc:target
+            prepend rel mjc:target = </reachy_2023/Physics/neck_yaw>
+        }
+
+        def MjcActuator "l_antenna_actuator"
+        {
+            uniform double[] mjc:biasPrm = [0, 0, -17.453292846679688, 0, 0, 0, 0, 0, 0, 0]
+            uniform token mjc:biasType = "affine"
+            uniform double mjc:forceRange:max = 10
+            uniform double mjc:forceRange:min = -10
+            uniform double[] mjc:gainPrm = [17.453292846679688, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            uniform token mjc:gainType = "fixed"
+            custom rel mjc:target
+            prepend rel mjc:target = </reachy_2023/Physics/l_antenna>
+        }
+
+        def MjcActuator "r_antenna_actuator"
+        {
+            uniform double[] mjc:biasPrm = [0, 0, -17.453292846679688, 0, 0, 0, 0, 0, 0, 0]
+            uniform token mjc:biasType = "affine"
+            uniform double mjc:forceRange:max = 10
+            uniform double mjc:forceRange:min = -10
+            uniform double[] mjc:gainPrm = [17.453292846679688, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+            uniform token mjc:gainType = "fixed"
+            custom rel mjc:target
+            prepend rel mjc:target = </reachy_2023/Physics/r_antenna>
+        }
+
+        over "r_shoulder_pitch" (
+            delete apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+            custom float mjc:frictionloss = 0.1
+        }
+
+        over "r_shoulder_roll" (
+            delete apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+            custom float mjc:frictionloss = 0.1
+        }
+
+        over "r_arm_yaw" (
+            delete apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+            custom float mjc:frictionloss = 0.1
+        }
+
+        over "r_elbow_pitch" (
+            delete apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+            custom float mjc:frictionloss = 0.1
+        }
+
+        over "r_forearm_yaw" (
+            delete apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+            custom float mjc:frictionloss = 0.1
+        }
+
+        over "r_wrist_pitch" (
+            delete apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+            custom float mjc:frictionloss = 0.1
+        }
+
+        over "r_wrist_roll" (
+            delete apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+            custom float mjc:frictionloss = 0.1
+        }
+
+        over "r_gripper" (
+            delete apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+            custom float mjc:frictionloss = 0.1
+        }
+
+        over "l_shoulder_pitch" (
+            delete apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+            custom float mjc:frictionloss = 0.1
+        }
+
+        over "l_shoulder_roll" (
+            delete apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+            custom float mjc:frictionloss = 0.1
+        }
+
+        over "l_arm_yaw" (
+            delete apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+            custom float mjc:frictionloss = 0.1
+        }
+
+        over "l_elbow_pitch" (
+            delete apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+            custom float mjc:frictionloss = 0.1
+        }
+
+        over "l_forearm_yaw" (
+            delete apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+            custom float mjc:frictionloss = 0.1
+        }
+
+        over "l_wrist_pitch" (
+            delete apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+            custom float mjc:frictionloss = 0.1
+        }
+
+        over "l_wrist_roll" (
+            delete apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+            custom float mjc:frictionloss = 0.1
+        }
+
+        over "l_gripper" (
+            delete apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+            custom float mjc:frictionloss = 0.1
+        }
+
+        over "neck_roll" (
+            delete apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+            custom float mjc:frictionloss = 0.1
+        }
+
+        over "neck_pitch" (
+            delete apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+            custom float mjc:frictionloss = 0.1
+        }
+
+        over "neck_yaw" (
+            delete apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+            custom float mjc:frictionloss = 0.1
+        }
+
+        over "world_joint"
+        {
+        }
+
+        over "r_arm_tip"
+        {
+        }
+
+        over "l_arm_tip"
+        {
+        }
+
+        over "neck_fixed"
+        {
+        }
+
+        over "neck_top"
+        {
+        }
+
+        over "neck_middle"
+        {
+        }
+
+        over "neck_bottom"
+        {
+        }
+
+        over "l_antenna" (
+            delete apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+        }
+
+        over "r_antenna" (
+            delete apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
+        )
+        {
+        }
+
+        over "left_cam_fixed"
+        {
+        }
+
+        over "right_cam_fixed"
+        {
+        }
+
+        over "depth_cam_fixed"
+        {
+        }
+    }
+
+    over "Geometry"
+    {
+        over "world"
+        {
+            over "torso"
+            {
+                over "r_shoulder"
+                {
+                    over "r_shoulder_x"
+                    {
+                        over "r_upper_arm"
+                        {
+                            over "r_forearm"
+                            {
+                                over "r_wrist"
+                                {
+                                    over "r_wrist2hand"
+                                    {
+                                        over "r_gripper_thumb"
+                                        {
+                                            over "r_gripper_thumb"
+                                            {
+                                            }
+
+                                            over "r_gripper_finger"
+                                            {
+                                                over "r_gripper_finger"
+                                                {
+                                                }
+
+                                                over "r_gripper_finger_1"
+                                                {
+                                                    over "tn__mesh1028_meshmesh_mP_1"
+                                                    {
+                                                    }
+
+                                                    over "tn__mesh1028_meshmesh_mP_2"
+                                                    {
+                                                    }
+                                                }
+                                            }
+
+                                            over "r_arm_tip"
+                                            {
+                                            }
+
+                                            over "r_gripper_thumb_1"
+                                            {
+                                                over "tn__mesh1064_meshmesh_mP_1"
+                                                {
+                                                }
+
+                                                over "tn__mesh1064_meshmesh_mP_2"
+                                                {
+                                                }
+                                            }
+                                        }
+
+                                        over "wrist2hand"
+                                        {
+                                        }
+
+                                        over "cylinder"
+                                        {
+                                        }
+                                    }
+
+                                    over "wrist"
+                                    {
+                                    }
+
+                                    over "cylinder"
+                                    {
+                                    }
+                                }
+
+                                over "forearm"
+                                {
+                                }
+
+                                over "cylinder"
+                                {
+                                }
+                            }
+
+                            over "upper_arm"
+                            {
+                            }
+
+                            over "cylinder"
+                            {
+                            }
+                        }
+
+                        over "shoulder_x"
+                        {
+                        }
+
+                        over "cylinder"
+                        {
+                        }
+                    }
+
+                    over "shoulder"
+                    {
+                    }
+
+                    over "cylinder"
+                    {
+                    }
+                }
+
+                over "l_shoulder"
+                {
+                    over "l_shoulder_x"
+                    {
+                        over "l_upper_arm"
+                        {
+                            over "l_forearm"
+                            {
+                                over "l_wrist"
+                                {
+                                    over "l_wrist2hand"
+                                    {
+                                        over "l_gripper_thumb"
+                                        {
+                                            over "l_gripper_thumb"
+                                            {
+                                            }
+
+                                            over "l_gripper_finger"
+                                            {
+                                                over "l_gripper_finger"
+                                                {
+                                                }
+
+                                                over "l_gripper_finger_1"
+                                                {
+                                                    over "tn__mesh1028_meshmesh_mP_1"
+                                                    {
+                                                    }
+
+                                                    over "tn__mesh1028_meshmesh_mP_2"
+                                                    {
+                                                    }
+                                                }
+                                            }
+
+                                            over "l_arm_tip"
+                                            {
+                                            }
+
+                                            over "l_gripper_thumb_1"
+                                            {
+                                                over "tn__mesh1064_meshmesh_mP_1"
+                                                {
+                                                }
+
+                                                over "tn__mesh1064_meshmesh_mP_2"
+                                                {
+                                                }
+                                            }
+                                        }
+
+                                        over "wrist2hand"
+                                        {
+                                        }
+
+                                        over "cylinder"
+                                        {
+                                        }
+                                    }
+
+                                    over "wrist"
+                                    {
+                                    }
+
+                                    over "cylinder"
+                                    {
+                                    }
+                                }
+
+                                over "forearm"
+                                {
+                                }
+
+                                over "cylinder"
+                                {
+                                }
+                            }
+
+                            over "upper_arm"
+                            {
+                            }
+
+                            over "cylinder"
+                            {
+                            }
+                        }
+
+                        over "shoulder_x"
+                        {
+                        }
+
+                        over "cylinder"
+                        {
+                        }
+                    }
+
+                    over "shoulder"
+                    {
+                    }
+
+                    over "cylinder"
+                    {
+                    }
+                }
+
+                over "head_x"
+                {
+                    over "head_y"
+                    {
+                        over "head_z"
+                        {
+                            over "head"
+                            {
+                                over "l_antenna_link"
+                                {
+                                    over "antenna"
+                                    {
+                                    }
+
+                                    over "cylinder"
+                                    {
+                                    }
+                                }
+
+                                over "r_antenna_link"
+                                {
+                                    over "antenna"
+                                    {
+                                    }
+
+                                    over "cylinder"
+                                    {
+                                    }
+                                }
+
+                                over "head_tip"
+                                {
+                                }
+
+                                over "left_camera"
+                                {
+                                    over "left_camera_optical"
+                                    {
+                                    }
+                                }
+
+                                over "right_camera"
+                                {
+                                    over "right_camera_optical"
+                                    {
+                                    }
+                                }
+
+                                over "depth_camera_link"
+                                {
+                                    over "depth_camera_optical"
+                                    {
+                                    }
+                                }
+
+                                over "head"
+                                {
+                                }
+
+                                over "cylinder"
+                                {
+                                }
+                            }
+                        }
+                    }
+                }
+
+                over "top_neck_arm"
+                {
+                    over "orbita_arm"
+                    {
+                    }
+
+                    over "cylinder"
+                    {
+                    }
+                }
+
+                over "middle_neck_arm"
+                {
+                    over "orbita_arm"
+                    {
+                    }
+
+                    over "cylinder"
+                    {
+                    }
+                }
+
+                over "bottom_neck_arm"
+                {
+                    over "orbita_arm"
+                    {
+                    }
+
+                    over "cylinder"
+                    {
+                    }
+                }
+
+                over "torso"
+                {
+                }
+
+                over "box"
+                {
+                }
+            }
+        }
+    }
+
+    over "Materials"
+    {
+    }
+
+    over "VisualMaterials"
+    {
+    }
+}
+

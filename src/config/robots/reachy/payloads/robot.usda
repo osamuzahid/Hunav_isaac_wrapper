@@ -1,0 +1,497 @@
+#usda 1.0
+(
+    customLayerData = {
+        string creator = "URDF USD Converter v0.1.3"
+    }
+    defaultPrim = "reachy_2023"
+    doc = """Generated from Composed Stage of root layer /tmp/tmpep5xaoq7/reachy_2023.usdc
+
+
+Generated from Composed Stage of root layer /tmp/urdf_import_reachy_8_n63x1w/usdex_reachy/reachy_2023.usdc
+
+
+Generated from Composed Stage of root layer /tmp/urdf_import_reachy_8_n63x1w/temp_reachy/reachy.usd
+"""
+    kilogramsPerUnit = 1
+    metersPerUnit = 1
+    upAxis = "Z"
+)
+
+over "reachy_2023" (
+    prepend apiSchemas = ["IsaacRobotAPI"]
+)
+{
+    prepend rel isaac:physics:robotJoints = [
+        </reachy_2023/Physics/world_joint>,
+        </reachy_2023/Physics/r_shoulder_pitch>,
+        </reachy_2023/Physics/l_shoulder_pitch>,
+        </reachy_2023/Physics/neck_roll>,
+        </reachy_2023/Physics/neck_top>,
+        </reachy_2023/Physics/neck_middle>,
+        </reachy_2023/Physics/neck_bottom>,
+        </reachy_2023/Physics/r_shoulder_roll>,
+        </reachy_2023/Physics/r_arm_yaw>,
+        </reachy_2023/Physics/r_elbow_pitch>,
+        </reachy_2023/Physics/r_forearm_yaw>,
+        </reachy_2023/Physics/r_wrist_pitch>,
+        </reachy_2023/Physics/r_wrist_roll>,
+        </reachy_2023/Physics/r_arm_tip>,
+        </reachy_2023/Physics/r_gripper>,
+        </reachy_2023/Physics/l_shoulder_roll>,
+        </reachy_2023/Physics/l_arm_yaw>,
+        </reachy_2023/Physics/l_elbow_pitch>,
+        </reachy_2023/Physics/l_forearm_yaw>,
+        </reachy_2023/Physics/l_wrist_pitch>,
+        </reachy_2023/Physics/l_wrist_roll>,
+        </reachy_2023/Physics/l_arm_tip>,
+        </reachy_2023/Physics/l_gripper>,
+        </reachy_2023/Physics/neck_pitch>,
+        </reachy_2023/Physics/neck_yaw>,
+        </reachy_2023/Physics/neck_fixed>,
+        </reachy_2023/Physics/l_antenna>,
+        </reachy_2023/Physics/r_antenna>,
+        </reachy_2023/Physics/left_cam_fixed>,
+        </reachy_2023/Physics/right_cam_fixed>,
+        </reachy_2023/Physics/depth_cam_fixed>,
+    ]
+    prepend rel isaac:physics:robotLinks = [
+        </reachy_2023/Geometry/world/torso>,
+        </reachy_2023/Geometry/world/torso/r_shoulder>,
+        </reachy_2023/Geometry/world/torso/r_shoulder/r_shoulder_x>,
+        </reachy_2023/Geometry/world/torso/r_shoulder/r_shoulder_x/r_upper_arm>,
+        </reachy_2023/Geometry/world/torso/r_shoulder/r_shoulder_x/r_upper_arm/r_forearm>,
+        </reachy_2023/Geometry/world/torso/r_shoulder/r_shoulder_x/r_upper_arm/r_forearm/r_wrist>,
+        </reachy_2023/Geometry/world/torso/r_shoulder/r_shoulder_x/r_upper_arm/r_forearm/r_wrist/r_wrist2hand>,
+        </reachy_2023/Geometry/world/torso/r_shoulder/r_shoulder_x/r_upper_arm/r_forearm/r_wrist/r_wrist2hand/r_gripper_thumb>,
+        </reachy_2023/Geometry/world/torso/r_shoulder/r_shoulder_x/r_upper_arm/r_forearm/r_wrist/r_wrist2hand/r_gripper_thumb/r_arm_tip>,
+        </reachy_2023/Geometry/world/torso/r_shoulder/r_shoulder_x/r_upper_arm/r_forearm/r_wrist/r_wrist2hand/r_gripper_thumb/r_gripper_finger>,
+        </reachy_2023/Geometry/world/torso/l_shoulder>,
+        </reachy_2023/Geometry/world/torso/l_shoulder/l_shoulder_x>,
+        </reachy_2023/Geometry/world/torso/l_shoulder/l_shoulder_x/l_upper_arm>,
+        </reachy_2023/Geometry/world/torso/l_shoulder/l_shoulder_x/l_upper_arm/l_forearm>,
+        </reachy_2023/Geometry/world/torso/l_shoulder/l_shoulder_x/l_upper_arm/l_forearm/l_wrist>,
+        </reachy_2023/Geometry/world/torso/l_shoulder/l_shoulder_x/l_upper_arm/l_forearm/l_wrist/l_wrist2hand>,
+        </reachy_2023/Geometry/world/torso/l_shoulder/l_shoulder_x/l_upper_arm/l_forearm/l_wrist/l_wrist2hand/l_gripper_thumb>,
+        </reachy_2023/Geometry/world/torso/l_shoulder/l_shoulder_x/l_upper_arm/l_forearm/l_wrist/l_wrist2hand/l_gripper_thumb/l_arm_tip>,
+        </reachy_2023/Geometry/world/torso/l_shoulder/l_shoulder_x/l_upper_arm/l_forearm/l_wrist/l_wrist2hand/l_gripper_thumb/l_gripper_finger>,
+        </reachy_2023/Geometry/world/torso/head_x>,
+        </reachy_2023/Geometry/world/torso/head_x/head_y>,
+        </reachy_2023/Geometry/world/torso/head_x/head_y/head_z>,
+        </reachy_2023/Geometry/world/torso/head_x/head_y/head_z/head>,
+        </reachy_2023/Geometry/world/torso/head_x/head_y/head_z/head/l_antenna_link>,
+        </reachy_2023/Geometry/world/torso/head_x/head_y/head_z/head/r_antenna_link>,
+        </reachy_2023/Geometry/world/torso/head_x/head_y/head_z/head/left_camera>,
+        </reachy_2023/Geometry/world/torso/head_x/head_y/head_z/head/right_camera>,
+        </reachy_2023/Geometry/world/torso/head_x/head_y/head_z/head/depth_camera_link>,
+        </reachy_2023/Geometry/world/torso/top_neck_arm>,
+        </reachy_2023/Geometry/world/torso/middle_neck_arm>,
+        </reachy_2023/Geometry/world/torso/bottom_neck_arm>,
+    ]
+    token isaac:robotType = "Default"
+
+    over "Geometry"
+    {
+        over "world"
+        {
+            over "torso" (
+                prepend apiSchemas = ["IsaacLinkAPI"]
+            )
+            {
+                over "r_shoulder" (
+                    prepend apiSchemas = ["IsaacLinkAPI"]
+                )
+                {
+                    over "r_shoulder_x" (
+                        prepend apiSchemas = ["IsaacLinkAPI"]
+                    )
+                    {
+                        over "r_upper_arm" (
+                            prepend apiSchemas = ["IsaacLinkAPI"]
+                        )
+                        {
+                            over "r_forearm" (
+                                prepend apiSchemas = ["IsaacLinkAPI"]
+                            )
+                            {
+                                over "r_wrist" (
+                                    prepend apiSchemas = ["IsaacLinkAPI"]
+                                )
+                                {
+                                    over "r_wrist2hand" (
+                                        prepend apiSchemas = ["IsaacLinkAPI"]
+                                    )
+                                    {
+                                        over "r_gripper_thumb" (
+                                            prepend apiSchemas = ["IsaacLinkAPI"]
+                                        )
+                                        {
+                                            over "r_gripper_thumb" (
+                                                prepend apiSchemas = ["IsaacSiteAPI"]
+                                            )
+                                            {
+                                            }
+
+                                            over "r_gripper_finger" (
+                                                prepend apiSchemas = ["IsaacLinkAPI"]
+                                            )
+                                            {
+                                                over "r_gripper_finger" (
+                                                    prepend apiSchemas = ["IsaacSiteAPI"]
+                                                )
+                                                {
+                                                }
+                                            }
+
+                                            over "r_arm_tip" (
+                                                prepend apiSchemas = ["IsaacLinkAPI"]
+                                            )
+                                            {
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                over "l_shoulder" (
+                    prepend apiSchemas = ["IsaacLinkAPI"]
+                )
+                {
+                    over "l_shoulder_x" (
+                        prepend apiSchemas = ["IsaacLinkAPI"]
+                    )
+                    {
+                        over "l_upper_arm" (
+                            prepend apiSchemas = ["IsaacLinkAPI"]
+                        )
+                        {
+                            over "l_forearm" (
+                                prepend apiSchemas = ["IsaacLinkAPI"]
+                            )
+                            {
+                                over "l_wrist" (
+                                    prepend apiSchemas = ["IsaacLinkAPI"]
+                                )
+                                {
+                                    over "l_wrist2hand" (
+                                        prepend apiSchemas = ["IsaacLinkAPI"]
+                                    )
+                                    {
+                                        over "l_gripper_thumb" (
+                                            prepend apiSchemas = ["IsaacLinkAPI"]
+                                        )
+                                        {
+                                            over "l_gripper_thumb" (
+                                                prepend apiSchemas = ["IsaacSiteAPI"]
+                                            )
+                                            {
+                                            }
+
+                                            over "l_gripper_finger" (
+                                                prepend apiSchemas = ["IsaacLinkAPI"]
+                                            )
+                                            {
+                                                over "l_gripper_finger" (
+                                                    prepend apiSchemas = ["IsaacSiteAPI"]
+                                                )
+                                                {
+                                                }
+                                            }
+
+                                            over "l_arm_tip" (
+                                                prepend apiSchemas = ["IsaacLinkAPI"]
+                                            )
+                                            {
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                over "head_x" (
+                    prepend apiSchemas = ["IsaacLinkAPI"]
+                )
+                {
+                    over "head_y" (
+                        prepend apiSchemas = ["IsaacLinkAPI"]
+                    )
+                    {
+                        over "head_z" (
+                            prepend apiSchemas = ["IsaacLinkAPI"]
+                        )
+                        {
+                            over "head" (
+                                prepend apiSchemas = ["IsaacLinkAPI"]
+                            )
+                            {
+                                over "l_antenna_link" (
+                                    prepend apiSchemas = ["IsaacLinkAPI"]
+                                )
+                                {
+                                }
+
+                                over "r_antenna_link" (
+                                    prepend apiSchemas = ["IsaacLinkAPI"]
+                                )
+                                {
+                                }
+
+                                over "head_tip" (
+                                    prepend apiSchemas = ["IsaacSiteAPI"]
+                                )
+                                {
+                                }
+
+                                over "left_camera" (
+                                    prepend apiSchemas = ["IsaacLinkAPI"]
+                                )
+                                {
+                                    over "left_camera_optical" (
+                                        prepend apiSchemas = ["IsaacSiteAPI"]
+                                    )
+                                    {
+                                    }
+                                }
+
+                                over "right_camera" (
+                                    prepend apiSchemas = ["IsaacLinkAPI"]
+                                )
+                                {
+                                    over "right_camera_optical" (
+                                        prepend apiSchemas = ["IsaacSiteAPI"]
+                                    )
+                                    {
+                                    }
+                                }
+
+                                over "depth_camera_link" (
+                                    prepend apiSchemas = ["IsaacLinkAPI"]
+                                )
+                                {
+                                    over "depth_camera_optical" (
+                                        prepend apiSchemas = ["IsaacSiteAPI"]
+                                    )
+                                    {
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                over "top_neck_arm" (
+                    prepend apiSchemas = ["IsaacLinkAPI"]
+                )
+                {
+                }
+
+                over "middle_neck_arm" (
+                    prepend apiSchemas = ["IsaacLinkAPI"]
+                )
+                {
+                }
+
+                over "bottom_neck_arm" (
+                    prepend apiSchemas = ["IsaacLinkAPI"]
+                )
+                {
+                }
+            }
+        }
+    }
+
+    over "Physics"
+    {
+        over "world_joint" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "r_shoulder_pitch" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "r_shoulder_roll" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "r_arm_yaw" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "r_elbow_pitch" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "r_forearm_yaw" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "r_wrist_pitch" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "r_wrist_roll" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "r_arm_tip" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "r_gripper" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "l_shoulder_pitch" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "l_shoulder_roll" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "l_arm_yaw" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "l_elbow_pitch" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "l_forearm_yaw" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "l_wrist_pitch" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "l_wrist_roll" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "l_arm_tip" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "l_gripper" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "neck_roll" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "neck_pitch" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "neck_yaw" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "neck_fixed" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "neck_top" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "neck_middle" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "neck_bottom" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "l_antenna" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "r_antenna" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "left_cam_fixed" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "right_cam_fixed" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+
+        over "depth_cam_fixed" (
+            prepend apiSchemas = ["IsaacJointAPI"]
+        )
+        {
+        }
+    }
+}
+

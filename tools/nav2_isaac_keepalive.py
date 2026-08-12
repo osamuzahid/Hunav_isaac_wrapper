@@ -249,10 +249,23 @@ def main() -> int:
     step_i = 0
     while time.time() < t_end and simulation_app.is_running():
         rclpy.spin_once(node, timeout_sec=0.0)
+        if getattr(node, "_lab_sensor_handles", None):
+            try:
+                from hunav_isaac_wrapper.lab_robot_sensors import tick_lab_sensor_handles
+
+                tick_lab_sensor_handles(
+                    node._lab_sensor_handles,
+                    sim_time=float(node.world.current_time),
+                )
+            except Exception:
+                pass
         if node._chassis_drive:
             node.robot.apply_cmd_vel(
                 node.cmd_lin, node.cmd_ang, node.world.get_physics_dt()
             )
+        elif getattr(node, "_static_drive", False):
+            if hasattr(node.robot, "hold_joints"):
+                node.robot.hold_joints()
         else:
             wheel_action = node.diff_controller.forward([node.cmd_lin, node.cmd_ang])
             node.robot.apply_wheel_actions(wheel_action)

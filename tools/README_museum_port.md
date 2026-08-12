@@ -24,6 +24,7 @@ Outputs:
 Intentional differences from CUCR Gazebo (documented in-script as
 `ORIGINALLY` / `PATCH (isaac-social-nav)` and in
 `src/worlds/assets/museum/PATCH_NOTES.md`): light brown floor instead of neon
-blue; brighter distant light; Z-up compose rotate.
+blue; brighter distant light; Z-up compose rotate; museum mesh Z **0.1** (not
+Gazebo visual 0.5) so walls meet the floor and base lidar hits them.
 
 Scenario: `src/scenarios/museum_agents.yaml`.

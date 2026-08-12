@@ -128,9 +128,11 @@ hunav_loader:
       behavior:
         # Scared: HuNav adds robot repulsion (not a sprint turn). Stronger
         # force + higher runaway vel so shy-away reads as flee in GUI.
+        # duration was 40s — REACTING + continuous flee looked "stuck" in GUI;
+        # once:true still latches for the whole window (no re-trigger thrash).
         type: 4
         configuration: 1
-        duration: 40.0
+        duration: 10.0
         once: true
         vel: 1.1
         dist: 5.0

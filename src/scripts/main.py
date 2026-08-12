@@ -8,7 +8,7 @@ This script provides a command-line interface that allows users to:
 - Select between existing agent configuration files or create new ones via RViz
 - Choose from built-in presets (warehouse, hospital, office) or custom YAML files
 - Automatically infer the simulation world based on the configuration file
-- Select the robot type (jetbot, create3, carter, carter_ROS, stretch, stretch_wheeled)
+- Select the robot type (jetbot, create3, carter, carter_ROS, stretch, stretch_wheeled, franka)
 - Launch the TeleopHuNavSim node with the selected parameters
 
 """
@@ -146,6 +146,7 @@ PRESETS = {
     "empty_world_agents",
     "museum_agents",
     "museum_behaviors",
+    "museum_sensor_demo",
 }
 KNOWN_WORLDS = {"warehouse", "hospital", "office", "empty_world", "museum"}
 ROBOTS = [
@@ -155,6 +156,7 @@ ROBOTS = [
     "carter_ROS",
     "stretch",
     "stretch_wheeled",
+    "franka",
 ]
 
 # Colors for terminal output
@@ -560,6 +562,7 @@ def main():
             "carter_ROS": "Carter with full ROS2 Nav2 stack support",
             "stretch": "Hello Robot Stretch — kinematic chassis (no wall collision)",
             "stretch_wheeled": "Hello Robot Stretch — PhysX diff-drive (walls collide)",
+            "franka": "CUCR lab Franka Panda — parked (TF + joint_states)",
         }
         robot = choose(
             "Select robot:",

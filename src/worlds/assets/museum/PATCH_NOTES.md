@@ -10,6 +10,7 @@ from the Gazebo source.
 | GroundPlane | Bare mesh (no material) → default white from above | Same light-brown PreviewSurface (`GroundBrown`) |
 | Distant light | Intensity `3000` in first compose | Intensity `5000` for laptop visibility |
 | Up-axis | Assimp/Isaac OBJ mesh data is Y-up | Compose wrapper `RotateX +90` to Z-up |
+| Museum mesh Z | Gazebo `model.sdf` visual pose `z=0.5` → wall bottoms ≈ world `z=0.40` | Compose `MUSEUM_Z_OFFSET=0.1` so walls meet the floor; Stretch base lidar (~0.17 m) hits walls (Validated **#47**). Do not restore 0.5. |
 
 Search `ORIGINALLY` / `PATCH (isaac-social-nav)` in `tools/isaac_convert_museum.py`.
 Re-run that script after changing source meshes so patches are reapplied.

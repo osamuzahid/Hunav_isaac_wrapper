@@ -10,9 +10,11 @@ Fork of [robotics-upo/Hunav_isaac_wrapper](https://github.com/robotics-upo/Hunav
 - PhysX subscribe via `get_physx_interface` (old `acquire_physx_interface` removed)
 - Laptop/debug `SimulationApp` profiles (`HUNAV_ISAAC_PROFILE=debug|laptop|default|lab`) via `sim_app_config.py`
 - Fixed `ros2 run … hunav_isaac_launcher` resource paths for this colcon layout; added `empty_world_agents` preset
-- CUCR museum v1: `museum.usd` (Isaac `asset_converter` + Z-up compose), `museum_agents.yaml`, `maps/museum.png`; rebuild via `tools/isaac_convert_museum.py`
+- CUCR museum v1: `museum.usd` (Isaac `asset_converter` + Z-up compose; `MUSEUM_Z_OFFSET=0.1` so walls meet floor / base lidar — Validated **#47**), `museum_agents.yaml`, `maps/museum.png`; rebuild via `tools/isaac_convert_museum.py`
 - Museum mixed behaviors: `museum_behaviors` preset (Regular / Curious / Scared / Surprised / Threatening)
 - Lab Stretch: `--robot stretch` (kinematic chassis) and `--robot stretch_wheeled` (PhysX diff-drive; flat-ground smoke PASS)
+- Lab Franka: `--robot franka` (CDN `FrankaPanda`, parked `drive: static`) + stock TF/`joint_states`
+- Lab sensors: `lab_robot_sensors.py` — Stretch `/scan` (RTX 2D) + `/imu` + parked joints; RGB-D via `HUNAV_LAB_CAMERAS=1` under `camera_color_optical_frame` (Validated **#46**); museum `/scan` wall rings after Z fix (**#47**); smoke `tools/lab_robot_sensor_smoke.py`
 - Agent walk on Isaac 6: People biped retarget source, file-referenced retarget clips, SFM goals wiring, museum free-space goals + collider/ray fixes — see **[docs/ANIMATION_LOG.md](docs/ANIMATION_LOG.md)**
 - In-source notes: search `ORIGINALLY` / `PATCH (isaac-social-nav)`
 
@@ -67,7 +69,7 @@ It supports both **ROS 2 teleoperation** and **autonomous navigation (Nav2)**, w
  - Supports animation **retargeting**, applying a single set of animations to different characters via **USD SkelAnimation** and the **Omni Anim Retargeting extension**
 
 - **Multiple Robot Models:**
- - Includes `jetbot`, `create3`, `carter`, `carter_ROS`, plus lab Stretch (`stretch`, `stretch_wheeled`)
+ - Includes `jetbot`, `create3`, `carter`, `carter_ROS`, lab Stretch (`stretch`, `stretch_wheeled`), and lab Franka (`franka`)
 
 - **ROS 2 Navigation (Nav2) Support:**
  - Enables autonomous navigation for the **Carter** robot using the **ROS 2 Nav2** stack

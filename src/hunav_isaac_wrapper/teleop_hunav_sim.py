@@ -333,6 +333,92 @@ class ChassisDriveRobot:
         return self._ang_vel.copy()
 
 
+class StaticPrimRobot:
+    """
+    PATCH (isaac-social-nav): parked lab robot (Franka first; Reachy/A1 later).
+    Spawns a USD at robot_init_pose; no /cmd_vel drive. HuNav still reads pose.
+    Optional USD variant selections (e.g. Franka Gripper/Mesh).
+    """
+
+    def __init__(
+        self, prim_path, usd_path, position, orientation, variants=None
+    ):
+        add_reference_to_stage(usd_path=usd_path, prim_path=prim_path)
+        stage = omni.usd.get_context().get_stage()
+        prim = stage.GetPrimAtPath(prim_path)
+        if prim and prim.IsValid() and variants:
+            vsets = prim.GetVariantSets()
+            for vset_name, selection in variants.items():
+                if not vsets.HasVariantSet(vset_name):
+                    continue
+                vs = vsets.GetVariantSet(vset_name)
+                if selection not in vs.GetVariantNames():
+                    print(
+                        f"[StaticPrimRobot] {prim_path}: variant "
+                        f"{vset_name}={selection!r} not in {list(vs.GetVariantNames())}"
+                    )
+                    continue
+                prev = vs.GetVariantSelection()
+                vs.SetVariantSelection(selection)
+                print(
+                    f"[StaticPrimRobot] {prim_path}: {vset_name} "
+                    f"{prev!r} → {selection!r}"
+                )
+        self._xform = SingleXFormPrim(
+            prim_path=prim_path,
+            name="Robot",
+            position=position,
+            orientation=orientation,
+        )
+        self._lin_vel = np.zeros(3, dtype=float)
+        self._ang_vel = np.zeros(3, dtype=float)
+        self._articulation = None
+        self._held_joint_positions = None
+        self.prim_path = prim_path
+
+    def try_init_articulation(self):
+        """After world.reset(), hold Franka joints at the spawned pose."""
+        try:
+            from isaacsim.core.prims import SingleArticulation
+        except Exception as exc:
+            print(f"[StaticPrimRobot] SingleArticulation import failed: {exc}")
+            return False
+        try:
+            art = SingleArticulation(self.prim_path)
+            art.initialize()
+            self._articulation = art
+            self._held_joint_positions = np.array(
+                art.get_joint_positions(), dtype=float, copy=True
+            )
+            print(
+                f"[StaticPrimRobot] articulation OK at {self.prim_path} "
+                f"({len(self._held_joint_positions)} DOFs held)"
+            )
+            return True
+        except Exception as exc:
+            print(f"[StaticPrimRobot] articulation init skipped: {exc}")
+            self._articulation = None
+            self._held_joint_positions = None
+            return False
+
+    def hold_joints(self):
+        if self._articulation is None or self._held_joint_positions is None:
+            return
+        try:
+            self._articulation.set_joint_positions(self._held_joint_positions)
+        except Exception:
+            pass
+
+    def get_world_pose(self):
+        return self._xform.get_world_pose()
+
+    def get_linear_velocity(self):
+        return self._lin_vel.copy()
+
+    def get_angular_velocity(self):
+        return self._ang_vel.copy()
+
+
 class TeleopHuNavSim(Node):
     """
     Combines:
@@ -474,6 +560,19 @@ class TeleopHuNavSim(Node):
                 # 2 mm was enough on a flat ground plane smoke but collapses into cucr museum mesh.
                 "spawn_z_lift": 0.12,
             },
+            # PATCH (isaac-social-nav): CUCR lab Franka — Isaac 6.0 CDN (Verified OK).
+            # drive=static: parked morphology + stock joint_states/TF (see lab_robot_sensors).
+            "franka": {
+                "name": "Franka",
+                "usd_relative_path": os.path.join(
+                    "Isaac", "Robots", "FrankaRobotics", "FrankaPanda", "franka.usd"
+                ),
+                "drive": "static",
+                "variants": {
+                    "Gripper": "AlternateFinger",
+                    "Mesh": "Quality",
+                },
+            },
         }
 
         if robot_name not in robot_configs:
@@ -499,11 +598,16 @@ class TeleopHuNavSim(Node):
 
         # Add robot to world
         robot_prim_path = f"/World/{robot_config['name']}"
+        self._robot_name = robot_name
+        self._lab_sensor_handles = None
         # ORIGINALLY (upstream v2.0): always WheeledRobot + DifferentialController at [0,0,0].
         # PATCH (isaac-social-nav): Stretch uses chassis_only kinematic base; optional robot_init_pose.
         # stretch_wheeled keeps PhysX WheeledRobot + DifferentialController (walls collide).
-        if robot_config.get("drive") == "chassis_only":
+        # franka (and later Reachy/A1) use drive=static parked USD.
+        drive = robot_config.get("drive")
+        if drive == "chassis_only":
             self._chassis_drive = True
+            self._static_drive = False
             self.robot = ChassisDriveRobot(
                 prim_path=robot_prim_path,
                 usd_path=robot_path,
@@ -514,8 +618,23 @@ class TeleopHuNavSim(Node):
             self._hold_non_wheel_dofs = False
             self._held_joint_positions = None
             self._wheel_dof_indices = None
+        elif drive == "static":
+            self._chassis_drive = False
+            self._static_drive = True
+            self.robot = StaticPrimRobot(
+                prim_path=robot_prim_path,
+                usd_path=robot_path,
+                position=spawn_position,
+                orientation=spawn_orientation,
+                variants=robot_config.get("variants"),
+            )
+            self.diff_controller = None
+            self._hold_non_wheel_dofs = False
+            self._held_joint_positions = None
+            self._wheel_dof_indices = None
         else:
             self._chassis_drive = False
+            self._static_drive = False
             self.robot = self.world.scene.add(
                 WheeledRobot(
                     prim_path=robot_prim_path,
@@ -566,6 +685,18 @@ class TeleopHuNavSim(Node):
 
         self.hunav.initialize_agents()
         self.hunav.initialize_hunav_nodes()
+
+        # PATCH (isaac-social-nav): stock lab-robot sensors (TF / joints / lidar / IMU).
+        # Attached after agents so stage prims exist; cameras default off (HUNAV_LAB_CAMERAS).
+        try:
+            from .lab_robot_sensors import attach_lab_robot_sensors
+
+            self._lab_sensor_handles = attach_lab_robot_sensors(
+                robot_name, robot_prim_path, ros_node=self
+            )
+        except Exception as exc:
+            print(f"[hunav_isaac_wrapper] lab sensors attach failed: {exc}")
+            self._lab_sensor_handles = None
 
     def _signal_handler(self, signum, frame):
         print("\n\nCaught shutdown signal, closing app and stopping hunav nodes...\n\n")
@@ -670,12 +801,27 @@ class TeleopHuNavSim(Node):
             self._held_joint_positions = np.array(
                 self.robot.get_joint_positions(), dtype=float, copy=True
             )
+        if self._static_drive and hasattr(self.robot, "try_init_articulation"):
+            self.robot.try_init_articulation()
         self.hunav.send_agents_msg()
         while simulation_app.is_running():
             self.world.step(render=True)
+            if self._lab_sensor_handles:
+                try:
+                    from .lab_robot_sensors import tick_lab_sensor_handles
+
+                    tick_lab_sensor_handles(
+                        self._lab_sensor_handles,
+                        sim_time=float(self.world.current_time),
+                    )
+                except Exception:
+                    pass
             if self._chassis_drive:
                 dt = self.world.get_physics_dt()
                 self.robot.apply_cmd_vel(self.cmd_lin, self.cmd_ang, dt)
+            elif self._static_drive:
+                if hasattr(self.robot, "hold_joints"):
+                    self.robot.hold_joints()
             else:
                 if self._hold_non_wheel_dofs and self._held_joint_positions is not None:
                     current = np.array(

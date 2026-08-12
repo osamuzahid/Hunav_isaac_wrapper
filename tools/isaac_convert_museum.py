@@ -41,7 +41,11 @@ OUT_DIR = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "..", "src", "worlds")
 )
 ASSETS_DIR = os.path.join(OUT_DIR, "assets", "museum")
-MUSEUM_Z_OFFSET = 0.5  # Gazebo museum model.sdf visual pose z=0.5
+# ORIGINALLY 0.5 — Gazebo museum model.sdf visual pose z=0.5.
+# That left wall bottoms at world z≈0.4 while Stretch base lidar sits at
+# ≈0.17 m, so RTX /scan shot under the building (sparse “feet” only; walls
+# looked floating under grazing light). Use 0.1 so wall bottoms meet the floor.
+MUSEUM_Z_OFFSET = 0.1
 CONVERT_TIMEOUT_S = 180.0
 
 # ---------------------------------------------------------------------------

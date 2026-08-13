@@ -68,7 +68,15 @@ def find_package_share_directory():
     Find the package share directory containing worlds, scenarios, config, etc.
     Works both in development and installed package modes.
     """
-    # Try to find via ROS2 package first (installed mode)
+    # Prefer the source checkout. colcon --symlink-install links worlds/*.usd
+    # into share/ but does not install nested assets/office, so opening the
+    # install office.usd leaves furniture references unresolved (whitebox only).
+    current_file = Path(__file__)
+    if current_file.parent.parent.name == "src":
+        src_dir = current_file.parent.parent
+        if (src_dir / "worlds").exists():
+            return str(src_dir)
+
     try:
         result = subprocess.run(
             ["ros2", "pkg", "prefix", "hunav_isaac_wrapper"],
@@ -80,22 +88,11 @@ def find_package_share_directory():
             return str(share_dir)
     except (subprocess.CalledProcessError, FileNotFoundError):
         pass
-    
-    # Development mode fallback
-    current_file = Path(__file__)
-    
-    # Check if we're in src/hunav_isaac_wrapper/ (development mode)
-    if current_file.parent.parent.name == "src":
-        src_dir = current_file.parent.parent
-        if (src_dir / "worlds").exists():
-            return str(src_dir)
-    
-    # Last fallback - check current working directory
+
     cwd = Path.cwd()
     if (cwd / "worlds").exists():
         return str(cwd)
-    
-    # If all else fails, return the old path calculation
+
     return os.path.dirname(os.path.dirname(__file__))
 
 

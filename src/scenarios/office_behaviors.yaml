@@ -1,0 +1,228 @@
+hunav_loader:
+  ros__parameters:
+    yaml_base_name: office_behaviors
+    simulator: Isaac Sim
+    map: office
+    publish_people: true
+    # PATCH (isaac-social-nav): CUCR cucr_worlds_office (ServiceSim). Same
+    # human-sim roster as museum_behaviors; disjoint wing loops (hospital #51/#52).
+    plan_goals_on_map: true
+    map_yaml: office.yaml
+    plan_waypoint_spacing_m: 1.0
+    plan_inflation_radius_m: 0.50
+    plan_from_init_pose: true
+    ignore_obstacle_rays: false
+    # South hallway — agents patrol first; drive into wings to trigger reactions.
+    robot_init_pose:
+      x: -6.0
+      y: 4.0
+      z: 0.0
+      h: 1.57
+    global_goals:
+      1:
+        x: -22.0
+        y: 8.0
+      2:
+        x: -22.0
+        y: 12.0
+      3:
+        x: -22.0
+        y: 16.0
+      4:
+        x: -24.0
+        y: 12.0
+      5:
+        x: 16.0
+        y: 4.0
+      6:
+        x: 16.0
+        y: 2.0
+      7:
+        x: 16.0
+        y: 6.0
+      8:
+        x: 16.0
+        y: 8.0
+      9:
+        x: -6.0
+        y: 10.0
+      10:
+        x: -6.0
+        y: 14.0
+      11:
+        x: -6.0
+        y: 18.0
+      12:
+        x: -6.0
+        y: 12.0
+      13:
+        x: 16.0
+        y: 18.0
+      14:
+        x: 18.0
+        y: 18.0
+      15:
+        x: 18.0
+        y: 20.0
+      16:
+        x: 16.0
+        y: 20.0
+      17:
+        x: 12.0
+        y: 6.0
+      18:
+        x: 12.0
+        y: 10.0
+      19:
+        x: 6.0
+        y: 10.0
+      20:
+        x: 6.0
+        y: 6.0
+    agents:
+      - agent1
+      - agent2
+      - agent3
+      - agent4
+      - agent5
+    agent1:
+      id: 1
+      group_id: -1
+      skin: 1
+      max_vel: 1.0
+      radius: 0.4
+      goal_radius: 0.6
+      cyclic_goals: true
+      init_pose:
+        x: -22.0
+        y: 8.0
+        z: 0.0
+        h: 1.57
+      behavior:
+        type: 2
+        configuration: 0
+        goal_force_factor: 10.0
+        obstacle_force_factor: 2.0
+        social_force_factor: 5.0
+        other_force_factor: 20.0
+      goals:
+        - "1"
+        - "2"
+        - "3"
+        - "4"
+    agent2:
+      id: 2
+      group_id: -1
+      skin: 3
+      max_vel: 0.9
+      radius: 0.4
+      goal_radius: 0.6
+      cyclic_goals: true
+      init_pose:
+        x: 16.0
+        y: 4.0
+        z: 0.0
+        h: 0.0
+      behavior:
+        type: 5
+        configuration: 1
+        duration: 35.0
+        once: true
+        vel: 0.45
+        dist: 2.0
+        goal_force_factor: 10.0
+        obstacle_force_factor: 2.0
+        social_force_factor: 5.0
+        other_force_factor: 20.0
+      goals:
+        - "5"
+        - "6"
+        - "7"
+        - "8"
+    agent3:
+      id: 3
+      group_id: -1
+      skin: 5
+      max_vel: 1.0
+      radius: 0.4
+      goal_radius: 0.6
+      cyclic_goals: true
+      init_pose:
+        x: -6.0
+        y: 10.0
+        z: 0.0
+        h: 0.0
+      behavior:
+        type: 4
+        configuration: 1
+        duration: 10.0
+        once: true
+        vel: 1.1
+        dist: 3.0
+        goal_force_factor: 6.0
+        obstacle_force_factor: 2.0
+        social_force_factor: 5.0
+        other_force_factor: 45.0
+      goals:
+        - "9"
+        - "10"
+        - "11"
+        - "12"
+    agent4:
+      id: 4
+      group_id: -1
+      skin: 7
+      max_vel: 0.85
+      radius: 0.4
+      goal_radius: 0.6
+      cyclic_goals: true
+      init_pose:
+        x: 16.0
+        y: 18.0
+        z: 0.0
+        h: 0.0
+      behavior:
+        type: 3
+        configuration: 1
+        duration: 30.0
+        once: true
+        vel: 0.5
+        dist: 3.0
+        goal_force_factor: 10.0
+        obstacle_force_factor: 2.0
+        social_force_factor: 5.0
+        other_force_factor: 20.0
+      goals:
+        - "13"
+        - "14"
+        - "15"
+        - "16"
+    agent5:
+      id: 5
+      group_id: -1
+      skin: 9
+      max_vel: 0.95
+      radius: 0.4
+      goal_radius: 0.6
+      cyclic_goals: true
+      init_pose:
+        x: 12.0
+        y: 6.0
+        z: 0.0
+        h: 0.0
+      behavior:
+        type: 6
+        configuration: 1
+        duration: 38.0
+        once: true
+        vel: 0.5
+        dist: 1.4
+        goal_force_factor: 10.0
+        obstacle_force_factor: 2.0
+        social_force_factor: 5.0
+        other_force_factor: 20.0
+      goals:
+        - "17"
+        - "18"
+        - "19"
+        - "20"

@@ -6,7 +6,7 @@ Interactive launcher for the Hunav Isaac Wrapper simulation environment.
 
 This script provides a command-line interface that allows users to:
 - Select between existing agent configuration files or create new ones via RViz
-- Choose from built-in presets (warehouse, hospital, office) or custom YAML files
+- Choose from built-in presets (warehouse, hospital, office, museum, bookstore) or custom YAML files
 - Automatically infer the simulation world based on the configuration file
 - Select the robot type (jetbot, create3, carter, carter_ROS, stretch, stretch_wheeled, franka)
 - Launch the TeleopHuNavSim node with the selected parameters
@@ -144,12 +144,15 @@ PRESETS = {
     "hospital_behaviors",
     "hospital_lab_park",
     "office_agents",
+    "office_behaviors",
     "empty_world_agents",
     "museum_agents",
     "museum_behaviors",
     "museum_sensor_demo",
+    "bookstore_agents",
+    "bookstore_behaviors",
 }
-KNOWN_WORLDS = {"warehouse", "hospital", "office", "empty_world", "museum"}
+KNOWN_WORLDS = {"warehouse", "hospital", "office", "empty_world", "museum", "bookstore"}
 ROBOTS = [
     "jetbot",
     "create3",
@@ -553,7 +556,8 @@ def main():
         if args.verbose:
             print_info(f"Using robot from last configuration: {robot}")
     elif args.batch:
-        robot = ROBOTS[3]  # Default to carter_ROS
+        # PATCH (isaac-social-nav): dissertation demos default to Stretch, not Carter.
+        robot = "stretch"
         print_info(f"Batch mode: using default robot {robot}")
     else:
         # Interactive robot selection
@@ -973,7 +977,7 @@ def interactive_config_selection():
 
     # --- pick agents config ---
     config_type_descriptions = {
-        "Pre-built configurations": "Choose from warehouse, hospital, or office presets",
+        "Pre-built configurations": "Choose from warehouse, hospital, office, museum, or bookstore presets",
         "Custom configurations": "Browse user-created configuration files"
     }
     

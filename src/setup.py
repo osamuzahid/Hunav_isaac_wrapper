@@ -41,6 +41,14 @@ setup(
             [p for p in glob('worlds/assets/hospital/*') if not os.path.isdir(p)]),
         (os.path.join('share', package_name, 'worlds', 'assets', 'hospital', 'textures'),
             glob('worlds/assets/hospital/textures/*')),
+        (os.path.join('share', package_name, 'worlds', 'assets', 'office'),
+            [p for p in glob('worlds/assets/office/*') if not os.path.isdir(p)]),
+        (os.path.join('share', package_name, 'worlds', 'assets', 'office', 'textures'),
+            glob('worlds/assets/office/textures/*')),
+        (os.path.join('share', package_name, 'worlds', 'assets', 'bookstore'),
+            [p for p in glob('worlds/assets/bookstore/*') if not os.path.isdir(p)]),
+        (os.path.join('share', package_name, 'worlds', 'assets', 'bookstore', 'textures'),
+            glob('worlds/assets/bookstore/textures/*')),
         
         # Install behavior tree files
         (os.path.join('share', package_name, 'behavior_trees'),

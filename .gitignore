@@ -21,6 +21,9 @@ src/config/last_launch_config.json
 src/worlds/hospital.usd.bak_*
 src/worlds/hospital.usd.cdn_compose_WRONG
 src/maps/hospital_isaac_stock.*
+src/worlds/office.usd.bak_*
+src/maps/office_isaac_stock.*
+src/scenarios/office_agents_isaac_stock.yaml
 src/config/robots/stretch/payloads/base.usda.bak_instanceable
 tools/remap_hospital_isaac60_assets.py
 

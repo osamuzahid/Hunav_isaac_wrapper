@@ -109,8 +109,11 @@ class OccupancyMap:
         self.navigable = free
 
     def world_to_grid(self, x: float, y: float) -> GridPoint:
-        col = int(round((x - self.origin_x) / self.resolution))
-        row_from_bottom = int(round((y - self.origin_y) / self.resolution))
+        # Floor, not round: cell i covers [origin + i*res, origin + (i+1)*res).
+        # round() sends a cell-centre at *.5 into the next cell (Python ties-to-even),
+        # so A* centres on odd columns looked occupied after densify.
+        col = int(math.floor((x - self.origin_x) / self.resolution))
+        row_from_bottom = int(math.floor((y - self.origin_y) / self.resolution))
         row = self.height - 1 - row_from_bottom
         return col, row
 
@@ -177,7 +180,8 @@ class OccupancyMap:
         if not grid_path:
             return None
         world = [self.grid_to_world(c, r) for c, r in grid_path]
-        return densify_waypoints(world, spacing_m=waypoint_spacing_m)
+        dense = densify_waypoints(world, spacing_m=waypoint_spacing_m)
+        return self._snap_path_to_navigable(dense)
 
     def plan_route(
         self,
@@ -196,6 +200,32 @@ class OccupancyMap:
                 out.extend(seg[1:])  # drop duplicate joint
             else:
                 out.extend(seg)
+        return self._snap_path_to_navigable(out)
+
+    def _snap_path_to_navigable(
+        self, path: Sequence[WorldPoint], max_radius_m: float = 0.6
+    ) -> Optional[List[WorldPoint]]:
+        """Keep densified waypoints on inflated-free cells.
+
+        A* visits navigable cell centres, but 1 m samples along that polyline
+        can round onto a neighbouring inflated cell (thin corridor / corner).
+        Snap those hits back; fail the plan if a sample cannot be rescued.
+        """
+        if not path:
+            return []
+        out: List[WorldPoint] = []
+        for x, y in path:
+            if self.is_navigable_world(x, y):
+                pt = (float(x), float(y))
+            else:
+                snapped = self.nearest_navigable(x, y, max_radius_m=max_radius_m)
+                if snapped is None:
+                    return None
+                pt = (float(snapped[0]), float(snapped[1]))
+            if out and math.hypot(pt[0] - out[-1][0], pt[1] - out[-1][1]) < 0.05:
+                out[-1] = pt
+            else:
+                out.append(pt)
         return out
 
     def _astar(self, start: GridPoint, goal: GridPoint) -> Optional[List[GridPoint]]:

@@ -4,50 +4,90 @@ hunav_loader:
     simulator: Isaac Sim
     map: hospital
     publish_people: true
-    # PATCH (isaac-social-nav): CUCR cucr_worlds_hospital + museum-style reaction roster.
+    # PATCH (isaac-social-nav): same human-sim setup as museum_behaviors —
+    # five agents, mixed HuNav BTs, four cyclic goals each, occupancy A*.
+    # Hospital adaptation: disjoint wing loops (no shared doorways). Tight
+    # corridors cannot use museum's overlapping open-room goals.
     plan_goals_on_map: true
     map_yaml: hospital.yaml
     plan_waypoint_spacing_m: 1.0
-    plan_inflation_radius_m: 0.35
+    # 0.50 m > agent radius 0.4 so A* stays off wall meshes / white partitions.
+    plan_inflation_radius_m: 0.50
     plan_from_init_pose: true
     ignore_obstacle_rays: false
-    # South-east free cell — agents patrol first; drive north/west into wards.
+    # Reception park. Agents patrol wings ≥12 m away; drive toward a wing
+    # to trigger Curious/Scared/Surprised/Threatening (museum pattern).
     robot_init_pose:
-      x: 10.0
-      y: -20.0
+      x: 5.0
+      y: 0.0
       z: 0.0
-      h: 2.5
+      h: 2.9
     global_goals:
+      # A1 Impassive — south hall rectangle
       1:
-        x: 1.925
-        y: -27.425
+        x: 4.0
+        y: -28.0
       2:
-        x: 4.725
-        y: -13.025
+        x: -2.0
+        y: -28.0
       3:
-        x: -10.875
-        y: -13.425
+        x: -2.0
+        y: -24.0
       4:
-        x: -0.075
-        y: 14.975
+        x: 4.0
+        y: -24.0
+      # A2 Curious — north waiting
       5:
-        x: -7.675
-        y: -3.825
+        x: -4.0
+        y: 12.0
       6:
-        x: -0.875
-        y: -2.225
+        x: 0.0
+        y: 12.0
       7:
-        x: 9.525
-        y: -6.625
+        x: 4.0
+        y: 12.0
       8:
-        x: 2.725
-        y: -8.225
+        x: 0.0
+        y: 14.0
+      # A3 Scared — west ward pocket
       9:
-        x: -3.275
-        y: 10.175
+        x: -8.0
+        y: -20.0
       10:
-        x: -9.675
-        y: -17.025
+        x: -8.0
+        y: -16.0
+      11:
+        x: -10.0
+        y: -16.0
+      12:
+        x: -10.0
+        y: -20.0
+      # A4 Surprised — east ward pocket
+      13:
+        x: 10.0
+        y: -20.0
+      14:
+        x: 8.0
+        y: -20.0
+      15:
+        x: 8.0
+        y: -16.0
+      16:
+        x: 10.0
+        y: -16.0
+      # A5 Threatening — mid E–W corridor (south of reception)
+      17:
+        x: 4.0
+        y: -14.0
+      18:
+        x: 2.0
+        y: -14.0
+      19:
+        x: 0.0
+        y: -14.0
+      20:
+        x: -2.0
+        y: -14.0
     agents:
       - agent1
       - agent2
@@ -63,11 +103,13 @@ hunav_loader:
       goal_radius: 0.6
       cyclic_goals: true
       init_pose:
-        x: 1.925
-        y: -27.425
+        x: 4.0
+        y: -28.0
         z: 0.0
-        h: 1.57
+        h: 3.14
       behavior:
+        # Impassive (2): treat robot as obstacle — Regular (1) social-force weave
+        # against the robot caused rapid left/right shuffling when close.
         type: 2
         configuration: 0
         goal_force_factor: 10.0
@@ -77,8 +119,8 @@ hunav_loader:
       goals:
         - "1"
         - "2"
-        - "6"
-        - "7"
+        - "3"
+        - "4"
     agent2:
       id: 2
       group_id: -1
@@ -88,11 +130,12 @@ hunav_loader:
       goal_radius: 0.6
       cyclic_goals: true
       init_pose:
-        x: 4.725
-        y: -13.025
+        x: -4.0
+        y: 12.0
         z: 0.0
-        h: 3.14
+        h: 0.0
       behavior:
+        # Curious: approach then stop+look at dist (2.0 m — museum value).
         type: 5
         configuration: 1
         duration: 35.0
@@ -104,10 +147,10 @@ hunav_loader:
         social_force_factor: 5.0
         other_force_factor: 20.0
       goals:
-        - "2"
-        - "8"
+        - "5"
         - "6"
         - "7"
+        - "8"
     agent3:
       id: 3
       group_id: -1
@@ -117,27 +160,27 @@ hunav_loader:
       goal_radius: 0.6
       cyclic_goals: true
       init_pose:
-        x: -10.875
-        y: -13.425
+        x: -8.0
+        y: -20.0
         z: 0.0
-        h: 0.0
+        h: 1.57
       behavior:
+        # Scared: HuNav adds robot repulsion (not a sprint turn). Match museum.
         type: 4
         configuration: 1
-        # Match museum: 40s continuous flee looked stuck in GUI (REACTING latched).
         duration: 10.0
         once: true
         vel: 1.1
-        dist: 5.0
+        dist: 3.0
         goal_force_factor: 6.0
         obstacle_force_factor: 2.0
         social_force_factor: 5.0
         other_force_factor: 45.0
       goals:
-        - "3"
+        - "9"
         - "10"
-        - "5"
-        - "6"
+        - "11"
+        - "12"
     agent4:
       id: 4
       group_id: -1
@@ -147,26 +190,26 @@ hunav_loader:
       goal_radius: 0.6
       cyclic_goals: true
       init_pose:
-        x: -0.075
-        y: 14.975
+        x: 10.0
+        y: -20.0
         z: 0.0
-        h: -1.57
+        h: 3.14
       behavior:
         type: 3
         configuration: 1
         duration: 30.0
         once: true
         vel: 0.5
-        dist: 4.0
+        dist: 3.0
         goal_force_factor: 10.0
         obstacle_force_factor: 2.0
         social_force_factor: 5.0
         other_force_factor: 20.0
       goals:
-        - "4"
-        - "9"
-        - "5"
-        - "6"
+        - "13"
+        - "14"
+        - "15"
+        - "16"
     agent5:
       id: 5
       group_id: -1
@@ -176,10 +219,10 @@ hunav_loader:
       goal_radius: 0.6
       cyclic_goals: true
       init_pose:
-        x: -7.675
-        y: -3.825
+        x: 4.0
+        y: -14.0
         z: 0.0
-        h: 0.8
+        h: 3.14
       behavior:
         type: 6
         configuration: 1
@@ -192,7 +235,7 @@ hunav_loader:
         social_force_factor: 5.0
         other_force_factor: 20.0
       goals:
-        - "5"
-        - "6"
-        - "8"
-        - "2"
+        - "17"
+        - "18"
+        - "19"
+        - "20"

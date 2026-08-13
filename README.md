@@ -12,6 +12,8 @@ Fork of [robotics-upo/Hunav_isaac_wrapper](https://github.com/robotics-upo/Hunav
 - Fixed `ros2 run … hunav_isaac_launcher` resource paths for this colcon layout; added `empty_world_agents` preset
 - CUCR museum v1: `museum.usd` (Isaac `asset_converter` + Z-up compose; `MUSEUM_Z_OFFSET=0.1` so walls meet floor / base lidar — Validated **#47**), `museum_agents.yaml`, `maps/museum.png`; rebuild via `tools/isaac_convert_museum.py`
 - Museum mixed behaviors: `museum_behaviors` preset (Regular / Curious / Scared / Surprised / Threatening)
+- CUCR office: `office.usd` is ServiceSim (`cucr_worlds_office`), not the stock HuNav bake — `tools/README_office_port.md`
+- CUCR bookstore: `bookstore.usd` (AWS RoboMaker retail; convert `tools/isaac_convert_bookstore.py`) + `bookstore_behaviors` disjoint aisle loops — `tools/README_bookstore_port.md`
 - Lab Stretch: `--robot stretch` (kinematic chassis) and `--robot stretch_wheeled` (PhysX diff-drive; flat-ground smoke PASS)
 - Lab Franka: `--robot franka` (CDN `FrankaPanda`, parked `drive: static`) + stock TF/`joint_states`
 - Lab sensors: `lab_robot_sensors.py` — Stretch `/scan` (RTX 2D) + `/imu` + parked joints; RGB-D via `HUNAV_LAB_CAMERAS=1` under `camera_color_optical_frame` (Validated **#46**); museum `/scan` wall rings after Z fix (**#47**); smoke `tools/lab_robot_sensor_smoke.py`
@@ -182,9 +184,10 @@ The repository includes multiple pre-configured USD files in `src/worlds/`:
 
 - `warehouse.usd`: Industrial layout with shelves and various obstacles
 - `hospital.usd`: Medical environment with corridors and rooms
-- `office.usd`: Workspace with desks and conference areas
+- `office.usd`: CUCR ServiceSim office (not stock HuNav bake)
 - `empty_world.usd`: A minimal open environment for testing
 - `museum.usd`: CUCR `cucr_worlds_museum` layout (Isaac asset_converter; pair with `museum_agents.yaml`)
+- `bookstore.usd`: CUCR `cucr_worlds_bookstore` (AWS RoboMaker retail; pair with `bookstore_behaviors.yaml`)
 
 #### Agents Configuration
 
@@ -193,9 +196,10 @@ Each world is paired with a YAML file in `src/scenarios/` that defines the HuNav
 - **Available configuration files:**
  - `warehouse_agents.yaml` for `warehouse.usd`
  - `hospital_agents.yaml` for `hospital.usd`
- - `office_agents.yaml` for `office.usd`
+ - `office_agents.yaml` / `office_behaviors.yaml` for `office.usd` (CUCR ServiceSim)
  - `empty_world_agents.yaml` for `empty_world.usd`
  - `museum_agents.yaml` for `museum.usd`
+ - `bookstore_agents.yaml` / `bookstore_behaviors.yaml` for `bookstore.usd`
 
 - **Each YAML file lets you configure:**
  - **Initial pose**: Define starting positions of each agent.

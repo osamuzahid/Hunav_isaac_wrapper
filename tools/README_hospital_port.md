@@ -75,3 +75,6 @@ The convert tool zeros emissive after convert and uses `DistantLight` intensity 
 (not museum’s 5000). White AWS hospital needs that dimmer light for textures to read.
 
 Scenarios must use the **CUCR** map frame (not HuNav Isaac-stock goals).
+
+Next CUCR worlds: follow `isaac-social-nav/docs/CUCR_WORLD_PORT.md` (scales, ceilings,
+asset install path, texture refs).

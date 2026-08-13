@@ -135,7 +135,7 @@ hunav_loader:
         duration: 10.0
         once: true
         vel: 1.1
-        dist: 5.0
+        dist: 3.0
         goal_force_factor: 6.0
         obstacle_force_factor: 2.0
         social_force_factor: 5.0
@@ -164,7 +164,7 @@ hunav_loader:
         duration: 30.0
         once: true
         vel: 0.5
-        dist: 4.0
+        dist: 3.0
         goal_force_factor: 10.0
         obstacle_force_factor: 2.0
         social_force_factor: 5.0

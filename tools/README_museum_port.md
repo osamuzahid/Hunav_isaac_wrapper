@@ -28,3 +28,5 @@ blue; brighter distant light; Z-up compose rotate; museum mesh Z **0.1** (not
 Gazebo visual 0.5) so walls meet the floor and base lidar hits them.
 
 Scenario: `src/scenarios/museum_agents.yaml`.
+
+Next CUCR worlds: `isaac-social-nav/docs/CUCR_WORLD_PORT.md`.

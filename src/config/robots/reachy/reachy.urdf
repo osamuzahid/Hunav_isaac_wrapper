@@ -5,11 +5,153 @@
 <!-- =================================================================================== -->
 <robot name="reachy_2023">
   <!-- convergence angle (rad) of the cameras. 0=parallel-->
-  <link name="world"/>
-  <joint name="world_joint" type="fixed">
-    <origin rpy="0 0 0" xyz="0 0 1.0"/>
-    <parent link="world"/>
+  <link name="base_footprint"/>
+  <joint name="base_footprint_joint" type="fixed">
+    <origin rpy="0 0 0" xyz="0 0 0"/>
+    <parent link="base_footprint"/>
+    <child link="base_link"/>
+  </joint>
+  <link name="base_link">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <mesh filename="file:///home/osamuzahid/Projects/isaac-social-nav/ros2_ws/src/Hunav_isaac_wrapper/src/config/robots/reachy/meshes/mobile_base_visual.obj"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0.145"/>
+      <geometry>
+        <cylinder length="0.19" radius="0.245"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin rpy="0 0 0" xyz="0.008 -0.00048 0.112"/>
+      <mass value="24.0"/>
+      <inertia ixx="0.40791094" ixy="-0.00167148" ixz="-0.00178789" iyy="0.4236827" iyz="0.00026596" izz="0.70990763"/>
+    </inertial>
+  </link>
+  <link name="drivewhl1_link">
+    <visual>
+      <origin rpy="1.5707963267948966 0 0" xyz="0 0 0"/>
+      <geometry>
+        <cylinder length="0.035" radius="0.105"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="1.5707963267948966 0 0" xyz="0 0 0"/>
+      <geometry>
+        <cylinder length="0.035" radius="0.105"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin rpy="1.5707963267948966 0 0" xyz="0 0 0"/>
+      <mass value="0.5"/>
+      <inertia ixx="0.0014291666666666665" ixy="0" ixz="0" iyy="0.0014291666666666665" iyz="0" izz="0.0027562499999999996"/>
+    </inertial>
+  </link>
+  <joint name="drivewhl1_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="drivewhl1_link"/>
+    <origin rpy="0 0 0.5235987755982989" xyz="0.09900000000000003 -0.17147302994931884 0.105"/>
+    <axis xyz="0 1 0"/>
+  </joint>
+  <link name="drivewhl2_link">
+    <visual>
+      <origin rpy="1.5707963267948966 0 0" xyz="0 0 0"/>
+      <geometry>
+        <cylinder length="0.035" radius="0.105"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="1.5707963267948966 0 0" xyz="0 0 0"/>
+      <geometry>
+        <cylinder length="0.035" radius="0.105"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin rpy="1.5707963267948966 0 0" xyz="0 0 0"/>
+      <mass value="0.5"/>
+      <inertia ixx="0.0014291666666666665" ixy="0" ixz="0" iyy="0.0014291666666666665" iyz="0" izz="0.0027562499999999996"/>
+    </inertial>
+  </link>
+  <joint name="drivewhl2_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="drivewhl2_link"/>
+    <origin rpy="0 0 -3.6651914291880923" xyz="0.09900000000000003 0.17147302994931884 0.105"/>
+    <axis xyz="0 1 0"/>
+  </joint>
+  <link name="drivewhl3_link">
+    <visual>
+      <origin rpy="1.5707963267948966 0 0" xyz="0 0 0"/>
+      <geometry>
+        <cylinder length="0.035" radius="0.105"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="1.5707963267948966 0 0" xyz="0 0 0"/>
+      <geometry>
+        <cylinder length="0.035" radius="0.105"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <origin rpy="1.5707963267948966 0 0" xyz="0 0 0"/>
+      <mass value="0.5"/>
+      <inertia ixx="0.0014291666666666665" ixy="0" ixz="0" iyy="0.0014291666666666665" iyz="0" izz="0.0027562499999999996"/>
+    </inertial>
+  </link>
+  <joint name="drivewhl3_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="drivewhl3_link"/>
+    <origin rpy="0 0 -1.5707963267948966" xyz="-0.198 -2.4248006623117595e-17 0.105"/>
+    <axis xyz="0 1 0"/>
+  </joint>
+  <link name="imu_link"/>
+  <joint name="imu_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="imu_link"/>
+    <origin xyz="0 0 0.01"/>
+  </joint>
+  <link name="lidar_link">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <mass value="0.125"/>
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001"/>
+    </inertial>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0"/>
+      <geometry>
+        <cylinder length="0.035" radius="0.035"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="lidar_joint" type="fixed">
+    <parent link="base_link"/>
+    <child link="lidar_link"/>
+    <origin rpy="0 0 0" xyz="0.184 0 0.25"/>
+  </joint>
+  <joint name="base_joint" type="fixed">
+    <origin rpy="0 0 0" xyz="-0.006 0 1.0"/>
+    <parent link="base_link"/>
     <child link="torso"/>
+  </joint>
+  <link name="bar_link">
+    <visual>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.6125"/>
+      <geometry>
+        <cylinder length="0.775" radius="0.02"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.6125"/>
+      <geometry>
+        <cylinder length="0.775" radius="0.02"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="bar_joint" type="fixed">
+    <origin rpy="0 0 0" xyz="-0.130 0 0.0"/>
+    <parent link="base_link"/>
+    <child link="bar_link"/>
   </joint>
   <link name="torso">
     <inertial>

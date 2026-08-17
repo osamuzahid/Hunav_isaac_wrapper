@@ -4,16 +4,16 @@
         string creator = "URDF USD Converter v0.1.3"
     }
     defaultPrim = "reachy_2023"
-    doc = """Generated from Composed Stage of root layer /tmp/tmpep5xaoq7/reachy_2023.usdc
+    doc = """Generated from Composed Stage of root layer /tmp/tmpn0uogcm4/reachy_2023.usdc
 
 
-Generated from Composed Stage of root layer /tmp/urdf_import_reachy_8_n63x1w/usdex_reachy/reachy_2023.usdc
+Generated from Composed Stage of root layer /tmp/urdf_import_reachy_3f7ii7ol/usdex_reachy/reachy_2023.usdc
 
 
-Generated from Composed Stage of root layer /tmp/urdf_import_reachy_8_n63x1w/temp_reachy/reachy.usd
+Generated from Composed Stage of root layer /tmp/urdf_import_reachy_3f7ii7ol/temp_reachy/reachy.usd
 
 
-Generated from Composed Stage of root layer /home/osamuzahid/Projects/isaac-social-nav/ros2_ws/src/Hunav_isaac_wrapper/src/config/robots/reachy/reachy_2/payloads/base.usd
+Generated from Composed Stage of root layer /home/osamuzahid/Projects/isaac-social-nav/ros2_ws/src/Hunav_isaac_wrapper/src/config/robots/reachy/reachy/payloads/base.usd
 """
     kilogramsPerUnit = 1
     metersPerUnit = 1

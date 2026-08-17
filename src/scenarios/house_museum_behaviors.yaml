@@ -1,0 +1,226 @@
+hunav_loader:
+  ros__parameters:
+    yaml_base_name: house_museum_behaviors
+    simulator: Isaac Sim
+    map: house_museum
+    publish_people: true
+    # PATCH (isaac-social-nav): CUCR cucr_worlds_house_museum (Natural Museum Cardiff). Mixed BTs on disjoint room loops.
+    plan_goals_on_map: true
+    map_yaml: house_museum.yaml
+    plan_waypoint_spacing_m: 1.0
+    plan_inflation_radius_m: 0.35
+    plan_from_init_pose: true
+    ignore_obstacle_rays: false
+    robot_init_pose:
+      x: -2.1
+      y: 0.0
+      z: 0.0
+      h: 0.0
+    global_goals:
+      1:
+        x: 3.57
+        y: -4.88
+      2:
+        x: 2.38
+        y: -4.93
+      3:
+        x: 3.22
+        y: -3.48
+      4:
+        x: 2.22
+        y: -3.73
+      5:
+        x: -6.72
+        y: 9.98
+      6:
+        x: -5.93
+        y: 9.02
+      7:
+        x: -5.28
+        y: 9.98
+      8:
+        x: -6.58
+        y: 8.18
+      9:
+        x: -9.18
+        y: -1.33
+      10:
+        x: -9.28
+        y: -0.08
+      11:
+        x: -7.88
+        y: -1.03
+      12:
+        x: -7.93
+        y: 0.22
+      13:
+        x: 2.62
+        y: 5.57
+      14:
+        x: 2.53
+        y: 4.38
+      15:
+        x: 1.53
+        y: 6.07
+      16:
+        x: 1.47
+        y: 5.07
+      17:
+        x: -4.78
+        y: -5.78
+      18:
+        x: -3.98
+        y: -4.88
+      19:
+        x: -2.97
+        y: -5.23
+      20:
+        x: -4.62
+        y: -3.73
+    agents:
+      - agent1
+      - agent2
+      - agent3
+      - agent4
+      - agent5
+    agent1:
+      id: 1
+      group_id: -1
+      skin: 1
+      max_vel: 1.0
+      radius: 0.4
+      goal_radius: 0.6
+      cyclic_goals: true
+      init_pose:
+        x: 3.57
+        y: -4.88
+        z: 0.0
+        h: 0.0
+      behavior:
+        type: 2
+        configuration: 0
+        goal_force_factor: 10.0
+        obstacle_force_factor: 2.0
+        social_force_factor: 5.0
+        other_force_factor: 20.0
+      goals:
+        - "1"
+        - "2"
+        - "3"
+        - "4"
+    agent2:
+      id: 2
+      group_id: -1
+      skin: 3
+      max_vel: 1.0
+      radius: 0.4
+      goal_radius: 0.6
+      cyclic_goals: true
+      init_pose:
+        x: -6.72
+        y: 9.98
+        z: 0.0
+        h: 0.0
+      behavior:
+        type: 5
+        configuration: 1
+        duration: 35.0
+        once: true
+        vel: 0.45
+        dist: 2.0
+        goal_force_factor: 10.0
+        obstacle_force_factor: 2.0
+        social_force_factor: 5.0
+        other_force_factor: 20.0
+      goals:
+        - "5"
+        - "6"
+        - "7"
+        - "8"
+    agent3:
+      id: 3
+      group_id: -1
+      skin: 5
+      max_vel: 1.0
+      radius: 0.4
+      goal_radius: 0.6
+      cyclic_goals: true
+      init_pose:
+        x: -9.18
+        y: -1.33
+        z: 0.0
+        h: 0.0
+      behavior:
+        type: 4
+        configuration: 1
+        duration: 10.0
+        once: true
+        vel: 1.1
+        dist: 3.0
+        goal_force_factor: 6.0
+        obstacle_force_factor: 2.0
+        social_force_factor: 5.0
+        other_force_factor: 45.0
+      goals:
+        - "9"
+        - "10"
+        - "11"
+        - "12"
+    agent4:
+      id: 4
+      group_id: -1
+      skin: 7
+      max_vel: 1.0
+      radius: 0.4
+      goal_radius: 0.6
+      cyclic_goals: true
+      init_pose:
+        x: 2.62
+        y: 5.57
+        z: 0.0
+        h: 0.0
+      behavior:
+        type: 3
+        configuration: 1
+        duration: 30.0
+        once: true
+        vel: 0.5
+        dist: 3.0
+        goal_force_factor: 10.0
+        obstacle_force_factor: 2.0
+        social_force_factor: 5.0
+        other_force_factor: 20.0
+      goals:
+        - "13"
+        - "14"
+        - "15"
+        - "16"
+    agent5:
+      id: 5
+      group_id: -1
+      skin: 9
+      max_vel: 1.0
+      radius: 0.4
+      goal_radius: 0.6
+      cyclic_goals: true
+      init_pose:
+        x: -4.78
+        y: -5.78
+        z: 0.0
+        h: 0.0
+      behavior:
+        type: 6
+        configuration: 1
+        duration: 38.0
+        once: true
+        vel: 0.5
+        dist: 1.4
+        goal_force_factor: 10.0
+        obstacle_force_factor: 2.0
+        social_force_factor: 5.0
+        other_force_factor: 20.0
+      goals:
+        - "17"
+        - "18"
+        - "19"
+        - "20"

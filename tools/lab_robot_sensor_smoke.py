@@ -441,7 +441,7 @@ def main() -> int:
         "franka": ["/clock", "/tf", "/joint_states"],
         "stretch": ["/clock", "/tf", "/joint_states", "/scan", "/imu"],
         "stretch_wheeled": ["/clock", "/tf", "/joint_states", "/scan", "/imu"],
-        "reachy": ["/clock", "/tf", "/joint_states"],
+        "reachy": ["/clock", "/tf", "/joint_states", "/scan", "/imu"],
     }.get(args.robot, ["/clock"])
     if args.robot == "reachy" and os.environ.get("HUNAV_LAB_CAMERAS", "0") in (
         "1",

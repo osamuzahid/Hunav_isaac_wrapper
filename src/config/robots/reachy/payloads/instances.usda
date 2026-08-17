@@ -3,16 +3,16 @@
     customLayerData = {
         string creator = "URDF USD Converter v0.1.3"
     }
-    doc = """Generated from Composed Stage of root layer /tmp/tmpep5xaoq7/reachy_2023.usdc
+    doc = """Generated from Composed Stage of root layer /tmp/tmpn0uogcm4/reachy_2023.usdc
 
 
-Generated from Composed Stage of root layer /tmp/urdf_import_reachy_8_n63x1w/usdex_reachy/reachy_2023.usdc
+Generated from Composed Stage of root layer /tmp/urdf_import_reachy_3f7ii7ol/usdex_reachy/reachy_2023.usdc
 
 
-Generated from Composed Stage of root layer /tmp/urdf_import_reachy_8_n63x1w/temp_reachy/reachy.usd
+Generated from Composed Stage of root layer /tmp/urdf_import_reachy_3f7ii7ol/temp_reachy/reachy.usd
 
 
-Generated from Composed Stage of root layer /home/osamuzahid/Projects/isaac-social-nav/ros2_ws/src/Hunav_isaac_wrapper/src/config/robots/reachy/reachy_2/payloads/base.usd
+Generated from Composed Stage of root layer /home/osamuzahid/Projects/isaac-social-nav/ros2_ws/src/Hunav_isaac_wrapper/src/config/robots/reachy/reachy/payloads/base.usd
 """
     kilogramsPerUnit = 1
     metersPerUnit = 1
@@ -21,6 +21,125 @@ Generated from Composed Stage of root layer /home/osamuzahid/Projects/isaac-soci
 
 def Scope "Instances"
 {
+    def Xform "tn__ID93mesh_bC_1" (
+        prepend references = @./geometries.usd@</Geometries/tn__ID93mesh_bC_1>
+    )
+    {
+        over "tn__ID93mesh_bC_1"
+        {
+            token purpose = "default"
+            token subsetFamily:materialBind:familyType = "nonOverlapping"
+
+            over "ID100" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__ID93mesh_bC_1/VisualMaterials/ID100>
+            }
+
+            over "black" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__ID93mesh_bC_1/VisualMaterials/black>
+            }
+
+            over "tn__Material002_XH" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__ID93mesh_bC_1/VisualMaterials/tn__Material002_XH>
+            }
+
+            over "tn__Material003_XH" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__ID93mesh_bC_1/VisualMaterials/tn__Material003_XH>
+            }
+
+            over "tn__Material004_XH" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__ID93mesh_bC_1/VisualMaterials/tn__Material004_XH>
+            }
+
+            over "tn__Material005_XH" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__ID93mesh_bC_1/VisualMaterials/tn__Material005_XH>
+            }
+
+            over "tn__Material006_XH" (
+                apiSchemas = ["MaterialBindingAPI"]
+            )
+            {
+                custom rel material:binding
+                prepend rel material:binding = </Instances/tn__ID93mesh_bC_1/VisualMaterials/tn__Material006_XH>
+            }
+        }
+
+        def Scope "VisualMaterials"
+        {
+            def Material "ID100" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/ID100>
+            )
+            {
+            }
+
+            def Material "black" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/black>
+            )
+            {
+            }
+
+            def Material "tn__Material002_XH" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/tn__Material002_XH>
+            )
+            {
+            }
+
+            def Material "tn__Material003_XH" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/tn__Material003_XH>
+            )
+            {
+            }
+
+            def Material "tn__Material004_XH" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/tn__Material004_XH>
+            )
+            {
+            }
+
+            def Material "tn__Material005_XH" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/tn__Material005_XH>
+            )
+            {
+            }
+
+            def Material "tn__Material006_XH" (
+                instanceable = true
+                prepend references = @./materials.usda@</Materials/tn__Material006_XH>
+            )
+            {
+            }
+        }
+    }
+
     def Xform "tn__mesh1019_meshmesh_mP_1" (
         prepend references = @./geometries.usd@</Geometries/tn__mesh1019_meshmesh_mP_1>
     )

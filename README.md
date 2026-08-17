@@ -14,6 +14,8 @@ Fork of [robotics-upo/Hunav_isaac_wrapper](https://github.com/robotics-upo/Hunav
 - Museum mixed behaviors: `museum_behaviors` preset (Regular / Curious / Scared / Surprised / Threatening)
 - CUCR office: `office.usd` is ServiceSim (`cucr_worlds_office`), not the stock HuNav bake — `tools/README_office_port.md`
 - CUCR bookstore: `bookstore.usd` (AWS RoboMaker retail; convert `tools/isaac_convert_bookstore.py`) + `bookstore_behaviors` disjoint aisle loops — `tools/README_bookstore_port.md`
+- CUCR house_museum / small_house / small_warehouse: remaining `cucr_worlds` ports (GUI-good; house_museum roofs off + sunset sky kept) — `tools/README_remaining_ports.md`
+- Lab Reachy: `--robot reachy` (Zuuu mobile base + full-kit torso; parked TF + `/scan` + dual RGB — Validated **#49/#59/#60**)
 - Lab Stretch: `--robot stretch` (kinematic chassis) and `--robot stretch_wheeled` (PhysX diff-drive; flat-ground smoke PASS)
 - Lab Franka: `--robot franka` (CDN `FrankaPanda`, parked `drive: static`) + stock TF/`joint_states`
 - Lab sensors: `lab_robot_sensors.py` — Stretch `/scan` (RTX 2D) + `/imu` + parked joints; RGB-D via `HUNAV_LAB_CAMERAS=1` under `camera_color_optical_frame` (Validated **#46**); museum `/scan` wall rings after Z fix (**#47**); smoke `tools/lab_robot_sensor_smoke.py`
@@ -71,7 +73,7 @@ It supports both **ROS 2 teleoperation** and **autonomous navigation (Nav2)**, w
  - Supports animation **retargeting**, applying a single set of animations to different characters via **USD SkelAnimation** and the **Omni Anim Retargeting extension**
 
 - **Multiple Robot Models:**
- - Includes `jetbot`, `create3`, `carter`, `carter_ROS`, lab Stretch (`stretch`, `stretch_wheeled`), and lab Franka (`franka`)
+ - Includes `jetbot`, `create3`, `carter`, `carter_ROS`, lab Stretch (`stretch`, `stretch_wheeled`), lab Franka (`franka`), and lab Reachy (`reachy`, Zuuu base, parked)
 
 - **ROS 2 Navigation (Nav2) Support:**
  - Enables autonomous navigation for the **Carter** robot using the **ROS 2 Nav2** stack
@@ -188,6 +190,9 @@ The repository includes multiple pre-configured USD files in `src/worlds/`:
 - `empty_world.usd`: A minimal open environment for testing
 - `museum.usd`: CUCR `cucr_worlds_museum` layout (Isaac asset_converter; pair with `museum_agents.yaml`)
 - `bookstore.usd`: CUCR `cucr_worlds_bookstore` (AWS RoboMaker retail; pair with `bookstore_behaviors.yaml`)
+- `house_museum.usd`: CUCR `cucr_worlds_house_museum` (Natural Museum Cardiff; pair with `house_museum_behaviors.yaml`)
+- `small_house.usd`: CUCR `cucr_worlds_small_house` (AWS residential; ceiling skipped)
+- `small_warehouse.usd`: CUCR `cucr_worlds_small_warehouse` (AWS warehouse; roof skipped; **not** stock `warehouse.usd`)
 
 #### Agents Configuration
 
@@ -200,6 +205,9 @@ Each world is paired with a YAML file in `src/scenarios/` that defines the HuNav
  - `empty_world_agents.yaml` for `empty_world.usd`
  - `museum_agents.yaml` for `museum.usd`
  - `bookstore_agents.yaml` / `bookstore_behaviors.yaml` for `bookstore.usd`
+ - `house_museum_agents.yaml` / `house_museum_behaviors.yaml` for `house_museum.usd`
+ - `small_house_agents.yaml` / `small_house_behaviors.yaml` for `small_house.usd`
+ - `small_warehouse_agents.yaml` / `small_warehouse_behaviors.yaml` for `small_warehouse.usd`
 
 - **Each YAML file lets you configure:**
  - **Initial pose**: Define starting positions of each agent.

@@ -49,7 +49,9 @@ find "$DEST/urdf" -name '*.xacro' -print0 | xargs -0 sed -i \
 
 echo "[bake] expand + strip gazebo/ros2_control → reachy.urdf"
 # shellcheck disable=SC1091
+set +u
 source /opt/ros/jazzy/setup.bash
+set -u
 xacro "$DEST/urdf/reachy.urdf.xacro" \
   robot_config:=full_kit \
   use_gazebo:=true \
@@ -68,7 +70,15 @@ raw = re.sub(r"<transmission[\s\S]*?</transmission>\s*", "", raw)
 Path(sys.argv[1]).write_text(raw)
 n_obj = raw.count(".obj")
 print(f"[bake] wrote {sys.argv[1]} ({len(raw.splitlines())} lines, {n_obj} .obj refs)")
-for need in ("left_camera_optical", "right_camera_optical", "torso"):
+for need in (
+    "left_camera_optical",
+    "right_camera_optical",
+    "torso",
+    "base_footprint",
+    "base_link",
+    "lidar_link",
+    "mobile_base_visual.obj",
+):
     assert need in raw, need
 PY
 

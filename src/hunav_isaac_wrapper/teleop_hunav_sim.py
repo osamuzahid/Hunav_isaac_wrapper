@@ -628,16 +628,15 @@ class TeleopHuNavSim(Node):
                     "Mesh": "Quality",
                 },
             },
-            # PATCH (isaac-social-nav): Pollen Reachy 2023 (CUCR reachy_2023 description;
-            # Pollen torso xacro — no Zuuu mobile base). Stock: TF/joints + dual head RGB.
+            # PATCH (isaac-social-nav): Pollen Reachy 2023 on Zuuu mobile base.
+            # Stock: TF/joints + base lidar + IMU + dual head RGB. Park kinematic
+            # — dynamic PhysX still blows on leftover joint-drive / contact issues.
             "reachy": {
                 "name": "Reachy",
                 "usd_package_file": "reachy/reachy.usd",
                 "drive": "static",
-                # Keep PhysX schema (joint tree) but park kinematic — upstream
-                # shoulder_x inertias (~1e4) explode dynamic articulations.
                 "variants": {"Physics": "physx"},
-                "articulation_prim": "Geometry/world",
+                "articulation_prim": "Geometry/base_footprint/base_link",
                 "expand_instances": False,
                 "park_kinematic": True,
             },

@@ -146,9 +146,11 @@ _STRETCH_PARKED_JOINTS = [
     "joint_gripper_finger_right",
 ]
 
-# Reachy 2023 full_kit (no gripper-force topic — not in Phase 0 bar yet).
-_REACHY_BASE = "Geometry/world"
+# Reachy 2023 full_kit on Zuuu mobile base (lidar + dual head RGB).
+_REACHY_BASE = "Geometry/base_footprint/base_link"
 _REACHY_TORSO = f"{_REACHY_BASE}/torso"
+_REACHY_LIDAR = f"{_REACHY_BASE}/lidar_link"
+_REACHY_IMU = f"{_REACHY_BASE}/imu_link"
 _REACHY_HEAD = f"{_REACHY_TORSO}/head_x/head_y/head_z/head"
 _REACHY_LEFT_OPTICAL = f"{_REACHY_HEAD}/left_camera/left_camera_optical"
 _REACHY_RIGHT_OPTICAL = f"{_REACHY_HEAD}/right_camera/right_camera_optical"
@@ -371,7 +373,7 @@ def _level_rtx_2d_lidar_beam(lidar_prim) -> None:
         )
 
 
-def _attach_stretch_lidar(laser_prim: str) -> Optional[Any]:
+def _attach_stretch_lidar(laser_prim: str, frame_id: str = "laser") -> Optional[Any]:
     if not _env_bool("HUNAV_LAB_LIDAR", True):
         print("[lab_robot_sensors] lidar disabled (HUNAV_LAB_LIDAR=0)")
         return None
@@ -410,7 +412,7 @@ def _attach_stretch_lidar(laser_prim: str) -> Optional[Any]:
         sensor.attach_writer(
             "RtxLidarROS2PublishLaserScan",
             topicName="scan",
-            frameId="laser",
+            frameId=frame_id,
             **meta,
         )
         print(f"[lab_robot_sensors] RTX 2D lidar at {lidar.paths[0]} → /scan")
@@ -760,9 +762,10 @@ class ParkedLinkTfPublisher:
         self._TFMessage = TFMessage
         self._parent = parent_frame
         self._frames = [(p, f) for p, f in frames if _prim_exists(p)]
-        # Match Isaac bridge / external smoke BEST_EFFORT TF subscribers.
+        # RELIABLE is what RViz / tf2 expect. BEST_EFFORT subscribers (Isaac
+        # smoke) still receive RELIABLE publishers; the reverse does not work.
         tf_qos = QoSProfile(
-            reliability=ReliabilityPolicy.BEST_EFFORT,
+            reliability=ReliabilityPolicy.RELIABLE,
             durability=DurabilityPolicy.VOLATILE,
             history=HistoryPolicy.KEEP_LAST,
             depth=50,
@@ -897,8 +900,10 @@ def attach_lab_robot_sensors(
         return handles
 
     if robot_name == "reachy":
-        # Stock non-mobile Reachy 2023: TF + joints + dual head RGB (no gripper force).
-        # PoseTree eInvalid on optical Xforms / root — publish parked TF from USD poses.
+        # Lab Reachy = full_kit torso on Zuuu. PoseTree eInvalid on opticals —
+        # parked rclpy TF. Lidar on lidar_link (stock mobile).
+        base = _join(robot_prim_path, _REACHY_BASE)
+        lidar = _join(robot_prim_path, _REACHY_LIDAR)
         torso = _join(robot_prim_path, _REACHY_TORSO)
         left_opt = _join(robot_prim_path, _REACHY_LEFT_OPTICAL)
         right_opt = _join(robot_prim_path, _REACHY_RIGHT_OPTICAL)
@@ -909,6 +914,8 @@ def attach_lab_robot_sensors(
             handles["parked_tf"] = ParkedLinkTfPublisher(
                 ros_node,
                 frames=[
+                    (base, "base_link"),
+                    (lidar, "lidar_link"),
                     (torso, "torso"),
                     (left_opt, "left_camera_optical"),
                     (right_opt, "right_camera_optical"),
@@ -919,6 +926,8 @@ def attach_lab_robot_sensors(
                 "[lab_robot_sensors] Reachy: publishing parked "
                 "/joint_states + /tf via rclpy"
             )
+        handles["lidar"] = _attach_stretch_lidar(lidar, frame_id="lidar_link")
+        _attach_synthetic_imu_publisher("/World/ROS2_ReachyImu", frame_id="imu_link")
         _attach_rgb_optical_camera(
             left_opt,
             graph_path="/World/ROS2_ReachyLeftCam",
@@ -934,8 +943,8 @@ def attach_lab_robot_sensors(
             fixed_optical_orient=True,
         )
         print(
-            "[lab_robot_sensors] Reachy: TF + joints + dual head RGB "
-            "(gripper force skipped)"
+            "[lab_robot_sensors] Reachy: TF + joints + Zuuu /scan + IMU "
+            "+ dual head RGB (gripper force skipped)"
         )
         return handles
 

@@ -1,0 +1,210 @@
+hunav_loader:
+  ros__parameters:
+    yaml_base_name: small_warehouse_agents
+    simulator: Isaac Sim
+    map: small_warehouse
+    publish_people: true
+    # PATCH (isaac-social-nav): CUCR cucr_worlds_small_warehouse (AWS warehouse, roof skipped). Mixed BTs on disjoint aisle loops.
+    plan_goals_on_map: true
+    map_yaml: small_warehouse.yaml
+    plan_waypoint_spacing_m: 1.0
+    plan_inflation_radius_m: 0.35
+    plan_from_init_pose: true
+    ignore_obstacle_rays: false
+    robot_init_pose:
+      x: 0.0
+      y: 0.0
+      z: 0.0
+      h: 0.0
+    global_goals:
+      1:
+        x: -6.48
+        y: 9.93
+      2:
+        x: -5.62
+        y: 9.08
+      3:
+        x: -4.78
+        y: 9.83
+      4:
+        x: -4.68
+        y: 8.53
+      5:
+        x: 6.32
+        y: -9.88
+      6:
+        x: 5.03
+        y: -9.58
+      7:
+        x: 5.98
+        y: -7.88
+      8:
+        x: 3.92
+        y: -9.83
+      9:
+        x: -6.38
+        y: -3.97
+      10:
+        x: -5.97
+        y: -2.78
+      11:
+        x: -5.17
+        y: -3.47
+      12:
+        x: -5.17
+        y: -4.67
+      13:
+        x: 4.88
+        y: 2.53
+      14:
+        x: 5.63
+        y: 1.53
+      15:
+        x: 3.78
+        y: 1.83
+      16:
+        x: 2.78
+        y: 1.78
+      17:
+        x: 1.73
+        y: 9.93
+      18:
+        x: 1.77
+        y: 8.72
+      19:
+        x: 3.03
+        y: 9.83
+      20:
+        x: 1.63
+        y: 7.63
+    agents:
+      - agent1
+      - agent2
+      - agent3
+      - agent4
+      - agent5
+    agent1:
+      id: 1
+      group_id: -1
+      skin: 1
+      max_vel: 1.0
+      radius: 0.4
+      goal_radius: 0.6
+      cyclic_goals: true
+      init_pose:
+        x: -6.48
+        y: 9.93
+        z: 0.0
+        h: 0.0
+      behavior:
+        type: 1
+        configuration: 0
+        goal_force_factor: 10.0
+        obstacle_force_factor: 2.0
+        social_force_factor: 5.0
+        other_force_factor: 20.0
+      goals:
+        - "1"
+        - "2"
+        - "3"
+        - "4"
+    agent2:
+      id: 2
+      group_id: -1
+      skin: 3
+      max_vel: 1.0
+      radius: 0.4
+      goal_radius: 0.6
+      cyclic_goals: true
+      init_pose:
+        x: 6.32
+        y: -9.88
+        z: 0.0
+        h: 0.0
+      behavior:
+        type: 1
+        configuration: 0
+        goal_force_factor: 10.0
+        obstacle_force_factor: 2.0
+        social_force_factor: 5.0
+        other_force_factor: 20.0
+      goals:
+        - "5"
+        - "6"
+        - "7"
+        - "8"
+    agent3:
+      id: 3
+      group_id: -1
+      skin: 5
+      max_vel: 1.0
+      radius: 0.4
+      goal_radius: 0.6
+      cyclic_goals: true
+      init_pose:
+        x: -6.38
+        y: -3.97
+        z: 0.0
+        h: 0.0
+      behavior:
+        type: 1
+        configuration: 0
+        goal_force_factor: 10.0
+        obstacle_force_factor: 2.0
+        social_force_factor: 5.0
+        other_force_factor: 20.0
+      goals:
+        - "9"
+        - "10"
+        - "11"
+        - "12"
+    agent4:
+      id: 4
+      group_id: -1
+      skin: 7
+      max_vel: 1.0
+      radius: 0.4
+      goal_radius: 0.6
+      cyclic_goals: true
+      init_pose:
+        x: 4.88
+        y: 2.53
+        z: 0.0
+        h: 0.0
+      behavior:
+        type: 1
+        configuration: 0
+        goal_force_factor: 10.0
+        obstacle_force_factor: 2.0
+        social_force_factor: 5.0
+        other_force_factor: 20.0
+      goals:
+        - "13"
+        - "14"
+        - "15"
+        - "16"
+    agent5:
+      id: 5
+      group_id: -1
+      skin: 9
+      max_vel: 1.0
+      radius: 0.4
+      goal_radius: 0.6
+      cyclic_goals: true
+      init_pose:
+        x: 1.73
+        y: 9.93
+        z: 0.0
+        h: 0.0
+      behavior:
+        type: 1
+        configuration: 0
+        goal_force_factor: 10.0
+        obstacle_force_factor: 2.0
+        social_force_factor: 5.0
+        other_force_factor: 20.0
+      goals:
+        - "17"
+        - "18"
+        - "19"
+        - "20"

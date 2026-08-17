@@ -4,16 +4,16 @@
         string creator = "URDF USD Converter v0.1.3"
     }
     defaultPrim = "reachy_2023"
-    doc = """Generated from Composed Stage of root layer /tmp/tmpep5xaoq7/reachy_2023.usdc
+    doc = """Generated from Composed Stage of root layer /tmp/tmpn0uogcm4/reachy_2023.usdc
 
 
-Generated from Composed Stage of root layer /tmp/urdf_import_reachy_8_n63x1w/usdex_reachy/reachy_2023.usdc
+Generated from Composed Stage of root layer /tmp/urdf_import_reachy_3f7ii7ol/usdex_reachy/reachy_2023.usdc
 
 
-Generated from Composed Stage of root layer /tmp/urdf_import_reachy_8_n63x1w/temp_reachy/reachy.usd
+Generated from Composed Stage of root layer /tmp/urdf_import_reachy_3f7ii7ol/temp_reachy/reachy.usd
 
 
-Generated from Composed Stage of root layer /home/osamuzahid/Projects/isaac-social-nav/ros2_ws/src/Hunav_isaac_wrapper/src/config/robots/reachy/reachy_2/payloads/base.usd
+Generated from Composed Stage of root layer /home/osamuzahid/Projects/isaac-social-nav/ros2_ws/src/Hunav_isaac_wrapper/src/config/robots/reachy/reachy/payloads/base.usd
 """
     kilogramsPerUnit = 1
     metersPerUnit = 1
@@ -24,102 +24,115 @@ over "reachy_2023"
 {
     over "Geometry"
     {
-        over "world" (
-            prepend apiSchemas = ["PhysicsArticulationRootAPI", "NewtonArticulationRootAPI"]
-        )
+        over "base_footprint"
         {
-            bool newton:selfCollisionEnabled = 0
-
-            over "torso" (
-                prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+            over "base_link" (
+                prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsArticulationRootAPI", "NewtonArticulationRootAPI", "PhysicsMassAPI"]
             )
             {
-                point3f physics:centerOfMass = (0, 0.019, -0.009)
-                float3 physics:diagonalInertia = (0.0028959173, 0.0039018774, 0.0045841853)
-                float physics:mass = 0.527
-                quatf physics:principalAxes = (-0.5614406, 0.8275083, -0.0023002382, 0.003045207)
+                bool newton:selfCollisionEnabled = 0
+                point3f physics:centerOfMass = (0.008, -0.00048, 0.112)
+                float3 physics:diagonalInertia = (0.4077256, 0.42385718, 0.7099185)
+                float physics:mass = 24
+                quatf physics:principalAxes = (0.99863684, 0.0006356043, 0.0029335, -0.052109748)
 
-                over "r_shoulder" (
+                over "torso" (
                     prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
                 )
                 {
-                    point3f physics:centerOfMass = (-0.016, 0.036, 0)
-                    float3 physics:diagonalInertia = (0.00003505973, 0.000046890233, 0.00033080005)
-                    float physics:mass = 0.053
-                    quatf physics:principalAxes = (0.06475127, 0.7037308, 0.7045382, 0.06477654)
+                    point3f physics:centerOfMass = (0, 0.019, -0.009)
+                    float3 physics:diagonalInertia = (0.0028959173, 0.0039018774, 0.0045841853)
+                    float physics:mass = 0.527
+                    quatf physics:principalAxes = (-0.5614406, 0.8275083, -0.0023002382, 0.003045207)
 
-                    over "r_shoulder_x" (
+                    over "r_shoulder" (
                         prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
                     )
                     {
-                        point3f physics:centerOfMass = (-0, 0, -0.019)
-                        float3 physics:diagonalInertia = (0.0000695, 0.0000695, 0.0000968)
-                        float physics:mass = 0.158
-                        quatf physics:principalAxes = (1, 0, 0, 0)
+                        point3f physics:centerOfMass = (-0.016, 0.036, 0)
+                        float3 physics:diagonalInertia = (0.00003505973, 0.000046890233, 0.00033080005)
+                        float physics:mass = 0.053
+                        quatf physics:principalAxes = (0.06475127, 0.7037308, 0.7045382, 0.06477654)
 
-                        over "r_upper_arm" (
+                        over "r_shoulder_x" (
                             prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
                         )
                         {
-                            point3f physics:centerOfMass = (-0.004, 0, -0.1426)
-                            float3 physics:diagonalInertia = (0.00025513122, 0.0032704675, 0.0033450013)
-                            float physics:mass = 0.43
-                            quatf physics:principalAxes = (0.48828626, 0.48828265, 0.5111367, 0.5117576)
+                            point3f physics:centerOfMass = (-0, 0, -0.019)
+                            float3 physics:diagonalInertia = (0.0000695, 0.0000695, 0.0000968)
+                            float physics:mass = 0.158
+                            quatf physics:principalAxes = (1, 0, 0, 0)
 
-                            over "r_forearm" (
+                            over "r_upper_arm" (
                                 prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
                             )
                             {
-                                point3f physics:centerOfMass = (-0.008, 0, -0.058)
-                                float3 physics:diagonalInertia = (0.000121804274, 0.00025379882, 0.0002547969)
-                                float physics:mass = 0.162
-                                quatf physics:principalAxes = (0.6671542, 0.011667703, 0.74471825, 0.012798879)
+                                point3f physics:centerOfMass = (-0.004, 0, -0.1426)
+                                float3 physics:diagonalInertia = (0.00025513122, 0.0032704675, 0.0033450013)
+                                float physics:mass = 0.43
+                                quatf physics:principalAxes = (0.48828626, 0.48828265, 0.5111367, 0.5117576)
 
-                                over "r_wrist" (
+                                over "r_forearm" (
                                     prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
                                 )
                                 {
-                                    point3f physics:centerOfMass = (0, 0, -0.193)
-                                    float3 physics:diagonalInertia = (0.00010478581, 0.00061591354, 0.00062800065)
-                                    float physics:mass = 0.197
-                                    quatf physics:principalAxes = (0.5043321, 0.5058397, 0.49366033, 0.4960593)
+                                    point3f physics:centerOfMass = (-0.008, 0, -0.058)
+                                    float3 physics:diagonalInertia = (0.000121804274, 0.00025379882, 0.0002547969)
+                                    float physics:mass = 0.162
+                                    quatf physics:principalAxes = (0.6671542, 0.011667703, 0.74471825, 0.012798879)
 
-                                    over "r_wrist2hand" (
+                                    over "r_wrist" (
                                         prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
                                     )
                                     {
-                                        point3f physics:centerOfMass = (0, 0, 0.014)
-                                        float3 physics:diagonalInertia = (0.000005774, 0.00000606, 0.00000675)
-                                        float physics:mass = 0.01
-                                        quatf physics:principalAxes = (0.7071125, -0.000016965154, 0.70710105, -0.000021280162)
+                                        point3f physics:centerOfMass = (0, 0, -0.193)
+                                        float3 physics:diagonalInertia = (0.00010478581, 0.00061591354, 0.00062800065)
+                                        float physics:mass = 0.197
+                                        quatf physics:principalAxes = (0.5043321, 0.5058397, 0.49366033, 0.4960593)
 
-                                        over "r_gripper_thumb" (
+                                        over "r_wrist2hand" (
                                             prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
                                         )
                                         {
-                                            point3f physics:centerOfMass = (0, 0.02, -0.06)
-                                            float3 physics:diagonalInertia = (0.00008653172, 0.0001638502, 0.00021121808)
-                                            float physics:mass = 0.173
-                                            quatf physics:principalAxes = (0.68424124, -0.19483228, 0.67504495, -0.195368)
+                                            point3f physics:centerOfMass = (0, 0, 0.014)
+                                            float3 physics:diagonalInertia = (0.000005774, 0.00000606, 0.00000675)
+                                            float physics:mass = 0.01
+                                            quatf physics:principalAxes = (0.7071125, -0.000016965154, 0.70710105, -0.000021280162)
 
-                                            over "r_gripper_finger" (
+                                            over "r_gripper_thumb" (
                                                 prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
                                             )
                                             {
-                                                point3f physics:centerOfMass = (0, -0.01, -0.02)
-                                                float3 physics:diagonalInertia = (0.000010092558, 0.00008704, 0.00009218744)
-                                                float physics:mass = 0.035
-                                                quatf physics:principalAxes = (-0.5193187, 0.52036715, -0.47903228, -0.47963974)
+                                                point3f physics:centerOfMass = (0, 0.02, -0.06)
+                                                float3 physics:diagonalInertia = (0.00008653172, 0.0001638502, 0.00021121808)
+                                                float physics:mass = 0.173
+                                                quatf physics:principalAxes = (0.68424124, -0.19483228, 0.67504495, -0.195368)
+
+                                                over "r_gripper_finger" (
+                                                    prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                                                )
+                                                {
+                                                    point3f physics:centerOfMass = (0, -0.01, -0.02)
+                                                    float3 physics:diagonalInertia = (0.000010092558, 0.00008704, 0.00009218744)
+                                                    float physics:mass = 0.035
+                                                    quatf physics:principalAxes = (-0.5193187, 0.52036715, -0.47903228, -0.47963974)
+                                                }
+
+                                                over "r_arm_tip" (
+                                                    prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                                                )
+                                                {
+                                                    point3f physics:centerOfMass = (0, 0, 0)
+                                                    float3 physics:diagonalInertia = (9.9e-7, 9.9e-7, 0.00000102)
+                                                    float physics:mass = 0.001
+                                                    quatf physics:principalAxes = (0.88047624, 0.3647052, -0.27984813, 0.11591689)
+                                                }
                                             }
 
-                                            over "r_arm_tip" (
-                                                prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                                            over "cylinder" (
+                                                prepend apiSchemas = ["NewtonCollisionAPI"]
                                             )
                                             {
-                                                point3f physics:centerOfMass = (0, 0, 0)
-                                                float3 physics:diagonalInertia = (9.9e-7, 9.9e-7, 0.00000102)
-                                                float physics:mass = 0.001
-                                                quatf physics:principalAxes = (0.88047624, 0.3647052, -0.27984813, 0.11591689)
                                             }
                                         }
 
@@ -158,94 +171,94 @@ over "reachy_2023"
                         }
                     }
 
-                    over "cylinder" (
-                        prepend apiSchemas = ["NewtonCollisionAPI"]
-                    )
-                    {
-                    }
-                }
-
-                over "l_shoulder" (
-                    prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
-                )
-                {
-                    point3f physics:centerOfMass = (-0.016, 0.044, 0)
-                    float3 physics:diagonalInertia = (0.00003505973, 0.000046890233, 0.00033080005)
-                    float physics:mass = 0.053
-                    quatf physics:principalAxes = (-0.06416452, -0.70402896, 0.70434296, 0.06424177)
-
-                    over "l_shoulder_x" (
+                    over "l_shoulder" (
                         prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
                     )
                     {
-                        point3f physics:centerOfMass = (-0, 0, -0.019)
-                        float3 physics:diagonalInertia = (0.0000695, 0.0000695, 0.0000968)
-                        float physics:mass = 0.158
-                        quatf physics:principalAxes = (1, 0, 0, 0)
+                        point3f physics:centerOfMass = (-0.016, 0.044, 0)
+                        float3 physics:diagonalInertia = (0.00003505973, 0.000046890233, 0.00033080005)
+                        float physics:mass = 0.053
+                        quatf physics:principalAxes = (-0.06416452, -0.70402896, 0.70434296, 0.06424177)
 
-                        over "l_upper_arm" (
+                        over "l_shoulder_x" (
                             prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
                         )
                         {
-                            point3f physics:centerOfMass = (-0.004, 0, -0.1426)
-                            float3 physics:diagonalInertia = (0.00025513122, 0.0032704675, 0.0033450013)
-                            float physics:mass = 0.43
-                            quatf physics:principalAxes = (0.48828626, 0.48828265, 0.5111367, 0.5117576)
+                            point3f physics:centerOfMass = (-0, 0, -0.019)
+                            float3 physics:diagonalInertia = (0.0000695, 0.0000695, 0.0000968)
+                            float physics:mass = 0.158
+                            quatf physics:principalAxes = (1, 0, 0, 0)
 
-                            over "l_forearm" (
+                            over "l_upper_arm" (
                                 prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
                             )
                             {
-                                point3f physics:centerOfMass = (-0.008, 0, -0.058)
-                                float3 physics:diagonalInertia = (0.000121804274, 0.00025379882, 0.0002547969)
-                                float physics:mass = 0.162
-                                quatf physics:principalAxes = (0.6671542, 0.011667703, 0.74471825, 0.012798879)
+                                point3f physics:centerOfMass = (-0.004, 0, -0.1426)
+                                float3 physics:diagonalInertia = (0.00025513122, 0.0032704675, 0.0033450013)
+                                float physics:mass = 0.43
+                                quatf physics:principalAxes = (0.48828626, 0.48828265, 0.5111367, 0.5117576)
 
-                                over "l_wrist" (
+                                over "l_forearm" (
                                     prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
                                 )
                                 {
-                                    point3f physics:centerOfMass = (0, 0, -0.193)
-                                    float3 physics:diagonalInertia = (0.00010478581, 0.00061591354, 0.00062800065)
-                                    float physics:mass = 0.197
-                                    quatf physics:principalAxes = (0.5043321, 0.5058397, 0.49366033, 0.4960593)
+                                    point3f physics:centerOfMass = (-0.008, 0, -0.058)
+                                    float3 physics:diagonalInertia = (0.000121804274, 0.00025379882, 0.0002547969)
+                                    float physics:mass = 0.162
+                                    quatf physics:principalAxes = (0.6671542, 0.011667703, 0.74471825, 0.012798879)
 
-                                    over "l_wrist2hand" (
+                                    over "l_wrist" (
                                         prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
                                     )
                                     {
-                                        point3f physics:centerOfMass = (0, 0, 0.014)
-                                        float3 physics:diagonalInertia = (0.000005774, 0.00000606, 0.00000675)
-                                        float physics:mass = 0.01
-                                        quatf physics:principalAxes = (0.7071125, -0.000016965154, 0.70710105, -0.000021280162)
+                                        point3f physics:centerOfMass = (0, 0, -0.193)
+                                        float3 physics:diagonalInertia = (0.00010478581, 0.00061591354, 0.00062800065)
+                                        float physics:mass = 0.197
+                                        quatf physics:principalAxes = (0.5043321, 0.5058397, 0.49366033, 0.4960593)
 
-                                        over "l_gripper_thumb" (
+                                        over "l_wrist2hand" (
                                             prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
                                         )
                                         {
-                                            point3f physics:centerOfMass = (0, -0.02, -0.06)
-                                            float3 physics:diagonalInertia = (0.00008653172, 0.0001638502, 0.00021121808)
-                                            float physics:mass = 0.173
-                                            quatf physics:principalAxes = (0.68424124, -0.19483228, 0.67504495, -0.195368)
+                                            point3f physics:centerOfMass = (0, 0, 0.014)
+                                            float3 physics:diagonalInertia = (0.000005774, 0.00000606, 0.00000675)
+                                            float physics:mass = 0.01
+                                            quatf physics:principalAxes = (0.7071125, -0.000016965154, 0.70710105, -0.000021280162)
 
-                                            over "l_gripper_finger" (
+                                            over "l_gripper_thumb" (
                                                 prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
                                             )
                                             {
-                                                point3f physics:centerOfMass = (0, 0.01, -0.02)
-                                                float3 physics:diagonalInertia = (0.000010092558, 0.00008704, 0.00009218744)
-                                                float physics:mass = 0.035
-                                                quatf physics:principalAxes = (-0.5193187, 0.52036715, -0.47903228, -0.47963974)
+                                                point3f physics:centerOfMass = (0, -0.02, -0.06)
+                                                float3 physics:diagonalInertia = (0.00008653172, 0.0001638502, 0.00021121808)
+                                                float physics:mass = 0.173
+                                                quatf physics:principalAxes = (0.68424124, -0.19483228, 0.67504495, -0.195368)
+
+                                                over "l_gripper_finger" (
+                                                    prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                                                )
+                                                {
+                                                    point3f physics:centerOfMass = (0, 0.01, -0.02)
+                                                    float3 physics:diagonalInertia = (0.000010092558, 0.00008704, 0.00009218744)
+                                                    float physics:mass = 0.035
+                                                    quatf physics:principalAxes = (-0.5193187, 0.52036715, -0.47903228, -0.47963974)
+                                                }
+
+                                                over "l_arm_tip" (
+                                                    prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                                                )
+                                                {
+                                                    point3f physics:centerOfMass = (0, 0, 0)
+                                                    float3 physics:diagonalInertia = (9.9e-7, 9.9e-7, 0.00000102)
+                                                    float physics:mass = 0.001
+                                                    quatf physics:principalAxes = (0.88047624, 0.3647052, -0.27984813, 0.11591689)
+                                                }
                                             }
 
-                                            over "l_arm_tip" (
-                                                prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                                            over "cylinder" (
+                                                prepend apiSchemas = ["NewtonCollisionAPI"]
                                             )
                                             {
-                                                point3f physics:centerOfMass = (0, 0, 0)
-                                                float3 physics:diagonalInertia = (9.9e-7, 9.9e-7, 0.00000102)
-                                                float physics:mass = 0.001
-                                                quatf physics:principalAxes = (0.88047624, 0.3647052, -0.27984813, 0.11591689)
                                             }
                                         }
 
@@ -284,23 +297,7 @@ over "reachy_2023"
                         }
                     }
 
-                    over "cylinder" (
-                        prepend apiSchemas = ["NewtonCollisionAPI"]
-                    )
-                    {
-                    }
-                }
-
-                over "head_x" (
-                    prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
-                )
-                {
-                    point3f physics:centerOfMass = (0, 0, 0)
-                    float3 physics:diagonalInertia = (9.9e-7, 9.9e-7, 0.00000102)
-                    float physics:mass = 0.001
-                    quatf physics:principalAxes = (0.88047624, 0.3647052, -0.27984813, 0.11591689)
-
-                    over "head_y" (
+                    over "head_x" (
                         prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
                     )
                     {
@@ -309,7 +306,7 @@ over "reachy_2023"
                         float physics:mass = 0.001
                         quatf physics:principalAxes = (0.88047624, 0.3647052, -0.27984813, 0.11591689)
 
-                        over "head_z" (
+                        over "head_y" (
                             prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
                         )
                         {
@@ -318,139 +315,230 @@ over "reachy_2023"
                             float physics:mass = 0.001
                             quatf physics:principalAxes = (0.88047624, 0.3647052, -0.27984813, 0.11591689)
 
-                            over "head" (
+                            over "head_z" (
                                 prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
                             )
                             {
-                                point3f physics:centerOfMass = (-0.009, -0.002, 0.059)
-                                float3 physics:diagonalInertia = (0.00082233147, 0.0013697805, 0.0016943881)
-                                float physics:mass = 0.237
-                                quatf physics:principalAxes = (0.6535628, -0.030655656, 0.7561791, 0.010444599)
+                                point3f physics:centerOfMass = (0, 0, 0)
+                                float3 physics:diagonalInertia = (9.9e-7, 9.9e-7, 0.00000102)
+                                float physics:mass = 0.001
+                                quatf physics:principalAxes = (0.88047624, 0.3647052, -0.27984813, 0.11591689)
 
-                                over "l_antenna_link" (
+                                over "head" (
                                     prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
                                 )
                                 {
-                                    point3f physics:centerOfMass = (-0.001, 0, 0.008)
-                                    float3 physics:diagonalInertia = (0.000001, 0.000001, 0.000001)
-                                    float physics:mass = 0.004
-                                    quatf physics:principalAxes = (1, 0, 0, 0)
+                                    point3f physics:centerOfMass = (-0.009, -0.002, 0.059)
+                                    float3 physics:diagonalInertia = (0.00082233147, 0.0013697805, 0.0016943881)
+                                    float physics:mass = 0.237
+                                    quatf physics:principalAxes = (0.6535628, -0.030655656, 0.7561791, 0.010444599)
+
+                                    over "l_antenna_link" (
+                                        prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                                    )
+                                    {
+                                        point3f physics:centerOfMass = (-0.001, 0, 0.008)
+                                        float3 physics:diagonalInertia = (0.000001, 0.000001, 0.000001)
+                                        float physics:mass = 0.004
+                                        quatf physics:principalAxes = (1, 0, 0, 0)
+
+                                        over "cylinder" (
+                                            prepend apiSchemas = ["NewtonCollisionAPI"]
+                                        )
+                                        {
+                                        }
+                                    }
+
+                                    over "r_antenna_link" (
+                                        prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                                    )
+                                    {
+                                        point3f physics:centerOfMass = (-0.001, 0, 0.008)
+                                        float3 physics:diagonalInertia = (0.000001, 0.000001, 0.000001)
+                                        float physics:mass = 0.004
+                                        quatf physics:principalAxes = (1, 0, 0, 0)
+
+                                        over "cylinder" (
+                                            prepend apiSchemas = ["NewtonCollisionAPI"]
+                                        )
+                                        {
+                                        }
+                                    }
 
                                     over "cylinder" (
                                         prepend apiSchemas = ["NewtonCollisionAPI"]
                                     )
                                     {
                                     }
-                                }
 
-                                over "r_antenna_link" (
-                                    prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
-                                )
-                                {
-                                    point3f physics:centerOfMass = (-0.001, 0, 0.008)
-                                    float3 physics:diagonalInertia = (0.000001, 0.000001, 0.000001)
-                                    float physics:mass = 0.004
-                                    quatf physics:principalAxes = (1, 0, 0, 0)
-
-                                    over "cylinder" (
-                                        prepend apiSchemas = ["NewtonCollisionAPI"]
+                                    over "left_camera" (
+                                        prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
                                     )
                                     {
+                                        point3f physics:centerOfMass = (0, 0, 0)
+                                        float3 physics:diagonalInertia = (0.000001, 0.000001, 0.000001)
+                                        float physics:mass = 0.00001
+                                        quatf physics:principalAxes = (1, 0, 0, 0)
                                     }
-                                }
 
-                                over "cylinder" (
-                                    prepend apiSchemas = ["NewtonCollisionAPI"]
-                                )
-                                {
-                                }
+                                    over "right_camera" (
+                                        prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                                    )
+                                    {
+                                        point3f physics:centerOfMass = (0, 0, 0)
+                                        float3 physics:diagonalInertia = (0.000001, 0.000001, 0.000001)
+                                        float physics:mass = 0.00001
+                                        quatf physics:principalAxes = (1, 0, 0, 0)
+                                    }
 
-                                over "left_camera" (
-                                    prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
-                                )
-                                {
-                                    point3f physics:centerOfMass = (0, 0, 0)
-                                    float3 physics:diagonalInertia = (0.000001, 0.000001, 0.000001)
-                                    float physics:mass = 0.00001
-                                    quatf physics:principalAxes = (1, 0, 0, 0)
-                                }
-
-                                over "right_camera" (
-                                    prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
-                                )
-                                {
-                                    point3f physics:centerOfMass = (0, 0, 0)
-                                    float3 physics:diagonalInertia = (0.000001, 0.000001, 0.000001)
-                                    float physics:mass = 0.00001
-                                    quatf physics:principalAxes = (1, 0, 0, 0)
-                                }
-
-                                over "depth_camera_link" (
-                                    prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
-                                )
-                                {
-                                    point3f physics:centerOfMass = (0, 0, 0)
-                                    float3 physics:diagonalInertia = (0.000001, 0.000001, 0.000001)
-                                    float physics:mass = 0.00001
-                                    quatf physics:principalAxes = (1, 0, 0, 0)
+                                    over "depth_camera_link" (
+                                        prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                                    )
+                                    {
+                                        point3f physics:centerOfMass = (0, 0, 0)
+                                        float3 physics:diagonalInertia = (0.000001, 0.000001, 0.000001)
+                                        float physics:mass = 0.00001
+                                        quatf physics:principalAxes = (1, 0, 0, 0)
+                                    }
                                 }
                             }
                         }
                     }
-                }
 
-                over "top_neck_arm" (
-                    prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
-                )
-                {
-                    point3f physics:centerOfMass = (0, 0, 0)
-                    float3 physics:diagonalInertia = (9.9e-7, 9.9e-7, 0.00000102)
-                    float physics:mass = 0.001
-                    quatf physics:principalAxes = (0.88047624, 0.3647052, -0.27984813, 0.11591689)
+                    over "top_neck_arm" (
+                        prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                    )
+                    {
+                        point3f physics:centerOfMass = (0, 0, 0)
+                        float3 physics:diagonalInertia = (9.9e-7, 9.9e-7, 0.00000102)
+                        float physics:mass = 0.001
+                        quatf physics:principalAxes = (0.88047624, 0.3647052, -0.27984813, 0.11591689)
 
-                    over "cylinder" (
+                        over "cylinder" (
+                            prepend apiSchemas = ["NewtonCollisionAPI"]
+                        )
+                        {
+                        }
+                    }
+
+                    over "middle_neck_arm" (
+                        prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                    )
+                    {
+                        point3f physics:centerOfMass = (0, 0, 0)
+                        float3 physics:diagonalInertia = (9.9e-7, 9.9e-7, 0.00000102)
+                        float physics:mass = 0.001
+                        quatf physics:principalAxes = (0.88047624, 0.3647052, -0.27984813, 0.11591689)
+
+                        over "cylinder" (
+                            prepend apiSchemas = ["NewtonCollisionAPI"]
+                        )
+                        {
+                        }
+                    }
+
+                    over "bottom_neck_arm" (
+                        prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                    )
+                    {
+                        point3f physics:centerOfMass = (0, 0, 0)
+                        float3 physics:diagonalInertia = (9.9e-7, 9.9e-7, 0.00000102)
+                        float physics:mass = 0.001
+                        quatf physics:principalAxes = (0.88047624, 0.3647052, -0.27984813, 0.11591689)
+
+                        over "cylinder" (
+                            prepend apiSchemas = ["NewtonCollisionAPI"]
+                        )
+                        {
+                        }
+                    }
+
+                    over "box" (
                         prepend apiSchemas = ["NewtonCollisionAPI"]
                     )
                     {
                     }
                 }
 
-                over "middle_neck_arm" (
-                    prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
-                )
-                {
-                    point3f physics:centerOfMass = (0, 0, 0)
-                    float3 physics:diagonalInertia = (9.9e-7, 9.9e-7, 0.00000102)
-                    float physics:mass = 0.001
-                    quatf physics:principalAxes = (0.88047624, 0.3647052, -0.27984813, 0.11591689)
-
-                    over "cylinder" (
-                        prepend apiSchemas = ["NewtonCollisionAPI"]
-                    )
-                    {
-                    }
-                }
-
-                over "bottom_neck_arm" (
-                    prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
-                )
-                {
-                    point3f physics:centerOfMass = (0, 0, 0)
-                    float3 physics:diagonalInertia = (9.9e-7, 9.9e-7, 0.00000102)
-                    float physics:mass = 0.001
-                    quatf physics:principalAxes = (0.88047624, 0.3647052, -0.27984813, 0.11591689)
-
-                    over "cylinder" (
-                        prepend apiSchemas = ["NewtonCollisionAPI"]
-                    )
-                    {
-                    }
-                }
-
-                over "box" (
+                over "cylinder" (
                     prepend apiSchemas = ["NewtonCollisionAPI"]
                 )
                 {
+                }
+
+                over "drivewhl1_link" (
+                    prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                )
+                {
+                    point3f physics:centerOfMass = (0, 0, 0)
+                    float3 physics:diagonalInertia = (0.0014291666, 0.0014291666, 0.00275625)
+                    float physics:mass = 0.5
+                    quatf physics:principalAxes = (0.70710677, 0.70710677, 0, 0)
+
+                    over "cylinder_1" (
+                        prepend apiSchemas = ["NewtonCollisionAPI"]
+                    )
+                    {
+                    }
+                }
+
+                over "drivewhl2_link" (
+                    prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                )
+                {
+                    point3f physics:centerOfMass = (0, 0, 0)
+                    float3 physics:diagonalInertia = (0.0014291666, 0.0014291666, 0.00275625)
+                    float physics:mass = 0.5
+                    quatf physics:principalAxes = (0.70710677, 0.70710677, 0, 0)
+
+                    over "cylinder_1" (
+                        prepend apiSchemas = ["NewtonCollisionAPI"]
+                    )
+                    {
+                    }
+                }
+
+                over "drivewhl3_link" (
+                    prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                )
+                {
+                    point3f physics:centerOfMass = (0, 0, 0)
+                    float3 physics:diagonalInertia = (0.0014291666, 0.0014291666, 0.00275625)
+                    float physics:mass = 0.5
+                    quatf physics:principalAxes = (0.70710677, 0.70710677, 0, 0)
+
+                    over "cylinder_1" (
+                        prepend apiSchemas = ["NewtonCollisionAPI"]
+                    )
+                    {
+                    }
+                }
+
+                over "lidar_link" (
+                    prepend apiSchemas = ["PhysicsRigidBodyAPI", "PhysicsMassAPI"]
+                )
+                {
+                    point3f physics:centerOfMass = (0, 0, 0)
+                    float3 physics:diagonalInertia = (0.001, 0.001, 0.001)
+                    float physics:mass = 0.125
+                    quatf physics:principalAxes = (1, 0, 0, 0)
+
+                    over "cylinder" (
+                        prepend apiSchemas = ["NewtonCollisionAPI"]
+                    )
+                    {
+                    }
+                }
+
+                over "bar_link" (
+                    prepend apiSchemas = ["PhysicsRigidBodyAPI"]
+                )
+                {
+                    over "cylinder_1" (
+                        prepend apiSchemas = ["NewtonCollisionAPI"]
+                    )
+                    {
+                    }
                 }
             }
         }
@@ -462,14 +550,14 @@ over "reachy_2023"
             prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
         )
         {
-            float drive:angular:physics:damping = 1000
-            float drive:angular:physics:maxForce = 1e6
-            float drive:angular:physics:stiffness = 1e5
+            float drive:angular:physics:damping = 0.1
+            float drive:angular:physics:maxForce = 10
+            float drive:angular:physics:stiffness = 0
             uniform token physics:axis = "Y"
             custom rel physics:body0
-            prepend rel physics:body0 = </reachy_2023/Geometry/world/torso>
+            prepend rel physics:body0 = </reachy_2023/Geometry/base_footprint/base_link/torso>
             custom rel physics:body1
-            prepend rel physics:body1 = </reachy_2023/Geometry/world/torso/r_shoulder>
+            prepend rel physics:body1 = </reachy_2023/Geometry/base_footprint/base_link/torso/r_shoulder>
             point3f physics:localPos0 = (0, -0.19, 0)
             point3f physics:localPos1 = (0, 0, 0)
             quatf physics:localRot0 = (1, 0, 0, 0)
@@ -486,14 +574,14 @@ over "reachy_2023"
             prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
         )
         {
-            float drive:angular:physics:damping = 1000
-            float drive:angular:physics:maxForce = 1e6
-            float drive:angular:physics:stiffness = 1e5
+            float drive:angular:physics:damping = 0.1
+            float drive:angular:physics:maxForce = 10
+            float drive:angular:physics:stiffness = 0
             uniform token physics:axis = "X"
             custom rel physics:body0
-            prepend rel physics:body0 = </reachy_2023/Geometry/world/torso/r_shoulder>
+            prepend rel physics:body0 = </reachy_2023/Geometry/base_footprint/base_link/torso/r_shoulder>
             custom rel physics:body1
-            prepend rel physics:body1 = </reachy_2023/Geometry/world/torso/r_shoulder/r_shoulder_x>
+            prepend rel physics:body1 = </reachy_2023/Geometry/base_footprint/base_link/torso/r_shoulder/r_shoulder_x>
             point3f physics:localPos0 = (0, 0, 0)
             point3f physics:localPos1 = (0, 0, 0)
             quatf physics:localRot0 = (1, 0, 0, 0)
@@ -510,14 +598,14 @@ over "reachy_2023"
             prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
         )
         {
-            float drive:angular:physics:damping = 1000
-            float drive:angular:physics:maxForce = 1e6
-            float drive:angular:physics:stiffness = 1e5
+            float drive:angular:physics:damping = 0.1
+            float drive:angular:physics:maxForce = 10
+            float drive:angular:physics:stiffness = 0
             uniform token physics:axis = "Z"
             custom rel physics:body0
-            prepend rel physics:body0 = </reachy_2023/Geometry/world/torso/r_shoulder/r_shoulder_x>
+            prepend rel physics:body0 = </reachy_2023/Geometry/base_footprint/base_link/torso/r_shoulder/r_shoulder_x>
             custom rel physics:body1
-            prepend rel physics:body1 = </reachy_2023/Geometry/world/torso/r_shoulder/r_shoulder_x/r_upper_arm>
+            prepend rel physics:body1 = </reachy_2023/Geometry/base_footprint/base_link/torso/r_shoulder/r_shoulder_x/r_upper_arm>
             point3f physics:localPos0 = (0, 0, 0)
             point3f physics:localPos1 = (0, 0, 0)
             quatf physics:localRot0 = (1, 0, 0, 0)
@@ -534,14 +622,14 @@ over "reachy_2023"
             prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
         )
         {
-            float drive:angular:physics:damping = 1000
-            float drive:angular:physics:maxForce = 1e6
-            float drive:angular:physics:stiffness = 1e5
+            float drive:angular:physics:damping = 0.1
+            float drive:angular:physics:maxForce = 10
+            float drive:angular:physics:stiffness = 0
             uniform token physics:axis = "Y"
             custom rel physics:body0
-            prepend rel physics:body0 = </reachy_2023/Geometry/world/torso/r_shoulder/r_shoulder_x/r_upper_arm>
+            prepend rel physics:body0 = </reachy_2023/Geometry/base_footprint/base_link/torso/r_shoulder/r_shoulder_x/r_upper_arm>
             custom rel physics:body1
-            prepend rel physics:body1 = </reachy_2023/Geometry/world/torso/r_shoulder/r_shoulder_x/r_upper_arm/r_forearm>
+            prepend rel physics:body1 = </reachy_2023/Geometry/base_footprint/base_link/torso/r_shoulder/r_shoulder_x/r_upper_arm/r_forearm>
             point3f physics:localPos0 = (0, 0, -0.28)
             point3f physics:localPos1 = (0, 0, 0)
             quatf physics:localRot0 = (1, 0, 0, 0)
@@ -558,14 +646,14 @@ over "reachy_2023"
             prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
         )
         {
-            float drive:angular:physics:damping = 1000
-            float drive:angular:physics:maxForce = 1e6
-            float drive:angular:physics:stiffness = 1e5
+            float drive:angular:physics:damping = 0.1
+            float drive:angular:physics:maxForce = 10
+            float drive:angular:physics:stiffness = 0
             uniform token physics:axis = "Z"
             custom rel physics:body0
-            prepend rel physics:body0 = </reachy_2023/Geometry/world/torso/r_shoulder/r_shoulder_x/r_upper_arm/r_forearm>
+            prepend rel physics:body0 = </reachy_2023/Geometry/base_footprint/base_link/torso/r_shoulder/r_shoulder_x/r_upper_arm/r_forearm>
             custom rel physics:body1
-            prepend rel physics:body1 = </reachy_2023/Geometry/world/torso/r_shoulder/r_shoulder_x/r_upper_arm/r_forearm/r_wrist>
+            prepend rel physics:body1 = </reachy_2023/Geometry/base_footprint/base_link/torso/r_shoulder/r_shoulder_x/r_upper_arm/r_forearm/r_wrist>
             point3f physics:localPos0 = (0, 0, 0)
             point3f physics:localPos1 = (0, 0, 0)
             quatf physics:localRot0 = (1, 0, 0, 0)
@@ -582,14 +670,14 @@ over "reachy_2023"
             prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
         )
         {
-            float drive:angular:physics:damping = 1000
-            float drive:angular:physics:maxForce = 1e6
-            float drive:angular:physics:stiffness = 1e5
+            float drive:angular:physics:damping = 0.1
+            float drive:angular:physics:maxForce = 10
+            float drive:angular:physics:stiffness = 0
             uniform token physics:axis = "Y"
             custom rel physics:body0
-            prepend rel physics:body0 = </reachy_2023/Geometry/world/torso/r_shoulder/r_shoulder_x/r_upper_arm/r_forearm/r_wrist>
+            prepend rel physics:body0 = </reachy_2023/Geometry/base_footprint/base_link/torso/r_shoulder/r_shoulder_x/r_upper_arm/r_forearm/r_wrist>
             custom rel physics:body1
-            prepend rel physics:body1 = </reachy_2023/Geometry/world/torso/r_shoulder/r_shoulder_x/r_upper_arm/r_forearm/r_wrist/r_wrist2hand>
+            prepend rel physics:body1 = </reachy_2023/Geometry/base_footprint/base_link/torso/r_shoulder/r_shoulder_x/r_upper_arm/r_forearm/r_wrist/r_wrist2hand>
             point3f physics:localPos0 = (0, 0, -0.25)
             point3f physics:localPos1 = (0, 0, 0)
             quatf physics:localRot0 = (1, 0, 0, 0)
@@ -606,14 +694,14 @@ over "reachy_2023"
             prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
         )
         {
-            float drive:angular:physics:damping = 1000
-            float drive:angular:physics:maxForce = 1e6
-            float drive:angular:physics:stiffness = 1e5
+            float drive:angular:physics:damping = 0.1
+            float drive:angular:physics:maxForce = 10
+            float drive:angular:physics:stiffness = 0
             uniform token physics:axis = "X"
             custom rel physics:body0
-            prepend rel physics:body0 = </reachy_2023/Geometry/world/torso/r_shoulder/r_shoulder_x/r_upper_arm/r_forearm/r_wrist/r_wrist2hand>
+            prepend rel physics:body0 = </reachy_2023/Geometry/base_footprint/base_link/torso/r_shoulder/r_shoulder_x/r_upper_arm/r_forearm/r_wrist/r_wrist2hand>
             custom rel physics:body1
-            prepend rel physics:body1 = </reachy_2023/Geometry/world/torso/r_shoulder/r_shoulder_x/r_upper_arm/r_forearm/r_wrist/r_wrist2hand/r_gripper_thumb>
+            prepend rel physics:body1 = </reachy_2023/Geometry/base_footprint/base_link/torso/r_shoulder/r_shoulder_x/r_upper_arm/r_forearm/r_wrist/r_wrist2hand/r_gripper_thumb>
             point3f physics:localPos0 = (0, 0, -0.0325)
             point3f physics:localPos1 = (0, 0, 0)
             quatf physics:localRot0 = (1, 0, 0, 0)
@@ -630,14 +718,14 @@ over "reachy_2023"
             prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
         )
         {
-            float drive:angular:physics:damping = 1000
-            float drive:angular:physics:maxForce = 1e6
-            float drive:angular:physics:stiffness = 1e5
+            float drive:angular:physics:damping = 0.1
+            float drive:angular:physics:maxForce = 10
+            float drive:angular:physics:stiffness = 0
             uniform token physics:axis = "X"
             custom rel physics:body0
-            prepend rel physics:body0 = </reachy_2023/Geometry/world/torso/r_shoulder/r_shoulder_x/r_upper_arm/r_forearm/r_wrist/r_wrist2hand/r_gripper_thumb>
+            prepend rel physics:body0 = </reachy_2023/Geometry/base_footprint/base_link/torso/r_shoulder/r_shoulder_x/r_upper_arm/r_forearm/r_wrist/r_wrist2hand/r_gripper_thumb>
             custom rel physics:body1
-            prepend rel physics:body1 = </reachy_2023/Geometry/world/torso/r_shoulder/r_shoulder_x/r_upper_arm/r_forearm/r_wrist/r_wrist2hand/r_gripper_thumb/r_gripper_finger>
+            prepend rel physics:body1 = </reachy_2023/Geometry/base_footprint/base_link/torso/r_shoulder/r_shoulder_x/r_upper_arm/r_forearm/r_wrist/r_wrist2hand/r_gripper_thumb/r_gripper_finger>
             point3f physics:localPos0 = (0, -0.037, -0.03998)
             point3f physics:localPos1 = (0, 0, 0)
             quatf physics:localRot0 = (0.9689124, -0.24740395, 0, 0)
@@ -654,14 +742,14 @@ over "reachy_2023"
             prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
         )
         {
-            float drive:angular:physics:damping = 1000
-            float drive:angular:physics:maxForce = 1e6
-            float drive:angular:physics:stiffness = 1e5
+            float drive:angular:physics:damping = 0.1
+            float drive:angular:physics:maxForce = 10
+            float drive:angular:physics:stiffness = 0
             uniform token physics:axis = "Y"
             custom rel physics:body0
-            prepend rel physics:body0 = </reachy_2023/Geometry/world/torso>
+            prepend rel physics:body0 = </reachy_2023/Geometry/base_footprint/base_link/torso>
             custom rel physics:body1
-            prepend rel physics:body1 = </reachy_2023/Geometry/world/torso/l_shoulder>
+            prepend rel physics:body1 = </reachy_2023/Geometry/base_footprint/base_link/torso/l_shoulder>
             point3f physics:localPos0 = (0, 0.19, 0)
             point3f physics:localPos1 = (0, 0, 0)
             quatf physics:localRot0 = (1, 0, 0, 0)
@@ -678,14 +766,14 @@ over "reachy_2023"
             prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
         )
         {
-            float drive:angular:physics:damping = 1000
-            float drive:angular:physics:maxForce = 1e6
-            float drive:angular:physics:stiffness = 1e5
+            float drive:angular:physics:damping = 0.1
+            float drive:angular:physics:maxForce = 10
+            float drive:angular:physics:stiffness = 0
             uniform token physics:axis = "X"
             custom rel physics:body0
-            prepend rel physics:body0 = </reachy_2023/Geometry/world/torso/l_shoulder>
+            prepend rel physics:body0 = </reachy_2023/Geometry/base_footprint/base_link/torso/l_shoulder>
             custom rel physics:body1
-            prepend rel physics:body1 = </reachy_2023/Geometry/world/torso/l_shoulder/l_shoulder_x>
+            prepend rel physics:body1 = </reachy_2023/Geometry/base_footprint/base_link/torso/l_shoulder/l_shoulder_x>
             point3f physics:localPos0 = (0, 0, 0)
             point3f physics:localPos1 = (0, 0, 0)
             quatf physics:localRot0 = (1, 0, 0, 0)
@@ -702,14 +790,14 @@ over "reachy_2023"
             prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
         )
         {
-            float drive:angular:physics:damping = 1000
-            float drive:angular:physics:maxForce = 1e6
-            float drive:angular:physics:stiffness = 1e5
+            float drive:angular:physics:damping = 0.1
+            float drive:angular:physics:maxForce = 10
+            float drive:angular:physics:stiffness = 0
             uniform token physics:axis = "Z"
             custom rel physics:body0
-            prepend rel physics:body0 = </reachy_2023/Geometry/world/torso/l_shoulder/l_shoulder_x>
+            prepend rel physics:body0 = </reachy_2023/Geometry/base_footprint/base_link/torso/l_shoulder/l_shoulder_x>
             custom rel physics:body1
-            prepend rel physics:body1 = </reachy_2023/Geometry/world/torso/l_shoulder/l_shoulder_x/l_upper_arm>
+            prepend rel physics:body1 = </reachy_2023/Geometry/base_footprint/base_link/torso/l_shoulder/l_shoulder_x/l_upper_arm>
             point3f physics:localPos0 = (0, 0, 0)
             point3f physics:localPos1 = (0, 0, 0)
             quatf physics:localRot0 = (1, 0, 0, 0)
@@ -726,14 +814,14 @@ over "reachy_2023"
             prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
         )
         {
-            float drive:angular:physics:damping = 1000
-            float drive:angular:physics:maxForce = 1e6
-            float drive:angular:physics:stiffness = 1e5
+            float drive:angular:physics:damping = 0.1
+            float drive:angular:physics:maxForce = 10
+            float drive:angular:physics:stiffness = 0
             uniform token physics:axis = "Y"
             custom rel physics:body0
-            prepend rel physics:body0 = </reachy_2023/Geometry/world/torso/l_shoulder/l_shoulder_x/l_upper_arm>
+            prepend rel physics:body0 = </reachy_2023/Geometry/base_footprint/base_link/torso/l_shoulder/l_shoulder_x/l_upper_arm>
             custom rel physics:body1
-            prepend rel physics:body1 = </reachy_2023/Geometry/world/torso/l_shoulder/l_shoulder_x/l_upper_arm/l_forearm>
+            prepend rel physics:body1 = </reachy_2023/Geometry/base_footprint/base_link/torso/l_shoulder/l_shoulder_x/l_upper_arm/l_forearm>
             point3f physics:localPos0 = (0, 0, -0.28)
             point3f physics:localPos1 = (0, 0, 0)
             quatf physics:localRot0 = (1, 0, 0, 0)
@@ -750,14 +838,14 @@ over "reachy_2023"
             prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
         )
         {
-            float drive:angular:physics:damping = 1000
-            float drive:angular:physics:maxForce = 1e6
-            float drive:angular:physics:stiffness = 1e5
+            float drive:angular:physics:damping = 0.1
+            float drive:angular:physics:maxForce = 10
+            float drive:angular:physics:stiffness = 0
             uniform token physics:axis = "Z"
             custom rel physics:body0
-            prepend rel physics:body0 = </reachy_2023/Geometry/world/torso/l_shoulder/l_shoulder_x/l_upper_arm/l_forearm>
+            prepend rel physics:body0 = </reachy_2023/Geometry/base_footprint/base_link/torso/l_shoulder/l_shoulder_x/l_upper_arm/l_forearm>
             custom rel physics:body1
-            prepend rel physics:body1 = </reachy_2023/Geometry/world/torso/l_shoulder/l_shoulder_x/l_upper_arm/l_forearm/l_wrist>
+            prepend rel physics:body1 = </reachy_2023/Geometry/base_footprint/base_link/torso/l_shoulder/l_shoulder_x/l_upper_arm/l_forearm/l_wrist>
             point3f physics:localPos0 = (0, 0, 0)
             point3f physics:localPos1 = (0, 0, 0)
             quatf physics:localRot0 = (1, 0, 0, 0)
@@ -774,14 +862,14 @@ over "reachy_2023"
             prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
         )
         {
-            float drive:angular:physics:damping = 1000
-            float drive:angular:physics:maxForce = 1e6
-            float drive:angular:physics:stiffness = 1e5
+            float drive:angular:physics:damping = 0.1
+            float drive:angular:physics:maxForce = 10
+            float drive:angular:physics:stiffness = 0
             uniform token physics:axis = "Y"
             custom rel physics:body0
-            prepend rel physics:body0 = </reachy_2023/Geometry/world/torso/l_shoulder/l_shoulder_x/l_upper_arm/l_forearm/l_wrist>
+            prepend rel physics:body0 = </reachy_2023/Geometry/base_footprint/base_link/torso/l_shoulder/l_shoulder_x/l_upper_arm/l_forearm/l_wrist>
             custom rel physics:body1
-            prepend rel physics:body1 = </reachy_2023/Geometry/world/torso/l_shoulder/l_shoulder_x/l_upper_arm/l_forearm/l_wrist/l_wrist2hand>
+            prepend rel physics:body1 = </reachy_2023/Geometry/base_footprint/base_link/torso/l_shoulder/l_shoulder_x/l_upper_arm/l_forearm/l_wrist/l_wrist2hand>
             point3f physics:localPos0 = (0, 0, -0.25)
             point3f physics:localPos1 = (0, 0, 0)
             quatf physics:localRot0 = (1, 0, 0, 0)
@@ -798,14 +886,14 @@ over "reachy_2023"
             prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
         )
         {
-            float drive:angular:physics:damping = 1000
-            float drive:angular:physics:maxForce = 1e6
-            float drive:angular:physics:stiffness = 1e5
+            float drive:angular:physics:damping = 0.1
+            float drive:angular:physics:maxForce = 10
+            float drive:angular:physics:stiffness = 0
             uniform token physics:axis = "X"
             custom rel physics:body0
-            prepend rel physics:body0 = </reachy_2023/Geometry/world/torso/l_shoulder/l_shoulder_x/l_upper_arm/l_forearm/l_wrist/l_wrist2hand>
+            prepend rel physics:body0 = </reachy_2023/Geometry/base_footprint/base_link/torso/l_shoulder/l_shoulder_x/l_upper_arm/l_forearm/l_wrist/l_wrist2hand>
             custom rel physics:body1
-            prepend rel physics:body1 = </reachy_2023/Geometry/world/torso/l_shoulder/l_shoulder_x/l_upper_arm/l_forearm/l_wrist/l_wrist2hand/l_gripper_thumb>
+            prepend rel physics:body1 = </reachy_2023/Geometry/base_footprint/base_link/torso/l_shoulder/l_shoulder_x/l_upper_arm/l_forearm/l_wrist/l_wrist2hand/l_gripper_thumb>
             point3f physics:localPos0 = (0, 0, -0.0325)
             point3f physics:localPos1 = (0, 0, 0)
             quatf physics:localRot0 = (1, 0, 0, 0)
@@ -822,14 +910,14 @@ over "reachy_2023"
             prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
         )
         {
-            float drive:angular:physics:damping = 1000
-            float drive:angular:physics:maxForce = 1e6
-            float drive:angular:physics:stiffness = 1e5
+            float drive:angular:physics:damping = 0.1
+            float drive:angular:physics:maxForce = 10
+            float drive:angular:physics:stiffness = 0
             uniform token physics:axis = "X"
             custom rel physics:body0
-            prepend rel physics:body0 = </reachy_2023/Geometry/world/torso/l_shoulder/l_shoulder_x/l_upper_arm/l_forearm/l_wrist/l_wrist2hand/l_gripper_thumb>
+            prepend rel physics:body0 = </reachy_2023/Geometry/base_footprint/base_link/torso/l_shoulder/l_shoulder_x/l_upper_arm/l_forearm/l_wrist/l_wrist2hand/l_gripper_thumb>
             custom rel physics:body1
-            prepend rel physics:body1 = </reachy_2023/Geometry/world/torso/l_shoulder/l_shoulder_x/l_upper_arm/l_forearm/l_wrist/l_wrist2hand/l_gripper_thumb/l_gripper_finger>
+            prepend rel physics:body1 = </reachy_2023/Geometry/base_footprint/base_link/torso/l_shoulder/l_shoulder_x/l_upper_arm/l_forearm/l_wrist/l_wrist2hand/l_gripper_thumb/l_gripper_finger>
             point3f physics:localPos0 = (0, 0.037, -0.03998)
             point3f physics:localPos1 = (0, 0, 0)
             quatf physics:localRot0 = (0.9689124, -0.24740395, 0, 0)
@@ -846,14 +934,14 @@ over "reachy_2023"
             prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
         )
         {
-            float drive:angular:physics:damping = 1000
-            float drive:angular:physics:maxForce = 1e6
-            float drive:angular:physics:stiffness = 1e5
+            float drive:angular:physics:damping = 0.1
+            float drive:angular:physics:maxForce = 10
+            float drive:angular:physics:stiffness = 0
             uniform token physics:axis = "X"
             custom rel physics:body0
-            prepend rel physics:body0 = </reachy_2023/Geometry/world/torso>
+            prepend rel physics:body0 = </reachy_2023/Geometry/base_footprint/base_link/torso>
             custom rel physics:body1
-            prepend rel physics:body1 = </reachy_2023/Geometry/world/torso/head_x>
+            prepend rel physics:body1 = </reachy_2023/Geometry/base_footprint/base_link/torso/head_x>
             point3f physics:localPos0 = (0.015, 0, 0.095)
             point3f physics:localPos1 = (0, 0, 0)
             quatf physics:localRot0 = (0.86279917, -0.043437716, 0.0752535, -0.49802378)
@@ -870,15 +958,15 @@ over "reachy_2023"
             prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
         )
         {
-            float drive:angular:physics:damping = 1000
-            float drive:angular:physics:maxForce = 1e6
-            float drive:angular:physics:stiffness = 1e5
+            float drive:angular:physics:damping = 0.1
+            float drive:angular:physics:maxForce = 10
+            float drive:angular:physics:stiffness = 0
             uniform token physics:axis = "Y"
             custom rel physics:body0
-            prepend rel physics:body0 = </reachy_2023/Geometry/world/torso/head_x>
+            prepend rel physics:body0 = </reachy_2023/Geometry/base_footprint/base_link/torso/head_x>
             custom rel physics:body1
-            prepend rel physics:body1 = </reachy_2023/Geometry/world/torso/head_x/head_y>
-            point3f physics:localPos0 = (0, 0, 0)
+            prepend rel physics:body1 = </reachy_2023/Geometry/base_footprint/base_link/torso/head_x/head_y>
+            point3f physics:localPos0 = (0, 2.7755576e-17, 0)
             point3f physics:localPos1 = (0, 0, 0)
             quatf physics:localRot0 = (1, 0, 0, 0)
             quatf physics:localRot1 = (1, 0, 0, 0)
@@ -894,15 +982,15 @@ over "reachy_2023"
             prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
         )
         {
-            float drive:angular:physics:damping = 1000
-            float drive:angular:physics:maxForce = 1e6
-            float drive:angular:physics:stiffness = 1e5
+            float drive:angular:physics:damping = 0.1
+            float drive:angular:physics:maxForce = 10
+            float drive:angular:physics:stiffness = 0
             uniform token physics:axis = "Z"
             custom rel physics:body0
-            prepend rel physics:body0 = </reachy_2023/Geometry/world/torso/head_x/head_y>
+            prepend rel physics:body0 = </reachy_2023/Geometry/base_footprint/base_link/torso/head_x/head_y>
             custom rel physics:body1
-            prepend rel physics:body1 = </reachy_2023/Geometry/world/torso/head_x/head_y/head_z>
-            point3f physics:localPos0 = (0, 0, 0)
+            prepend rel physics:body1 = </reachy_2023/Geometry/base_footprint/base_link/torso/head_x/head_y/head_z>
+            point3f physics:localPos0 = (0, 2.7755576e-17, 0)
             point3f physics:localPos1 = (0, 0, 0)
             quatf physics:localRot0 = (1, 0, 0, 0)
             quatf physics:localRot1 = (1, 0, 0, 0)
@@ -918,14 +1006,14 @@ over "reachy_2023"
             prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
         )
         {
-            float drive:angular:physics:damping = 1000
-            float drive:angular:physics:maxForce = 1e6
-            float drive:angular:physics:stiffness = 1e5
+            float drive:angular:physics:damping = 17.453293
+            float drive:angular:physics:maxForce = 10
+            float drive:angular:physics:stiffness = 0
             uniform token physics:axis = "Z"
             custom rel physics:body0
-            prepend rel physics:body0 = </reachy_2023/Geometry/world/torso/head_x/head_y/head_z/head>
+            prepend rel physics:body0 = </reachy_2023/Geometry/base_footprint/base_link/torso/head_x/head_y/head_z/head>
             custom rel physics:body1
-            prepend rel physics:body1 = </reachy_2023/Geometry/world/torso/head_x/head_y/head_z/head/l_antenna_link>
+            prepend rel physics:body1 = </reachy_2023/Geometry/base_footprint/base_link/torso/head_x/head_y/head_z/head/l_antenna_link>
             point3f physics:localPos0 = (-0.052, 0.057, 0.086)
             point3f physics:localPos1 = (0, 0, 0)
             quatf physics:localRot0 = (0.75402856, -0.20320928, -0.4637384, -0.4184419)
@@ -940,14 +1028,14 @@ over "reachy_2023"
             prepend apiSchemas = ["PhysicsDriveAPI:angular", "PhysicsJointStateAPI:angular"]
         )
         {
-            float drive:angular:physics:damping = 1000
-            float drive:angular:physics:maxForce = 1e6
-            float drive:angular:physics:stiffness = 1e5
+            float drive:angular:physics:damping = 17.453293
+            float drive:angular:physics:maxForce = 10
+            float drive:angular:physics:stiffness = 0
             uniform token physics:axis = "Z"
             custom rel physics:body0
-            prepend rel physics:body0 = </reachy_2023/Geometry/world/torso/head_x/head_y/head_z/head>
+            prepend rel physics:body0 = </reachy_2023/Geometry/base_footprint/base_link/torso/head_x/head_y/head_z/head>
             custom rel physics:body1
-            prepend rel physics:body1 = </reachy_2023/Geometry/world/torso/head_x/head_y/head_z/head/r_antenna_link>
+            prepend rel physics:body1 = </reachy_2023/Geometry/base_footprint/base_link/torso/head_x/head_y/head_z/head/r_antenna_link>
             point3f physics:localPos0 = (-0.052, -0.057, 0.086)
             point3f physics:localPos1 = (0, 0, 0)
             quatf physics:localRot0 = (0.75402856, 0.20320928, -0.4637384, 0.4184419)
@@ -958,13 +1046,73 @@ over "reachy_2023"
             custom float urdf:limit:velocity = 0
         }
 
-        def PhysicsFixedJoint "world_joint"
+        def PhysicsFixedJoint "drivewhl1_joint"
         {
             custom rel physics:body0
-            prepend rel physics:body0 = </reachy_2023>
+            prepend rel physics:body0 = </reachy_2023/Geometry/base_footprint/base_link>
             custom rel physics:body1
-            prepend rel physics:body1 = </reachy_2023/Geometry/world/torso>
-            point3f physics:localPos0 = (0, 0, 1)
+            prepend rel physics:body1 = </reachy_2023/Geometry/base_footprint/base_link/drivewhl1_link>
+            point3f physics:localPos0 = (0.099, -0.17147303, 0.105)
+            point3f physics:localPos1 = (0, 0, 0)
+            quatf physics:localRot0 = (0.9659258, 0, 0, 0.2588191)
+            quatf physics:localRot1 = (1, 0, 0, 0)
+        }
+
+        def PhysicsFixedJoint "drivewhl2_joint"
+        {
+            custom rel physics:body0
+            prepend rel physics:body0 = </reachy_2023/Geometry/base_footprint/base_link>
+            custom rel physics:body1
+            prepend rel physics:body1 = </reachy_2023/Geometry/base_footprint/base_link/drivewhl2_link>
+            point3f physics:localPos0 = (0.099, 0.17147303, 0.105)
+            point3f physics:localPos1 = (0, 0, 0)
+            quatf physics:localRot0 = (0.25881904, 0, 0, 0.9659258)
+            quatf physics:localRot1 = (1, 0, 0, 0)
+        }
+
+        def PhysicsFixedJoint "drivewhl3_joint"
+        {
+            custom rel physics:body0
+            prepend rel physics:body0 = </reachy_2023/Geometry/base_footprint/base_link>
+            custom rel physics:body1
+            prepend rel physics:body1 = </reachy_2023/Geometry/base_footprint/base_link/drivewhl3_link>
+            point3f physics:localPos0 = (-0.198, -2.4248007e-17, 0.105)
+            point3f physics:localPos1 = (0, 0, 0)
+            quatf physics:localRot0 = (-0.70710677, 0, 0, 0.70710677)
+            quatf physics:localRot1 = (1, 0, 0, 0)
+        }
+
+        def PhysicsFixedJoint "lidar_joint"
+        {
+            custom rel physics:body0
+            prepend rel physics:body0 = </reachy_2023/Geometry/base_footprint/base_link>
+            custom rel physics:body1
+            prepend rel physics:body1 = </reachy_2023/Geometry/base_footprint/base_link/lidar_link>
+            point3f physics:localPos0 = (0.184, 0, 0.25)
+            point3f physics:localPos1 = (0, 0, 0)
+            quatf physics:localRot0 = (1, 0, 0, 0)
+            quatf physics:localRot1 = (1, 0, 0, 0)
+        }
+
+        def PhysicsFixedJoint "base_joint"
+        {
+            custom rel physics:body0
+            prepend rel physics:body0 = </reachy_2023/Geometry/base_footprint/base_link>
+            custom rel physics:body1
+            prepend rel physics:body1 = </reachy_2023/Geometry/base_footprint/base_link/torso>
+            point3f physics:localPos0 = (-0.006, 0, 1)
+            point3f physics:localPos1 = (0, 0, 0)
+            quatf physics:localRot0 = (1, 0, 0, 0)
+            quatf physics:localRot1 = (1, 0, 0, 0)
+        }
+
+        def PhysicsFixedJoint "bar_joint"
+        {
+            custom rel physics:body0
+            prepend rel physics:body0 = </reachy_2023/Geometry/base_footprint/base_link>
+            custom rel physics:body1
+            prepend rel physics:body1 = </reachy_2023/Geometry/base_footprint/base_link/bar_link>
+            point3f physics:localPos0 = (-0.13, 0, 0)
             point3f physics:localPos1 = (0, 0, 0)
             quatf physics:localRot0 = (1, 0, 0, 0)
             quatf physics:localRot1 = (1, 0, 0, 0)
@@ -973,9 +1121,9 @@ over "reachy_2023"
         def PhysicsFixedJoint "r_arm_tip"
         {
             custom rel physics:body0
-            prepend rel physics:body0 = </reachy_2023/Geometry/world/torso/r_shoulder/r_shoulder_x/r_upper_arm/r_forearm/r_wrist/r_wrist2hand/r_gripper_thumb>
+            prepend rel physics:body0 = </reachy_2023/Geometry/base_footprint/base_link/torso/r_shoulder/r_shoulder_x/r_upper_arm/r_forearm/r_wrist/r_wrist2hand/r_gripper_thumb>
             custom rel physics:body1
-            prepend rel physics:body1 = </reachy_2023/Geometry/world/torso/r_shoulder/r_shoulder_x/r_upper_arm/r_forearm/r_wrist/r_wrist2hand/r_gripper_thumb/r_arm_tip>
+            prepend rel physics:body1 = </reachy_2023/Geometry/base_footprint/base_link/torso/r_shoulder/r_shoulder_x/r_upper_arm/r_forearm/r_wrist/r_wrist2hand/r_gripper_thumb/r_arm_tip>
             point3f physics:localPos0 = (0, -0.012, -0.085)
             point3f physics:localPos1 = (0, 0, 0)
             quatf physics:localRot0 = (1, 0, 0, 0)
@@ -985,9 +1133,9 @@ over "reachy_2023"
         def PhysicsFixedJoint "l_arm_tip"
         {
             custom rel physics:body0
-            prepend rel physics:body0 = </reachy_2023/Geometry/world/torso/l_shoulder/l_shoulder_x/l_upper_arm/l_forearm/l_wrist/l_wrist2hand/l_gripper_thumb>
+            prepend rel physics:body0 = </reachy_2023/Geometry/base_footprint/base_link/torso/l_shoulder/l_shoulder_x/l_upper_arm/l_forearm/l_wrist/l_wrist2hand/l_gripper_thumb>
             custom rel physics:body1
-            prepend rel physics:body1 = </reachy_2023/Geometry/world/torso/l_shoulder/l_shoulder_x/l_upper_arm/l_forearm/l_wrist/l_wrist2hand/l_gripper_thumb/l_arm_tip>
+            prepend rel physics:body1 = </reachy_2023/Geometry/base_footprint/base_link/torso/l_shoulder/l_shoulder_x/l_upper_arm/l_forearm/l_wrist/l_wrist2hand/l_gripper_thumb/l_arm_tip>
             point3f physics:localPos0 = (0, -0.012, -0.085)
             point3f physics:localPos1 = (0, 0, 0)
             quatf physics:localRot0 = (1, 0, 0, 0)
@@ -997,10 +1145,10 @@ over "reachy_2023"
         def PhysicsFixedJoint "neck_fixed"
         {
             custom rel physics:body0
-            prepend rel physics:body0 = </reachy_2023/Geometry/world/torso/head_x/head_y/head_z>
+            prepend rel physics:body0 = </reachy_2023/Geometry/base_footprint/base_link/torso/head_x/head_y/head_z>
             custom rel physics:body1
-            prepend rel physics:body1 = </reachy_2023/Geometry/world/torso/head_x/head_y/head_z/head>
-            point3f physics:localPos0 = (0, 0, 0)
+            prepend rel physics:body1 = </reachy_2023/Geometry/base_footprint/base_link/torso/head_x/head_y/head_z/head>
+            point3f physics:localPos0 = (0, 2.7755576e-17, 0)
             point3f physics:localPos1 = (0, 0, 0)
             quatf physics:localRot0 = (0.8660748, 4.8572257e-16, -8.0478194e-16, 0.49991444)
             quatf physics:localRot1 = (1, 0, 0, 0)
@@ -1009,9 +1157,9 @@ over "reachy_2023"
         def PhysicsFixedJoint "neck_top"
         {
             custom rel physics:body0
-            prepend rel physics:body0 = </reachy_2023/Geometry/world/torso>
+            prepend rel physics:body0 = </reachy_2023/Geometry/base_footprint/base_link/torso>
             custom rel physics:body1
-            prepend rel physics:body1 = </reachy_2023/Geometry/world/torso/top_neck_arm>
+            prepend rel physics:body1 = </reachy_2023/Geometry/base_footprint/base_link/torso/top_neck_arm>
             point3f physics:localPos0 = (0.0067, 0, 0.0478)
             point3f physics:localPos1 = (0, 0, 0)
             quatf physics:localRot0 = (0.9962179, 0, 0.086890064, 0)
@@ -1021,9 +1169,9 @@ over "reachy_2023"
         def PhysicsFixedJoint "neck_middle"
         {
             custom rel physics:body0
-            prepend rel physics:body0 = </reachy_2023/Geometry/world/torso>
+            prepend rel physics:body0 = </reachy_2023/Geometry/base_footprint/base_link/torso>
             custom rel physics:body1
-            prepend rel physics:body1 = </reachy_2023/Geometry/world/torso/middle_neck_arm>
+            prepend rel physics:body1 = </reachy_2023/Geometry/base_footprint/base_link/torso/middle_neck_arm>
             point3f physics:localPos0 = (0.0067, 0, 0.0478)
             point3f physics:localPos1 = (0, 0, 0)
             quatf physics:localRot0 = (0.9962179, 0, 0.086890064, 0)
@@ -1033,9 +1181,9 @@ over "reachy_2023"
         def PhysicsFixedJoint "neck_bottom"
         {
             custom rel physics:body0
-            prepend rel physics:body0 = </reachy_2023/Geometry/world/torso>
+            prepend rel physics:body0 = </reachy_2023/Geometry/base_footprint/base_link/torso>
             custom rel physics:body1
-            prepend rel physics:body1 = </reachy_2023/Geometry/world/torso/bottom_neck_arm>
+            prepend rel physics:body1 = </reachy_2023/Geometry/base_footprint/base_link/torso/bottom_neck_arm>
             point3f physics:localPos0 = (0.0067, 0, 0.0478)
             point3f physics:localPos1 = (0, 0, 0)
             quatf physics:localRot0 = (0.9962179, 0, 0.086890064, 0)
@@ -1045,9 +1193,9 @@ over "reachy_2023"
         def PhysicsFixedJoint "left_cam_fixed"
         {
             custom rel physics:body0
-            prepend rel physics:body0 = </reachy_2023/Geometry/world/torso/head_x/head_y/head_z/head>
+            prepend rel physics:body0 = </reachy_2023/Geometry/base_footprint/base_link/torso/head_x/head_y/head_z/head>
             custom rel physics:body1
-            prepend rel physics:body1 = </reachy_2023/Geometry/world/torso/head_x/head_y/head_z/head/left_camera>
+            prepend rel physics:body1 = </reachy_2023/Geometry/base_footprint/base_link/torso/head_x/head_y/head_z/head/left_camera>
             point3f physics:localPos0 = (0.02, 0.03625, 0.06105)
             point3f physics:localPos1 = (0, 0, 0)
             quatf physics:localRot0 = (1, 0, 0, 0)
@@ -1057,9 +1205,9 @@ over "reachy_2023"
         def PhysicsFixedJoint "right_cam_fixed"
         {
             custom rel physics:body0
-            prepend rel physics:body0 = </reachy_2023/Geometry/world/torso/head_x/head_y/head_z/head>
+            prepend rel physics:body0 = </reachy_2023/Geometry/base_footprint/base_link/torso/head_x/head_y/head_z/head>
             custom rel physics:body1
-            prepend rel physics:body1 = </reachy_2023/Geometry/world/torso/head_x/head_y/head_z/head/right_camera>
+            prepend rel physics:body1 = </reachy_2023/Geometry/base_footprint/base_link/torso/head_x/head_y/head_z/head/right_camera>
             point3f physics:localPos0 = (0.02, -0.03625, 0.06105)
             point3f physics:localPos1 = (0, 0, 0)
             quatf physics:localRot0 = (1, 0, 0, 0)
@@ -1069,9 +1217,9 @@ over "reachy_2023"
         def PhysicsFixedJoint "depth_cam_fixed"
         {
             custom rel physics:body0
-            prepend rel physics:body0 = </reachy_2023/Geometry/world/torso/head_x/head_y/head_z/head>
+            prepend rel physics:body0 = </reachy_2023/Geometry/base_footprint/base_link/torso/head_x/head_y/head_z/head>
             custom rel physics:body1
-            prepend rel physics:body1 = </reachy_2023/Geometry/world/torso/head_x/head_y/head_z/head/depth_camera_link>
+            prepend rel physics:body1 = </reachy_2023/Geometry/base_footprint/base_link/torso/head_x/head_y/head_z/head/depth_camera_link>
             point3f physics:localPos0 = (0.02, 0, 0.06105)
             point3f physics:localPos1 = (0, 0, 0)
             quatf physics:localRot0 = (1, 0, 0, 0)

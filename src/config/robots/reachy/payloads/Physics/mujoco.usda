@@ -4,16 +4,16 @@
         string creator = "URDF USD Converter v0.1.3"
     }
     defaultPrim = "reachy_2023"
-    doc = """Generated from Composed Stage of root layer /tmp/tmpep5xaoq7/reachy_2023.usdc
+    doc = """Generated from Composed Stage of root layer /tmp/tmpn0uogcm4/reachy_2023.usdc
 
 
-Generated from Composed Stage of root layer /tmp/urdf_import_reachy_8_n63x1w/usdex_reachy/reachy_2023.usdc
+Generated from Composed Stage of root layer /tmp/urdf_import_reachy_3f7ii7ol/usdex_reachy/reachy_2023.usdc
 
 
-Generated from Composed Stage of root layer /tmp/urdf_import_reachy_8_n63x1w/temp_reachy/reachy.usd
+Generated from Composed Stage of root layer /tmp/urdf_import_reachy_3f7ii7ol/temp_reachy/reachy.usd
 
 
-Generated from Composed Stage of root layer /home/osamuzahid/Projects/isaac-social-nav/ros2_ws/src/Hunav_isaac_wrapper/src/config/robots/reachy/reachy_2/payloads/base.usd
+Generated from Composed Stage of root layer /home/osamuzahid/Projects/isaac-social-nav/ros2_ws/src/Hunav_isaac_wrapper/src/config/robots/reachy/reachy/payloads/base.usd
 """
     kilogramsPerUnit = 1
     metersPerUnit = 1
@@ -412,7 +412,27 @@ over "reachy_2023"
             custom float mjc:frictionloss = 0.1
         }
 
-        over "world_joint"
+        over "drivewhl1_joint"
+        {
+        }
+
+        over "drivewhl2_joint"
+        {
+        }
+
+        over "drivewhl3_joint"
+        {
+        }
+
+        over "lidar_joint"
+        {
+        }
+
+        over "base_joint"
+        {
+        }
+
+        over "bar_joint"
         {
         }
 
@@ -467,63 +487,74 @@ over "reachy_2023"
 
     over "Geometry"
     {
-        over "world"
+        over "base_footprint"
         {
-            over "torso"
+            over "base_link"
             {
-                over "r_shoulder"
+                over "torso"
                 {
-                    over "r_shoulder_x"
+                    over "r_shoulder"
                     {
-                        over "r_upper_arm"
+                        over "r_shoulder_x"
                         {
-                            over "r_forearm"
+                            over "r_upper_arm"
                             {
-                                over "r_wrist"
+                                over "r_forearm"
                                 {
-                                    over "r_wrist2hand"
+                                    over "r_wrist"
                                     {
-                                        over "r_gripper_thumb"
+                                        over "r_wrist2hand"
                                         {
                                             over "r_gripper_thumb"
                                             {
-                                            }
+                                                over "r_gripper_thumb"
+                                                {
+                                                }
 
-                                            over "r_gripper_finger"
-                                            {
                                                 over "r_gripper_finger"
                                                 {
-                                                }
-
-                                                over "r_gripper_finger_1"
-                                                {
-                                                    over "tn__mesh1028_meshmesh_mP_1"
+                                                    over "r_gripper_finger"
                                                     {
                                                     }
 
-                                                    over "tn__mesh1028_meshmesh_mP_2"
+                                                    over "r_gripper_finger_1"
+                                                    {
+                                                        over "tn__mesh1028_meshmesh_mP_1"
+                                                        {
+                                                        }
+
+                                                        over "tn__mesh1028_meshmesh_mP_2"
+                                                        {
+                                                        }
+                                                    }
+                                                }
+
+                                                over "r_arm_tip"
+                                                {
+                                                }
+
+                                                over "r_gripper_thumb_1"
+                                                {
+                                                    over "tn__mesh1064_meshmesh_mP_1"
+                                                    {
+                                                    }
+
+                                                    over "tn__mesh1064_meshmesh_mP_2"
                                                     {
                                                     }
                                                 }
                                             }
 
-                                            over "r_arm_tip"
+                                            over "wrist2hand"
                                             {
                                             }
 
-                                            over "r_gripper_thumb_1"
+                                            over "cylinder"
                                             {
-                                                over "tn__mesh1064_meshmesh_mP_1"
-                                                {
-                                                }
-
-                                                over "tn__mesh1064_meshmesh_mP_2"
-                                                {
-                                                }
                                             }
                                         }
 
-                                        over "wrist2hand"
+                                        over "wrist"
                                         {
                                         }
 
@@ -532,7 +563,7 @@ over "reachy_2023"
                                         }
                                     }
 
-                                    over "wrist"
+                                    over "forearm"
                                     {
                                     }
 
@@ -541,7 +572,7 @@ over "reachy_2023"
                                     }
                                 }
 
-                                over "forearm"
+                                over "upper_arm"
                                 {
                                 }
 
@@ -550,7 +581,7 @@ over "reachy_2023"
                                 }
                             }
 
-                            over "upper_arm"
+                            over "shoulder_x"
                             {
                             }
 
@@ -559,7 +590,7 @@ over "reachy_2023"
                             }
                         }
 
-                        over "shoulder_x"
+                        over "shoulder"
                         {
                         }
 
@@ -568,68 +599,68 @@ over "reachy_2023"
                         }
                     }
 
-                    over "shoulder"
+                    over "l_shoulder"
                     {
-                    }
-
-                    over "cylinder"
-                    {
-                    }
-                }
-
-                over "l_shoulder"
-                {
-                    over "l_shoulder_x"
-                    {
-                        over "l_upper_arm"
+                        over "l_shoulder_x"
                         {
-                            over "l_forearm"
+                            over "l_upper_arm"
                             {
-                                over "l_wrist"
+                                over "l_forearm"
                                 {
-                                    over "l_wrist2hand"
+                                    over "l_wrist"
                                     {
-                                        over "l_gripper_thumb"
+                                        over "l_wrist2hand"
                                         {
                                             over "l_gripper_thumb"
                                             {
-                                            }
+                                                over "l_gripper_thumb"
+                                                {
+                                                }
 
-                                            over "l_gripper_finger"
-                                            {
                                                 over "l_gripper_finger"
                                                 {
-                                                }
-
-                                                over "l_gripper_finger_1"
-                                                {
-                                                    over "tn__mesh1028_meshmesh_mP_1"
+                                                    over "l_gripper_finger"
                                                     {
                                                     }
 
-                                                    over "tn__mesh1028_meshmesh_mP_2"
+                                                    over "l_gripper_finger_1"
+                                                    {
+                                                        over "tn__mesh1028_meshmesh_mP_1"
+                                                        {
+                                                        }
+
+                                                        over "tn__mesh1028_meshmesh_mP_2"
+                                                        {
+                                                        }
+                                                    }
+                                                }
+
+                                                over "l_arm_tip"
+                                                {
+                                                }
+
+                                                over "l_gripper_thumb_1"
+                                                {
+                                                    over "tn__mesh1064_meshmesh_mP_1"
+                                                    {
+                                                    }
+
+                                                    over "tn__mesh1064_meshmesh_mP_2"
                                                     {
                                                     }
                                                 }
                                             }
 
-                                            over "l_arm_tip"
+                                            over "wrist2hand"
                                             {
                                             }
 
-                                            over "l_gripper_thumb_1"
+                                            over "cylinder"
                                             {
-                                                over "tn__mesh1064_meshmesh_mP_1"
-                                                {
-                                                }
-
-                                                over "tn__mesh1064_meshmesh_mP_2"
-                                                {
-                                                }
                                             }
                                         }
 
-                                        over "wrist2hand"
+                                        over "wrist"
                                         {
                                         }
 
@@ -638,7 +669,7 @@ over "reachy_2023"
                                         }
                                     }
 
-                                    over "wrist"
+                                    over "forearm"
                                     {
                                     }
 
@@ -647,7 +678,7 @@ over "reachy_2023"
                                     }
                                 }
 
-                                over "forearm"
+                                over "upper_arm"
                                 {
                                 }
 
@@ -656,7 +687,7 @@ over "reachy_2023"
                                 }
                             }
 
-                            over "upper_arm"
+                            over "shoulder_x"
                             {
                             }
 
@@ -665,7 +696,7 @@ over "reachy_2023"
                             }
                         }
 
-                        over "shoulder_x"
+                        over "shoulder"
                         {
                         }
 
@@ -674,120 +705,175 @@ over "reachy_2023"
                         }
                     }
 
-                    over "shoulder"
+                    over "head_x"
                     {
-                    }
-
-                    over "cylinder"
-                    {
-                    }
-                }
-
-                over "head_x"
-                {
-                    over "head_y"
-                    {
-                        over "head_z"
+                        over "head_y"
                         {
-                            over "head"
+                            over "head_z"
                             {
-                                over "l_antenna_link"
-                                {
-                                    over "antenna"
-                                    {
-                                    }
-
-                                    over "cylinder"
-                                    {
-                                    }
-                                }
-
-                                over "r_antenna_link"
-                                {
-                                    over "antenna"
-                                    {
-                                    }
-
-                                    over "cylinder"
-                                    {
-                                    }
-                                }
-
-                                over "head_tip"
-                                {
-                                }
-
-                                over "left_camera"
-                                {
-                                    over "left_camera_optical"
-                                    {
-                                    }
-                                }
-
-                                over "right_camera"
-                                {
-                                    over "right_camera_optical"
-                                    {
-                                    }
-                                }
-
-                                over "depth_camera_link"
-                                {
-                                    over "depth_camera_optical"
-                                    {
-                                    }
-                                }
-
                                 over "head"
                                 {
-                                }
+                                    over "l_antenna_link"
+                                    {
+                                        over "antenna"
+                                        {
+                                        }
 
-                                over "cylinder"
-                                {
+                                        over "cylinder"
+                                        {
+                                        }
+                                    }
+
+                                    over "r_antenna_link"
+                                    {
+                                        over "antenna"
+                                        {
+                                        }
+
+                                        over "cylinder"
+                                        {
+                                        }
+                                    }
+
+                                    over "head_tip"
+                                    {
+                                    }
+
+                                    over "left_camera"
+                                    {
+                                        over "left_camera_optical"
+                                        {
+                                        }
+                                    }
+
+                                    over "right_camera"
+                                    {
+                                        over "right_camera_optical"
+                                        {
+                                        }
+                                    }
+
+                                    over "depth_camera_link"
+                                    {
+                                        over "depth_camera_optical"
+                                        {
+                                        }
+                                    }
+
+                                    over "head"
+                                    {
+                                    }
+
+                                    over "cylinder"
+                                    {
+                                    }
                                 }
                             }
                         }
                     }
-                }
 
-                over "top_neck_arm"
-                {
-                    over "orbita_arm"
+                    over "top_neck_arm"
+                    {
+                        over "orbita_arm"
+                        {
+                        }
+
+                        over "cylinder"
+                        {
+                        }
+                    }
+
+                    over "middle_neck_arm"
+                    {
+                        over "orbita_arm"
+                        {
+                        }
+
+                        over "cylinder"
+                        {
+                        }
+                    }
+
+                    over "bottom_neck_arm"
+                    {
+                        over "orbita_arm"
+                        {
+                        }
+
+                        over "cylinder"
+                        {
+                        }
+                    }
+
+                    over "torso"
                     {
                     }
 
+                    over "box"
+                    {
+                    }
+                }
+
+                over "drivewhl1_link"
+                {
+                    over "cylinder"
+                    {
+                    }
+
+                    over "cylinder_1"
+                    {
+                    }
+                }
+
+                over "drivewhl2_link"
+                {
+                    over "cylinder"
+                    {
+                    }
+
+                    over "cylinder_1"
+                    {
+                    }
+                }
+
+                over "drivewhl3_link"
+                {
+                    over "cylinder"
+                    {
+                    }
+
+                    over "cylinder_1"
+                    {
+                    }
+                }
+
+                over "imu_link"
+                {
+                }
+
+                over "lidar_link"
+                {
                     over "cylinder"
                     {
                     }
                 }
 
-                over "middle_neck_arm"
+                over "bar_link"
                 {
-                    over "orbita_arm"
-                    {
-                    }
-
                     over "cylinder"
                     {
                     }
-                }
 
-                over "bottom_neck_arm"
-                {
-                    over "orbita_arm"
-                    {
-                    }
-
-                    over "cylinder"
+                    over "cylinder_1"
                     {
                     }
                 }
 
-                over "torso"
+                over "mobile_base_visual"
                 {
                 }
 
-                over "box"
+                over "cylinder"
                 {
                 }
             }

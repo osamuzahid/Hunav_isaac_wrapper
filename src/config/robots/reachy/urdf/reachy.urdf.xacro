@@ -8,12 +8,36 @@
   <xacro:include filename="/home/osamuzahid/Projects/isaac-social-nav/ros2_ws/src/Hunav_isaac_wrapper/src/config/robots/reachy/urdf/arm.urdf.xacro"/>
   <xacro:include filename="/home/osamuzahid/Projects/isaac-social-nav/ros2_ws/src/Hunav_isaac_wrapper/src/config/robots/reachy/urdf/head.urdf.xacro"/>
   <xacro:include filename="/home/osamuzahid/Projects/isaac-social-nav/ros2_ws/src/Hunav_isaac_wrapper/src/config/robots/reachy/urdf/orbita.urdf.xacro"/>
+  <xacro:include filename="/home/osamuzahid/Projects/isaac-social-nav/ros2_ws/src/Hunav_isaac_wrapper/src/config/robots/reachy/urdf/zuuu.urdf.xacro"/>
 
-  <link name="world"/>
-  <joint name="world_joint" type="fixed">
-    <origin xyz="0 0 1.0" rpy="0 0 0"/>
-    <parent link="world"/>
+  <!-- PATCH (isaac-social-nav): Zuuu mobile base (lab Reachy). Torso sits on
+       the pole — not world→torso at z=1.0 (Phase 0 table-top). -->
+  <xacro:zuuu/>
+
+  <joint name="base_joint" type="fixed">
+    <origin xyz="-0.006 0 1.0" rpy="0 0 0"/>
+    <parent link="base_link"/>
     <child link="torso"/>
+  </joint>
+
+  <link name="bar_link">
+    <visual>
+      <origin xyz="0.0 0.0 0.6125" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <cylinder radius="0.02" length="0.775"/>
+      </geometry>
+    </visual>
+    <collision>
+      <origin xyz="0.0 0.0 0.6125" rpy="0.0 0.0 0.0"/>
+      <geometry>
+        <cylinder radius="0.02" length="0.775"/>
+      </geometry>
+    </collision>
+  </link>
+  <joint name="bar_joint" type="fixed">
+    <origin xyz="-0.130 0 0.0" rpy="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="bar_link"/>
   </joint>
 
   <link name="torso">

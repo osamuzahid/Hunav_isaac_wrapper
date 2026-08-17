@@ -6,7 +6,7 @@ Interactive launcher for the Hunav Isaac Wrapper simulation environment.
 
 This script provides a command-line interface that allows users to:
 - Select between existing agent configuration files or create new ones via RViz
-- Choose from built-in presets (warehouse, hospital, office, museum, bookstore) or custom YAML files
+- Choose from built-in presets (warehouse, hospital, office, museum, bookstore, house_museum, small_house, small_warehouse) or custom YAML files
 - Automatically infer the simulation world based on the configuration file
 - Select the robot type (jetbot, create3, carter, carter_ROS, stretch, stretch_wheeled, franka)
 - Launch the TeleopHuNavSim node with the selected parameters
@@ -151,8 +151,24 @@ PRESETS = {
     "museum_sensor_demo",
     "bookstore_agents",
     "bookstore_behaviors",
+    "house_museum_agents",
+    "house_museum_behaviors",
+    "small_house_agents",
+    "small_house_behaviors",
+    "small_warehouse_agents",
+    "small_warehouse_behaviors",
 }
-KNOWN_WORLDS = {"warehouse", "hospital", "office", "empty_world", "museum", "bookstore"}
+KNOWN_WORLDS = {
+    "warehouse",
+    "hospital",
+    "office",
+    "empty_world",
+    "museum",
+    "bookstore",
+    "house_museum",
+    "small_house",
+    "small_warehouse",
+}
 ROBOTS = [
     "jetbot",
     "create3",
@@ -362,9 +378,11 @@ def find_config(basename):
 def infer_scenario_from_config(config_path: str) -> str:
     """
     Look for one of KNOWN_WORLDS in the filename; fallback to 'warehouse'.
+    Longest name first so house_museum is not inferred as museum and
+    small_warehouse is not inferred as warehouse.
     """
     base = os.path.basename(config_path).lower()
-    for scen in KNOWN_WORLDS:
+    for scen in sorted(KNOWN_WORLDS, key=len, reverse=True):
         if scen in base:
             return scen
     return "warehouse"
@@ -569,7 +587,7 @@ def main():
             "stretch": "Hello Robot Stretch — kinematic chassis (no wall collision)",
             "stretch_wheeled": "Hello Robot Stretch — PhysX diff-drive (walls collide)",
             "franka": "CUCR lab Franka Panda — parked (TF + joint_states)",
-            "reachy": "CUCR lab Reachy 2023 — parked (TF + joints + dual head RGB)",
+            "reachy": "CUCR lab Reachy 2023 + Zuuu base — parked (TF + joints + /scan + dual RGB)",
         }
         robot = choose(
             "Select robot:",
@@ -977,7 +995,7 @@ def interactive_config_selection():
 
     # --- pick agents config ---
     config_type_descriptions = {
-        "Pre-built configurations": "Choose from warehouse, hospital, office, museum, or bookstore presets",
+        "Pre-built configurations": "Choose from warehouse, hospital, office, museum, bookstore, house_museum, small_house, or small_warehouse presets",
         "Custom configurations": "Browse user-created configuration files"
     }
     

@@ -2,15 +2,19 @@
 
 Apache-2.0 (Pollen Robotics). Source: official
 [`pollen-robotics/reachy_2023`](https://github.com/pollen-robotics/reachy_2023)
-`reachy_description` (develop). **Torso-only** kit (Zuuu mobile-base xacro stripped for Phase 0).
-Camera optical frames come from the description’s Gazebo camera section (links kept; plugins stripped).
+`reachy_description` (develop) **plus Zuuu mobile base** (`mobile_base_visual.dae`,
+lidar at `lidar_link`). Camera optical frames come from the description’s Gazebo
+camera section (links kept; plugins stripped). Wheels are **fixed** (kinematic
+park / later chassis teleport — not PhysX omni drive).
 
-## Stock sensors (Phase 0)
+## Stock sensors
 
 | Stream | Topic | Notes |
 |---|---|---|
-| TF | `/tf` | parked rclpy: `world`→`torso` / camera opticals (PoseTree unusable on opticals) |
-| Joint states | `/joint_states` | parked zeros via rclpy; bodies **`park_kinematic`** (dynamic PhysX blows on bad upstream inertias) |
+| TF | `/tf` | parked rclpy: `world`→`base_link` / `lidar_link` / `torso` / camera opticals |
+| Joint states | `/joint_states` | parked zeros via rclpy; bodies **`park_kinematic`** |
+| Base lidar | `/scan` | RTX 2D on `lidar_link` (frame_id=`lidar_link`) |
+| IMU | `/imu` | synthetic gravity on `imu_link` |
 | Head RGB L/R | `/left_camera/*`, `/right_camera/*` | opt-in `HUNAV_LAB_CAMERAS=1`; no gripper force |
 
 ## Rebuild USD
@@ -29,7 +33,7 @@ housings stack as a vertical “exploded” look).
 OMNI_KIT_ACCEPT_EULA=YES ~/isaacsim/python.sh tools/isaac_import_robot_urdf.py \
   --urdf src/config/robots/reachy/reachy.urdf \
   --usd-path src/config/robots/reachy --output-name reachy.usd \
-  --fix-base --merge-mesh
+  --no-fix-base --merge-mesh
 ```
 
 Baked `.obj`/`.mtl` are gitignored (large); keep source `.dae` and re-bake before

@@ -23,6 +23,13 @@ GOAL_Y="${GOAL_Y:-0.0}"
 ODOM_TOPIC="${ODOM_TOPIC:-/chassis/odom}"
 SKIP_PC2="${SKIP_PC2:-0}"
 USE_LOCALIZATION="${USE_LOCALIZATION:-True}"
+RECORD_ODOM="${RECORD_ODOM:-0}"
+STATUE_X="${STATUE_X:-}"
+STATUE_Y="${STATUE_Y:-}"
+STATUE2_X="${STATUE2_X:-}"
+STATUE2_Y="${STATUE2_Y:-}"
+STATUE3_X="${STATUE3_X:-}"
+STATUE3_Y="${STATUE3_Y:-}"
 SUMMARY="$OUT/nav2_smoke_summary.txt"
 
 # Isaac Kit + many leftover ROS nodes can exhaust FastDDS SHM locks.
@@ -149,6 +156,15 @@ fi
 log "=== NavigateToPose goal ($GOAL_X,$GOAL_Y) ==="
 timeout 3 ros2 topic echo "$ODOM_TOPIC" --once --qos-reliability best_effort >"$OUT/odom_before.txt" 2>&1 || true
 
+ODOM_REC_PID=""
+if [[ "$RECORD_ODOM" == "1" ]]; then
+  log "=== record $ODOM_TOPIC → $OUT/odom_path.csv ==="
+  python3 "$SMOKE_DIR/record_odom_path.py" --topic "$ODOM_TOPIC" --out "$OUT/odom_path.csv" \
+    >"$OUT/odom_record.log" 2>&1 &
+  ODOM_REC_PID=$!
+  sleep 1
+fi
+
 GOAL_TIMEOUT="${GOAL_TIMEOUT:-120}"
 set +e
 timeout "$GOAL_TIMEOUT" ros2 action send_goal /navigate_to_pose nav2_msgs/action/NavigateToPose \
@@ -158,6 +174,11 @@ GOAL_RC=$?
 set -e
 log "send_goal exit=$GOAL_RC timeout=${GOAL_TIMEOUT}s"
 tail -40 "$OUT/nav_goal.txt" | tee -a "$SUMMARY"
+
+if [[ -n "$ODOM_REC_PID" ]]; then
+  kill "$ODOM_REC_PID" 2>/dev/null || true
+  wait "$ODOM_REC_PID" 2>/dev/null || true
+fi
 
 timeout 3 ros2 topic echo "$ODOM_TOPIC" --once --qos-reliability best_effort >"$OUT/odom_after.txt" 2>&1 || true
 log "=== odom / goal verdict ==="
@@ -192,7 +213,29 @@ else:
 blog = (out/"nav2_bringup.log").read_text() if (out/"nav2_bringup.log").is_file() else ""
 n_prog = blog.count("Failed to make progress")
 print(f"progress_fail_count={n_prog}")
+n_origin = blog.count("Sensor origin")
+print(f"sensor_origin_warns={n_origin}")
 PY
+
+if [[ "$RECORD_ODOM" == "1" && -n "$STATUE_X" && -n "$STATUE_Y" ]]; then
+  log "=== obstacle hop vs statues ($STATUE_X,$STATUE_Y) ($STATUE2_X,$STATUE2_Y) ($STATUE3_X,$STATUE3_Y) ==="
+  extra=()
+  if [[ -n "$STATUE2_X" && -n "$STATUE2_Y" ]]; then
+    extra+=(--statue2-x "$STATUE2_X" --statue2-y "$STATUE2_Y")
+  fi
+  if [[ -n "$STATUE3_X" && -n "$STATUE3_Y" ]]; then
+    extra+=(--statue3-x "$STATUE3_X" --statue3-y "$STATUE3_Y")
+  fi
+  python3 "$SMOKE_DIR/analyze_obstacle_hop.py" \
+    --odom "$OUT/odom_path.csv" \
+    --map-yaml "$MAP_YAML" \
+    --statue-x "$STATUE_X" --statue-y "$STATUE_Y" \
+    "${extra[@]}" \
+    --bringup-log "$OUT/nav2_bringup.log" \
+    --start-x "$INIT_X" --start-y "$INIT_Y" \
+    --goal-x "$GOAL_X" --goal-y "$GOAL_Y" \
+    | tee -a "$SUMMARY" || true
+fi
 
 # Abort diagnostics — survive /tmp wipe if summary was copied; always leave clues.
 log "=== abort diagnostics (nav2_bringup.log) ==="
@@ -201,7 +244,7 @@ DIAG="$OUT/nav2_abort_diag.txt"
 if [[ -f "$OUT/nav2_bringup.log" ]]; then
   {
     echo "--- progress / TF / collision_monitor / abort ---"
-    grep -E 'Failed to make progress|TF_ERROR|Transform|collision_monitor|Collision Monitor|Aborting|Goal failed|invalid source|timed out|No valid|control loop missed' \
+    grep -E 'Failed to make progress|TF_ERROR|Transform|Sensor origin|collision_monitor|Collision Monitor|Aborting|Goal failed|invalid source|timed out|No valid|control loop missed' \
       "$OUT/nav2_bringup.log" 2>/dev/null | tail -n 80 || true
     echo "--- last 40 lines ---"
     tail -n 40 "$OUT/nav2_bringup.log"
@@ -210,7 +253,7 @@ else
   log "no nav2_bringup.log" | tee -a "$DIAG"
 fi
 
-kill $PC2_PID $NAV_PID $MAP_PID 2>/dev/null || true
-wait $PC2_PID $NAV_PID $MAP_PID 2>/dev/null || true
+kill $PC2_PID $NAV_PID $MAP_PID $ODOM_REC_PID 2>/dev/null || true
+wait $PC2_PID $NAV_PID $MAP_PID $ODOM_REC_PID 2>/dev/null || true
 log "=== done ==="
 cat "$SUMMARY"

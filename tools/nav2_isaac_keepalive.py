@@ -6,7 +6,10 @@ Usage:
   export OMNI_KIT_ACCEPT_EULA=YES ROS_DOMAIN_ID=0 HUNAV_ISAAC_PROFILE=debug
   ~/isaacsim/python.sh tools/nav2_isaac_keepalive.py --seconds 360 \\
     --world empty_world --config empty_world_agents
-  # museum (lighter agent preset):
+  # museum Stretch Nav2 (5 Impassive along plaza hop):
+  ~/isaacsim/python.sh tools/nav2_isaac_keepalive.py --seconds 600 \\
+    --robot stretch --world museum --config museum_eval_5 --disable-cameras
+  # museum (2-agent demo):
   ~/isaacsim/python.sh tools/nav2_isaac_keepalive.py --seconds 400 \\
     --world museum --config museum_agents --disable-cameras
   # windowed hospital (see the robot):

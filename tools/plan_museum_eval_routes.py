@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Offline A* + crowd-safety bars for museum_eval (10 Impassive loops).
+"""Offline A* + crowd-safety bars for museum_eval / museum_eval_5 Impassive loops.
 
 Usage:
   python3 tools/plan_museum_eval_routes.py
+  python3 tools/plan_museum_eval_routes.py museum_eval_5
 """
 
 from __future__ import annotations
@@ -54,7 +55,8 @@ def _min_path_path(p1: list, p2: list) -> float:
 
 
 def main() -> int:
-    params = _load_scenario("museum_eval")
+    name = sys.argv[1] if len(sys.argv) > 1 else "museum_eval"
+    params = _load_scenario(name)
     inflation = float(params.get("plan_inflation_radius_m", 0.40))
     maps = os.path.join(ROOT, "maps", params.get("map_yaml", "museum.yaml"))
     m = OccupancyMap.from_yaml(maps, inflation_radius_m=inflation)
@@ -71,12 +73,29 @@ def main() -> int:
     for aname in params["agents"]:
         a = params[aname]
         if int(a.get("behavior", {}).get("type", 2)) != 2:
-            print(f"FAIL {aname}: museum_eval must stay Impassive (type 2), "
+            print(f"FAIL {aname}: {name} must stay Impassive (type 2), "
                   f"got {a.get('behavior', {}).get('type')}")
             ok = False
         init = (float(a["init_pose"]["x"]), float(a["init_pose"]["y"]))
         inits[aname] = init
         gids = [str(g) for g in a["goals"]]
+        standing = float(a.get("max_vel", 1.0)) < 0.05
+        if standing:
+            if not m.is_navigable_world(*init):
+                print(f"FAIL {aname}: standing pose not navigable {init}")
+                ok = False
+                continue
+            d_robot = math.hypot(init[0] - robot[0], init[1] - robot[1])
+            print(
+                f"OK   {aname}: STANDING at ({init[0]:.2f},{init[1]:.2f}), "
+                f"min_d_robot={d_robot:.2f} m"
+            )
+            if d_robot < ROBOT_STANDOFF_M:
+                print(f"FAIL {aname}: standing on parked Stretch "
+                      f"{d_robot:.2f} m < {ROBOT_STANDOFF_M:.1f} m")
+                ok = False
+            paths[aname] = [init]
+            continue
         keys = [init] + [goals[g] for g in gids] + [goals[gids[0]]]
         path = m.plan_route(keys, waypoint_spacing_m=1.0)
         if path is None:
@@ -114,6 +133,13 @@ def main() -> int:
             d = _min_path_path(paths[a], paths[b])
             pair_best = min(pair_best, d)
             if d < CHOKE_M:
+                stand = (
+                    float(params[a].get("max_vel", 1.0)) < 0.05
+                    or float(params[b].get("max_vel", 1.0)) < 0.05
+                )
+                if stand:
+                    print(f"NOTE {a} vs {b}: {d:.2f} m (standing blocker; ok)")
+                    continue
                 print(f"FAIL {a} vs {b}: share a {d:.2f} m choke (< {CHOKE_M:.1f} m)")
                 ok = False
     print(f"     min pairwise path {pair_best:.2f} m (bar {CHOKE_M:.1f} m)")
@@ -123,6 +149,12 @@ def main() -> int:
         for b in ns[i + 1 :]:
             d = math.hypot(inits[a][0] - inits[b][0], inits[a][1] - inits[b][1])
             if d < INIT_SEP_M:
+                stand = (
+                    float(params[a].get("max_vel", 1.0)) < 0.05
+                    or float(params[b].get("max_vel", 1.0)) < 0.05
+                )
+                if stand:
+                    continue
                 print(f"FAIL init {a} vs {b}: {d:.2f} m < {INIT_SEP_M:.1f} m")
                 ok = False
 

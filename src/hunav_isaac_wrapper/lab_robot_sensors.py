@@ -843,8 +843,30 @@ def _gf_pose(mw):
     )
 
 
+def _relative_gf(mw_parent, mw_child):
+    """Child pose in the parent frame.
+
+    USD Gf is row-vector (p' = p * M). ORIGINALLY ``inverse(parent) * child``
+    (column-vector) put Stretch ``laser`` ~10–18 m off the chassis, so Nav2's
+    local costmap logged ``Sensor origin out of map bounds`` and skipped
+    /scan (#69 leftover).
+    """
+    from pxr import Gf
+
+    rel = Gf.Matrix4d(mw_child) * Gf.Matrix4d(mw_parent).GetInverse()
+    return _gf_pose(rel)
+
+
 def _yaw_from_xyzw(x, y, z, w) -> float:
     return float(math.atan2(2.0 * (w * z + x * y), 1.0 - 2.0 * (y * y + z * z)))
+
+
+# Stretch SE3 ``joint_laser`` (stretch.urdf): xyz 0.004 0 0.1664, rpy 0 0 π.
+# Do not derive this from USD LocalToWorld — kinematic ChassisDriveRobot moves
+# the root Xform; laser's computed world pose can sit 10–18 m off chassis and
+# Nav2 then skips /scan (local costmap ``Sensor origin out of map bounds``).
+_STRETCH_LASER_IN_BASE_XYZ = (0.004, 0.0, 0.1664)
+_STRETCH_LASER_IN_BASE_XYZW = (0.0, 0.0, 1.0, 0.0)
 
 
 class KinematicNavPublisher:
@@ -865,6 +887,7 @@ class KinematicNavPublisher:
         base_prim: str,
         child_frames: Sequence[tuple],
         odom_topic: str = "/odom",
+        fixed_in_base: Optional[Dict[str, tuple]] = None,
     ):
         from geometry_msgs.msg import TransformStamped
         from nav_msgs.msg import Odometry
@@ -881,6 +904,7 @@ class KinematicNavPublisher:
         self._Odometry = Odometry
         self._base_prim = base_prim
         self._children = [(p, f) for p, f in child_frames if _prim_exists(p)]
+        self._fixed_in_base = dict(fixed_in_base or {})
         tf_qos = QoSProfile(
             reliability=ReliabilityPolicy.RELIABLE,
             durability=DurabilityPolicy.VOLATILE,
@@ -924,7 +948,7 @@ class KinematicNavPublisher:
     def publish(self, stamp_sec: float = 0.0) -> None:
         try:
             import omni.usd
-            from pxr import Gf, Usd, UsdGeom
+            from pxr import Usd, UsdGeom
 
             stage = omni.usd.get_context().get_stage()
             if stage is None:
@@ -945,17 +969,31 @@ class KinematicNavPublisher:
                 self._ts(stamp_sec, "odom", "base_link", xyz, xyzw)
             )
             for prim_path, frame_id in self._children:
-                prim = stage.GetPrimAtPath(prim_path)
-                if not prim or not prim.IsValid():
-                    continue
-                mw = UsdGeom.Xformable(prim).ComputeLocalToWorldTransform(
-                    Usd.TimeCode.Default()
-                )
-                rel = Gf.Matrix4d(mw_base).GetInverse() * mw
-                cxyz, cxyzw = _gf_pose(rel)
+                if frame_id in self._fixed_in_base:
+                    cxyz, cxyzw = self._fixed_in_base[frame_id]
+                else:
+                    prim = stage.GetPrimAtPath(prim_path)
+                    if not prim or not prim.IsValid():
+                        continue
+                    mw = UsdGeom.Xformable(prim).ComputeLocalToWorldTransform(
+                        Usd.TimeCode.Default()
+                    )
+                    cxyz, cxyzw = _relative_gf(mw_base, mw)
                 out.transforms.append(
                     self._ts(stamp_sec, "base_link", frame_id, cxyz, cxyzw)
                 )
+                if not self._logged_ok and frame_id == "laser":
+                    off = math.hypot(cxyz[0], cxyz[1])
+                    print(
+                        f"[lab_robot_sensors] laser in base_link "
+                        f"({cxyz[0]:.3f},{cxyz[1]:.3f},{cxyz[2]:.3f}) "
+                        f"xy={off:.3f} m (URDF mount pin)"
+                    )
+                    if off > 1.0:
+                        print(
+                            "[lab_robot_sensors] WARNING: laser XY offset "
+                            f"{off:.2f} m — local costmap will not raytrace"
+                        )
             self._tf_pub.publish(out)
 
             yaw = _yaw_from_xyzw(*xyzw)
@@ -1063,6 +1101,12 @@ def attach_lab_robot_sensors(
                     (cam_link, "camera_link"),
                     (cam_optical, "camera_color_optical_frame"),
                 ],
+                fixed_in_base={
+                    "laser": (
+                        _STRETCH_LASER_IN_BASE_XYZ,
+                        _STRETCH_LASER_IN_BASE_XYZW,
+                    ),
+                },
             )
             print(
                 "[lab_robot_sensors] Stretch kinematic: /joint_states + Nav2 "

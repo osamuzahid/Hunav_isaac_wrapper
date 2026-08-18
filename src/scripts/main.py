@@ -149,6 +149,7 @@ PRESETS = {
     "museum_agents",
     "museum_behaviors",
     "museum_eval",
+    "museum_eval_5",
     "museum_sensor_demo",
     "bookstore_agents",
     "bookstore_behaviors",

@@ -64,10 +64,7 @@ bt_navigator:
       plugin: "nav2_bt_navigator::NavigateToPoseNavigator"
     navigate_through_poses:
       plugin: "nav2_bt_navigator::NavigateThroughPosesNavigator"
-    # 'default_nav_through_poses_bt_xml' and 'default_nav_to_pose_bt_xml' are use defaults:
-    # nav2_bt_navigator/navigate_to_pose_w_replanning_and_recovery.xml
-    # nav2_bt_navigator/navigate_through_poses_w_replanning_and_recovery.xml
-    # They can be set here or via a RewrittenYaml remap from a parent launch file to Nav2.
+    default_nav_to_pose_bt_xml: "/home/osamuzahid/Projects/isaac-social-nav/ros2_ws/src/Hunav_isaac_wrapper/tools/nav2_smoke/navigate_to_pose_w_replanning_20hz.xml"
 
     # plugin_lib_names is used to add custom BT plugins to the executor (vector of strings).
     # Built-in plugins are added automatically
@@ -114,7 +111,7 @@ controller_server:
       plugin: "nav2_mppi_controller::MPPIController"
       time_steps: 56
       model_dt: 0.05
-      batch_size: 2000
+      batch_size: 512
       ax_max: 3.0
       ax_min: -3.0
       ay_max: 3.0
@@ -243,12 +240,19 @@ local_costmap:
 global_costmap:
   global_costmap:
     ros__parameters:
-      update_frequency: 1.0
-      publish_frequency: 1.0
+      update_frequency: 5.0
+      publish_frequency: 2.0
       global_frame: map
       robot_base_frame: base_link
       robot_radius: 0.35
-      resolution: 0.05
+      # museum.png is 200 m @ 5 cm (4000²). NavFn allocates that full grid even
+      # with A*, so each plan was ~100 ms ("current loop rate 10 Hz"). A 50 m
+      # rolling window at 10 cm is 500² — small enough to finish in the 20 Hz
+      # budget. Hop (2,-8)→(1.5,6.5) is ~15 m, so the goal stays in-window.
+      rolling_window: true
+      width: 50
+      height: 50
+      resolution: 0.10
       track_unknown_space: true
       plugins: ["static_layer", "obstacle_layer", "inflation_layer"]
       obstacle_layer:
@@ -296,7 +300,9 @@ planner_server:
     GridBased:
       plugin: "nav2_navfn_planner::NavfnPlanner"
       tolerance: 0.5
-      use_astar: false
+      # A* + rolling 50 m / 0.10 m global costmap (see global_costmap). Keep
+      # expected_planner_frequency at 20; do not lower it to match a slow plan.
+      use_astar: true
       allow_unknown: true
 
 smoother_server:

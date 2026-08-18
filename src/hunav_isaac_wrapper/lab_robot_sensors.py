@@ -15,6 +15,7 @@ Env:
 
 from __future__ import annotations
 
+import math
 import os
 from typing import Any, Dict, List, Optional, Sequence
 
@@ -831,6 +832,183 @@ class ParkedLinkTfPublisher:
                 self._logged_err = True
 
 
+def _gf_pose(mw):
+    """USD world matrix → (xyz, xyzw quat)."""
+    t = mw.ExtractTranslation()
+    q = mw.ExtractRotation().GetQuat()
+    imag = q.GetImaginary()
+    return (
+        (float(t[0]), float(t[1]), float(t[2])),
+        (float(imag[0]), float(imag[1]), float(imag[2]), float(q.GetReal())),
+    )
+
+
+def _yaw_from_xyzw(x, y, z, w) -> float:
+    return float(math.atan2(2.0 * (w * z + x * y), 1.0 - 2.0 * (y * y + z * z)))
+
+
+class KinematicNavPublisher:
+    """Nav2 TF tree + /odom for kinematic Stretch (Physics=none).
+
+    ORIGINALLY ParkedLinkTfPublisher posted world→each link (forest). Nav2 needs
+    map→odom→base_link→laser. World XY already matches the occupancy map, so
+    map→odom is identity; odom is ground-truth chassis pose. world→map identity
+    keeps RViz Fixed Frame ``world`` / ``laser`` working.
+
+    /tf stays RELIABLE (Validated #60). /odom is BEST_EFFORT (Nav2 sensor QoS).
+    Do not also publish world→base_link (two parents).
+    """
+
+    def __init__(
+        self,
+        node,
+        base_prim: str,
+        child_frames: Sequence[tuple],
+        odom_topic: str = "/odom",
+    ):
+        from geometry_msgs.msg import TransformStamped
+        from nav_msgs.msg import Odometry
+        from tf2_msgs.msg import TFMessage
+        from rclpy.qos import (
+            DurabilityPolicy,
+            HistoryPolicy,
+            QoSProfile,
+            ReliabilityPolicy,
+        )
+
+        self._TransformStamped = TransformStamped
+        self._TFMessage = TFMessage
+        self._Odometry = Odometry
+        self._base_prim = base_prim
+        self._children = [(p, f) for p, f in child_frames if _prim_exists(p)]
+        tf_qos = QoSProfile(
+            reliability=ReliabilityPolicy.RELIABLE,
+            durability=DurabilityPolicy.VOLATILE,
+            history=HistoryPolicy.KEEP_LAST,
+            depth=50,
+        )
+        odom_qos = QoSProfile(
+            reliability=ReliabilityPolicy.BEST_EFFORT,
+            durability=DurabilityPolicy.VOLATILE,
+            history=HistoryPolicy.KEEP_LAST,
+            depth=10,
+        )
+        self._tf_pub = node.create_publisher(TFMessage, "/tf", tf_qos)
+        self._odom_pub = node.create_publisher(Odometry, odom_topic, odom_qos)
+        self._prev_xy = None
+        self._prev_yaw = None
+        self._prev_t = None
+        self._logged_ok = False
+        self._logged_err = False
+        print(
+            f"[lab_robot_sensors] kinematic Nav TF+odom: base={base_prim} "
+            f"children={', '.join(f for _, f in self._children) or '(none)'} "
+            f"topic={odom_topic}"
+        )
+
+    def _ts(self, stamp_sec, parent, child, xyz, xyzw):
+        ts = self._TransformStamped()
+        ts.header.stamp.sec = int(stamp_sec)
+        ts.header.stamp.nanosec = int((stamp_sec % 1.0) * 1e9)
+        ts.header.frame_id = parent
+        ts.child_frame_id = child
+        ts.transform.translation.x = float(xyz[0])
+        ts.transform.translation.y = float(xyz[1])
+        ts.transform.translation.z = float(xyz[2])
+        ts.transform.rotation.x = float(xyzw[0])
+        ts.transform.rotation.y = float(xyzw[1])
+        ts.transform.rotation.z = float(xyzw[2])
+        ts.transform.rotation.w = float(xyzw[3])
+        return ts
+
+    def publish(self, stamp_sec: float = 0.0) -> None:
+        try:
+            import omni.usd
+            from pxr import Gf, Usd, UsdGeom
+
+            stage = omni.usd.get_context().get_stage()
+            if stage is None:
+                return
+            base = stage.GetPrimAtPath(self._base_prim)
+            if not base or not base.IsValid():
+                return
+            mw_base = UsdGeom.Xformable(base).ComputeLocalToWorldTransform(
+                Usd.TimeCode.Default()
+            )
+            xyz, xyzw = _gf_pose(mw_base)
+            ident = (0.0, 0.0, 0.0)
+            iq = (0.0, 0.0, 0.0, 1.0)
+            out = self._TFMessage()
+            out.transforms.append(self._ts(stamp_sec, "world", "map", ident, iq))
+            out.transforms.append(self._ts(stamp_sec, "map", "odom", ident, iq))
+            out.transforms.append(
+                self._ts(stamp_sec, "odom", "base_link", xyz, xyzw)
+            )
+            for prim_path, frame_id in self._children:
+                prim = stage.GetPrimAtPath(prim_path)
+                if not prim or not prim.IsValid():
+                    continue
+                mw = UsdGeom.Xformable(prim).ComputeLocalToWorldTransform(
+                    Usd.TimeCode.Default()
+                )
+                rel = Gf.Matrix4d(mw_base).GetInverse() * mw
+                cxyz, cxyzw = _gf_pose(rel)
+                out.transforms.append(
+                    self._ts(stamp_sec, "base_link", frame_id, cxyz, cxyzw)
+                )
+            self._tf_pub.publish(out)
+
+            yaw = _yaw_from_xyzw(*xyzw)
+            vx = vy = wz = 0.0
+            if self._prev_xy is not None and self._prev_t is not None:
+                dt = float(stamp_sec) - float(self._prev_t)
+                if dt > 1e-4:
+                    dx = xyz[0] - self._prev_xy[0]
+                    dy = xyz[1] - self._prev_xy[1]
+                    vx_w = dx / dt
+                    vy_w = dy / dt
+                    c, s = math.cos(yaw), math.sin(yaw)
+                    vx = vx_w * c + vy_w * s
+                    vy = -vx_w * s + vy_w * c
+                    dyaw = yaw - self._prev_yaw
+                    while dyaw > math.pi:
+                        dyaw -= 2.0 * math.pi
+                    while dyaw < -math.pi:
+                        dyaw += 2.0 * math.pi
+                    wz = dyaw / dt
+            self._prev_xy = (xyz[0], xyz[1])
+            self._prev_yaw = yaw
+            self._prev_t = float(stamp_sec)
+
+            odom = self._Odometry()
+            odom.header.stamp.sec = int(stamp_sec)
+            odom.header.stamp.nanosec = int((stamp_sec % 1.0) * 1e9)
+            odom.header.frame_id = "odom"
+            odom.child_frame_id = "base_link"
+            odom.pose.pose.position.x = xyz[0]
+            odom.pose.pose.position.y = xyz[1]
+            odom.pose.pose.position.z = xyz[2]
+            odom.pose.pose.orientation.x = xyzw[0]
+            odom.pose.pose.orientation.y = xyzw[1]
+            odom.pose.pose.orientation.z = xyzw[2]
+            odom.pose.pose.orientation.w = xyzw[3]
+            odom.twist.twist.linear.x = vx
+            odom.twist.twist.linear.y = vy
+            odom.twist.twist.angular.z = wz
+            self._odom_pub.publish(odom)
+
+            if not self._logged_ok:
+                print(
+                    f"[lab_robot_sensors] kinematic Nav TF+odom live "
+                    f"base=({xyz[0]:.2f},{xyz[1]:.2f})"
+                )
+                self._logged_ok = True
+        except Exception as exc:
+            if not self._logged_err:
+                print(f"[lab_robot_sensors] kinematic Nav TF+odom failed: {exc}")
+                self._logged_err = True
+
+
 def attach_lab_robot_sensors(
     robot_name: str,
     robot_prim_path: str,
@@ -875,20 +1053,20 @@ def attach_lab_robot_sensors(
             # prims (thousands of warnings; can hitch the sim and make agents look
             # broken). Same parked rclpy /tf path as Reachy.
             handles["parked_js"] = ParkedJointStatePublisher(ros_node)
-            handles["parked_tf"] = ParkedLinkTfPublisher(
+            # PATCH: Nav2 needs map→odom→base_link→laser, not world→each link.
+            handles["parked_tf"] = KinematicNavPublisher(
                 ros_node,
-                frames=[
-                    (base, "base_link"),
+                base_prim=base,
+                child_frames=[
                     (laser, "laser"),
                     (imu, "base_imu"),
                     (cam_link, "camera_link"),
                     (cam_optical, "camera_color_optical_frame"),
                 ],
-                parent_frame="world",
             )
             print(
-                "[lab_robot_sensors] Stretch kinematic: publishing parked "
-                "/joint_states + /tf via rclpy (Physics=none; no PoseTree)"
+                "[lab_robot_sensors] Stretch kinematic: /joint_states + Nav2 "
+                "TF (map/odom/base_link) + /odom via rclpy (Physics=none; no PoseTree)"
             )
 
         handles["lidar"] = _attach_stretch_lidar(laser)

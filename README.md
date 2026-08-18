@@ -17,6 +17,7 @@ Fork of [robotics-upo/Hunav_isaac_wrapper](https://github.com/robotics-upo/Hunav
 - CUCR house_museum / small_house / small_warehouse: remaining `cucr_worlds` ports (GUI-good; house_museum roofs off + sunset sky kept) — `tools/README_remaining_ports.md`
 - Lab Reachy: `--robot reachy` (Zuuu mobile base + full-kit torso; parked TF + `/scan` + dual RGB — Validated **#49/#59/#60**)
 - Lab Stretch: `--robot stretch` (kinematic chassis) and `--robot stretch_wheeled` (PhysX diff-drive; flat-ground smoke PASS)
+- Stretch Nav2: `KinematicNavPublisher` (`world→map→odom→base_link` + `/odom`); museum A10 plaza **#69**; plaza `/cmd_vel` A* **#68**; `museum_eval` static crowd **#67**
 - Lab Franka: `--robot franka` (CDN `FrankaPanda`, parked `drive: static`) + stock TF/`joint_states`
 - Lab sensors: `lab_robot_sensors.py` — Stretch `/scan` (RTX 2D) + `/imu` + parked joints; RGB-D via `HUNAV_LAB_CAMERAS=1` under `camera_color_optical_frame` (Validated **#46**); museum `/scan` wall rings after Z fix (**#47**); smoke `tools/lab_robot_sensor_smoke.py`
 - Agent walk on Isaac 6: People biped retarget source, file-referenced retarget clips, SFM goals wiring, museum free-space goals + collider/ray fixes — see **[docs/ANIMATION_LOG.md](docs/ANIMATION_LOG.md)**
@@ -76,7 +77,8 @@ It supports both **ROS 2 teleoperation** and **autonomous navigation (Nav2)**, w
  - Includes `jetbot`, `create3`, `carter`, `carter_ROS`, lab Stretch (`stretch`, `stretch_wheeled`), lab Franka (`franka`), and lab Reachy (`reachy`, Zuuu base, parked)
 
 - **ROS 2 Navigation (Nav2) Support:**
- - Enables autonomous navigation for the **Carter** robot using the **ROS 2 Nav2** stack
+ - Dissertation path: kinematic **Stretch** (`tools/nav2_smoke/run_stretch_nav2_smoke.sh`, museum A10 plaza)
+ - Optional tooling: **Carter** (`carter_ROS`) using the **ROS 2 Nav2** stack
 
 - **Social Simulation & Teleoperation:**
  - Real-time robot control via `/cmd_vel`
@@ -224,7 +226,7 @@ The interactive launcher will prompt you to select your desired robot:
 
 **Note:** For `carter_ROS`, make sure to unzip the `nova_carter_ros2_sensors` package located in `src/config/robots/`.
 
-**Carter** robot also supports **ROS 2 Navigation (Nav2)** for autonomous navigation.
+**Carter** remains optional Nav2 tooling. Dissertation Stretch Nav2: `~/Desktop/run-museum-stretch-nav2.sh` (A10 plaza).
 
 ### 6. Launch the Simulation
 
@@ -267,9 +269,11 @@ Use ROS 2 to publish Twist messages to `/cmd_vel` for direct robot control:
 ros2 topic pub /cmd_vel geometry_msgs/msg/Twist '{linear: {x: 0.5}, angular: {z: 0.1}}'
 ```
 
-#### ROS 2 Navigation (Nav2) – Carter Robot Only
+#### ROS 2 Navigation (Nav2)
 
-For autonomous navigation with the `carter_ROS` robot:
+Dissertation robot is kinematic **Stretch** (museum A10 plaza). Desktop: `~/Desktop/run-museum-stretch-nav2.sh`. Params: `tools/nav2_smoke/nav2_stretch_params.yaml`. Viewport follow is `--frame-robot` only.
+
+Optional **Carter** (`carter_ROS`) tooling:
 
 1. Ensure the simulation is running
 2. In a separate terminal, launch the navigation stack:

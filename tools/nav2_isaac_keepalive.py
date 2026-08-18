@@ -211,11 +211,7 @@ def main() -> int:
         n = _disable_carter_cameras()
         print(f"[nav2_keepalive] deactivated Camera prims: {n}", flush=True)
 
-    headless_env = os.environ.get("HUNAV_ISAAC_HEADLESS", "").strip()
-    windowed = headless_env in ("0", "false", "False") or os.environ.get(
-        "HUNAV_ISAAC_PROFILE", ""
-    ).lower() in ("lab", "default")
-    follow = bool(args.frame_robot or windowed)
+    follow = bool(args.frame_robot)
     if follow:
         node.world.step(render=True)
         _select_chassis_link()
@@ -239,11 +235,12 @@ def main() -> int:
         f"{pose_s} wrapper_cmd_vel_drive=True",
         flush=True,
     )
-    print(
-        "[nav2_keepalive] TIP: stage /World/Nova_Carter is an empty wrapper at origin. "
-        "Body is /World/Nova_Carter/chassis_link (hospital ~10,-20).",
-        flush=True,
-    )
+    if args.robot in ("carter", "carter_ROS"):
+        print(
+            "[nav2_keepalive] TIP: stage /World/Nova_Carter is an empty wrapper at origin. "
+            "Body is /World/Nova_Carter/chassis_link (hospital ~10,-20).",
+            flush=True,
+        )
 
     t_end = time.time() + args.seconds
     step_i = 0

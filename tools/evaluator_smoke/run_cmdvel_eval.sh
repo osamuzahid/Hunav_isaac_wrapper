@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Record hunav_evaluator while Stretch drives a scripted /cmd_vel hop through
 # museum_eval (10 Impassive). No Nav2. Kinematic Stretch has no wall collision —
-# keep the hop short and in the south gallery.
+# occupancy A* goes west of the y≈3 partition to the A10 plaza (1.5, 6.5).
 #
 # Prerequisites: Isaac already up with --config museum_eval --robot stretch
 #
@@ -81,10 +81,10 @@ done
 
 log "=== start recording ==="
 ros2 service call /hunav_start_recording hunav_msgs/srv/StartEvaluation \
-  "{experiment_tag: '$EXP_TAG', run_id: $RUN_ID, robot_goal: {header: {frame_id: 'map'}, pose: {position: {x: 2.0, y: -6.0, z: 0.0}, orientation: {w: 1.0}}}}" \
+  "{experiment_tag: '$EXP_TAG', run_id: $RUN_ID, robot_goal: {header: {frame_id: 'map'}, pose: {position: {x: 1.5, y: 6.5, z: 0.0}, orientation: {w: 1.0}}}}" \
   | tee -a "$SUMMARY"
 
-log "=== waypoint /cmd_vel: south pocket → west gap → north open hall ==="
+log "=== waypoint /cmd_vel: alcove → west gap → A10 plaza (1.5, 6.5) ==="
 python3 "$ROOT/tools/drive_stretch_waypoints.py" | tee -a "$SUMMARY" &
 DRIVE_PID=$!
 

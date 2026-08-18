@@ -20,6 +20,9 @@ INIT_Y="${INIT_Y:-0.0}"
 INIT_YAW="${INIT_YAW:-0.0}"
 GOAL_X="${GOAL_X:-2.0}"
 GOAL_Y="${GOAL_Y:-0.0}"
+ODOM_TOPIC="${ODOM_TOPIC:-/chassis/odom}"
+SKIP_PC2="${SKIP_PC2:-0}"
+USE_LOCALIZATION="${USE_LOCALIZATION:-True}"
 SUMMARY="$OUT/nav2_smoke_summary.txt"
 
 # Isaac Kit + many leftover ROS nodes can exhaust FastDDS SHM locks.
@@ -62,6 +65,10 @@ if [[ "$clock_ok" -ne 1 ]]; then
 fi
 
 log "=== pointcloud_to_laserscan ==="
+if [[ "$SKIP_PC2" == "1" ]]; then
+  log "skip pointcloud_to_laserscan (native /scan)"
+  PC2_PID=""
+else
 ros2 run pointcloud_to_laserscan pointcloud_to_laserscan_node --ros-args \
   -r cloud_in:=/front_3d_lidar/lidar_points \
   -r scan:=/scan \
@@ -81,18 +88,33 @@ ros2 run pointcloud_to_laserscan pointcloud_to_laserscan_node --ros-args \
 PC2_PID=$!
 log "laserscan pid=$PC2_PID"
 sleep 3
+fi
 timeout 5 ros2 topic hz /scan --window 5 >"$OUT/scan_hz.txt" 2>&1 || true
 log "scan hz:"
 cat "$OUT/scan_hz.txt" | tee -a "$SUMMARY" || true
 
-log "=== nav2_bringup ==="
+log "=== nav2_bringup (localization=$USE_LOCALIZATION) ==="
+MAP_PID=""
+if [[ "$USE_LOCALIZATION" == "False" || "$USE_LOCALIZATION" == "false" ]]; then
+  log "=== map_server (GT odom; no AMCL) ==="
+  ros2 run nav2_map_server map_server --ros-args \
+    -p yaml_filename:="$MAP_YAML" \
+    -p use_sim_time:=true \
+    -p frame_id:=map \
+    >"$OUT/map_server.log" 2>&1 &
+  MAP_PID=$!
+  sleep 2
+  ros2 run nav2_util lifecycle_bringup map_server \
+    >"$OUT/map_server_lifecycle.log" 2>&1 || true
+  log "map_server pid=$MAP_PID"
+fi
 ros2 launch nav2_bringup bringup_launch.py \
   use_sim_time:=True \
   map:="$MAP_YAML" \
   params_file:="$PARAMS" \
   autostart:=True \
   use_composition:=False \
-  use_localization:=True \
+  use_localization:="$USE_LOCALIZATION" \
   slam:=False \
   >"$OUT/nav2_bringup.log" 2>&1 &
 NAV_PID=$!
@@ -108,19 +130,24 @@ for i in $(seq 1 90); do
   if [[ $i -eq 90 ]]; then
     log "FAIL: navigate_to_pose missing"
     tail -40 "$OUT/nav2_bringup.log" | tee -a "$SUMMARY"
-    kill $PC2_PID $NAV_PID 2>/dev/null || true
+    kill $PC2_PID $NAV_PID $MAP_PID 2>/dev/null || true
     exit 3
   fi
 done
 
-log "=== initialpose ($INIT_X,$INIT_Y) qz=$INIT_QZ qw=$INIT_QW ==="
-ros2 topic pub --once /initialpose geometry_msgs/msg/PoseWithCovarianceStamped \
-  "{header: {frame_id: 'map'}, pose: {pose: {position: {x: ${INIT_X}, y: ${INIT_Y}, z: 0.0}, orientation: {x: 0.0, y: 0.0, z: ${INIT_QZ}, w: ${INIT_QW}}}, covariance: [0.25,0,0,0,0,0, 0,0.25,0,0,0,0, 0,0,0,0,0,0, 0,0,0,0,0,0, 0,0,0,0,0,0, 0,0,0,0,0,0.068]}}" \
-  | tee -a "$SUMMARY" || true
-sleep 4
+if [[ "$USE_LOCALIZATION" == "True" || "$USE_LOCALIZATION" == "true" ]]; then
+  log "=== initialpose ($INIT_X,$INIT_Y) qz=$INIT_QZ qw=$INIT_QW ==="
+  ros2 topic pub --once /initialpose geometry_msgs/msg/PoseWithCovarianceStamped \
+    "{header: {frame_id: 'map'}, pose: {pose: {position: {x: ${INIT_X}, y: ${INIT_Y}, z: 0.0}, orientation: {x: 0.0, y: 0.0, z: ${INIT_QZ}, w: ${INIT_QW}}}, covariance: [0.25,0,0,0,0,0, 0,0.25,0,0,0,0, 0,0,0,0,0,0, 0,0,0,0,0,0, 0,0,0,0,0,0, 0,0,0,0,0,0.068]}}" \
+    | tee -a "$SUMMARY" || true
+  sleep 4
+else
+  log "=== skip initialpose (GT odom, no AMCL) init=($INIT_X,$INIT_Y) ==="
+  sleep 2
+fi
 
 log "=== NavigateToPose goal ($GOAL_X,$GOAL_Y) ==="
-timeout 3 ros2 topic echo /chassis/odom --once --qos-reliability best_effort >"$OUT/odom_before.txt" 2>&1 || true
+timeout 3 ros2 topic echo "$ODOM_TOPIC" --once --qos-reliability best_effort >"$OUT/odom_before.txt" 2>&1 || true
 
 GOAL_TIMEOUT="${GOAL_TIMEOUT:-120}"
 set +e
@@ -132,7 +159,7 @@ set -e
 log "send_goal exit=$GOAL_RC timeout=${GOAL_TIMEOUT}s"
 tail -40 "$OUT/nav_goal.txt" | tee -a "$SUMMARY"
 
-timeout 3 ros2 topic echo /chassis/odom --once --qos-reliability best_effort >"$OUT/odom_after.txt" 2>&1 || true
+timeout 3 ros2 topic echo "$ODOM_TOPIC" --once --qos-reliability best_effort >"$OUT/odom_after.txt" 2>&1 || true
 log "=== odom / goal verdict ==="
 python3 - <<PY | tee -a "$SUMMARY"
 import re
@@ -183,7 +210,7 @@ else
   log "no nav2_bringup.log" | tee -a "$DIAG"
 fi
 
-kill $PC2_PID $NAV_PID 2>/dev/null || true
-wait $PC2_PID $NAV_PID 2>/dev/null || true
+kill $PC2_PID $NAV_PID $MAP_PID 2>/dev/null || true
+wait $PC2_PID $NAV_PID $MAP_PID 2>/dev/null || true
 log "=== done ==="
 cat "$SUMMARY"

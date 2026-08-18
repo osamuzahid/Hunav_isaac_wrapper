@@ -1,0 +1,36 @@
+# Cmd-vel eval: same museum_eval crowd, Stretch actually moves.
+# Robot path/speed metrics on. No Nav2 goal (completed stays off).
+hunav_evaluator_node:
+  ros__parameters:
+    frequency: 1.0
+    result_file: /tmp/hunav_cmdvel_eval/metrics
+    metrics:
+      time_to_reach_goal: false
+      path_length: true
+      cumulative_heading_changes: true
+      avg_distance_to_closest_person: true
+      minimum_distance_to_people: true
+      maximum_distance_to_people: true
+      intimate_space_intrusions: true
+      personal_space_intrusions: true
+      social_space_intrusions: true
+      group_intimate_space_intrusions: false
+      group_personal_space_intrusions: false
+      group_social_space_intrusions: false
+      completed: false
+      minimum_distance_to_target: false
+      final_distance_to_target: false
+      robot_on_person_collision: true
+      person_on_robot_collision: true
+      time_not_moving: true
+      avg_robot_linear_speed: true
+      avg_robot_angular_speed: true
+      avg_acceleration: false
+      avg_overacceleration: false
+      avg_pedestrian_velocity: true
+      avg_closest_pedestrian_velocity: true
+      social_force_on_agents: true
+      social_force_on_robot: true
+      social_work: false
+      obstacle_force_on_robot: false
+      obstacle_force_on_agents: true

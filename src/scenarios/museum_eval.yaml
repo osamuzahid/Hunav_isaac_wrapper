@@ -1,0 +1,243 @@
+hunav_loader:
+  ros__parameters:
+    yaml_base_name: museum_eval
+    simulator: Isaac Sim
+    map: museum
+    publish_people: true
+    # PATCH (isaac-social-nav): static-scene eval crowd. Ten Impassive agents on
+    # unique compact loops (offline A* detour ~1.0, min pairwise path 2.2 m).
+    # Do not mix Curious/Threatening here — they walk onto a parked robot and fuse.
+    # Inflation 0.40 m vs museum_behaviors 0.35 so wall-clip is harder with 10 bodies.
+    plan_goals_on_map: true
+    map_yaml: museum.yaml
+    plan_waypoint_spacing_m: 1.0
+    plan_inflation_radius_m: 0.40
+    plan_from_init_pose: true
+    ignore_obstacle_rays: false
+    robot_init_pose:
+      x: 2.0
+      y: -8.0
+      z: 0.0
+      h: 1.57
+    global_goals:
+      1: {x: -18.00, y: -8.00}
+      2: {x: -14.22, y: -7.97}
+      3: {x: -14.17, y: -3.97}
+      4: {x: -18.00, y: -4.00}
+      5: {x: -3.92, y: -7.27}
+      6: {x: -0.20, y: -7.30}
+      7: {x: -0.20, y: -3.70}
+      8: {x: -3.80, y: -3.70}
+      9: {x: 6.50, y: -8.00}
+      10: {x: 10.50, y: -8.00}
+      11: {x: 10.50, y: -4.00}
+      12: {x: 6.68, y: -3.97}
+      13: {x: -19.80, y: -1.80}
+      14: {x: -16.20, y: -1.80}
+      15: {x: -16.20, y: 1.80}
+      16: {x: -19.80, y: 1.80}
+      17: {x: -6.67, y: 1.73}
+      18: {x: -3.92, y: 1.73}
+      19: {x: -3.20, y: 5.30}
+      20: {x: -6.80, y: 5.30}
+      21: {x: 6.68, y: 0.03}
+      22: {x: 10.50, y: 0.00}
+      23: {x: 10.50, y: 4.00}
+      24: {x: 6.73, y: 4.03}
+      25: {x: -18.00, y: 8.00}
+      26: {x: -14.00, y: 8.00}
+      27: {x: -14.00, y: 12.00}
+      28: {x: -18.00, y: 12.00}
+      29: {x: -8.00, y: 9.00}
+      30: {x: -4.00, y: 9.00}
+      31: {x: -4.00, y: 13.00}
+      32: {x: -7.62, y: 13.03}
+      33: {x: 6.50, y: 9.00}
+      34: {x: 10.50, y: 9.00}
+      35: {x: 10.50, y: 13.00}
+      36: {x: 6.78, y: 13.03}
+      37: {x: -0.50, y: 4.50}
+      38: {x: 3.50, y: 4.50}
+      39: {x: 3.50, y: 8.50}
+      40: {x: -0.50, y: 8.50}
+    agents:
+      - agent1
+      - agent2
+      - agent3
+      - agent4
+      - agent5
+      - agent6
+      - agent7
+      - agent8
+      - agent9
+      - agent10
+    agent1:
+      id: 1
+      group_id: -1
+      skin: 1
+      max_vel: 0.80
+      radius: 0.4
+      goal_radius: 0.6
+      cyclic_goals: true
+      init_pose: {x: -18.00, y: -8.00, z: 0.0, h: 0.01}
+      behavior:
+        type: 2
+        configuration: 0
+        goal_force_factor: 10.0
+        obstacle_force_factor: 2.0
+        social_force_factor: 5.0
+        other_force_factor: 20.0
+      goals: ["1", "2", "3", "4"]
+    agent2:
+      id: 2
+      group_id: -1
+      skin: 2
+      max_vel: 0.85
+      radius: 0.4
+      goal_radius: 0.6
+      cyclic_goals: true
+      init_pose: {x: -3.92, y: -7.27, z: 0.0, h: 0.00}
+      behavior:
+        type: 2
+        configuration: 0
+        goal_force_factor: 10.0
+        obstacle_force_factor: 2.0
+        social_force_factor: 5.0
+        other_force_factor: 20.0
+      goals: ["5", "6", "7", "8"]
+    agent3:
+      id: 3
+      group_id: -1
+      skin: 3
+      max_vel: 0.90
+      radius: 0.4
+      goal_radius: 0.6
+      cyclic_goals: true
+      init_pose: {x: 6.50, y: -8.00, z: 0.0, h: 0.00}
+      behavior:
+        type: 2
+        configuration: 0
+        goal_force_factor: 10.0
+        obstacle_force_factor: 2.0
+        social_force_factor: 5.0
+        other_force_factor: 20.0
+      goals: ["9", "10", "11", "12"]
+    agent4:
+      id: 4
+      group_id: -1
+      skin: 4
+      max_vel: 0.95
+      radius: 0.4
+      goal_radius: 0.6
+      cyclic_goals: true
+      init_pose: {x: -19.80, y: -1.80, z: 0.0, h: 0.00}
+      behavior:
+        type: 2
+        configuration: 0
+        goal_force_factor: 10.0
+        obstacle_force_factor: 2.0
+        social_force_factor: 5.0
+        other_force_factor: 20.0
+      goals: ["13", "14", "15", "16"]
+    agent5:
+      id: 5
+      group_id: -1
+      skin: 5
+      max_vel: 1.00
+      radius: 0.4
+      goal_radius: 0.6
+      cyclic_goals: true
+      init_pose: {x: -6.67, y: 1.73, z: 0.0, h: 0.00}
+      behavior:
+        type: 2
+        configuration: 0
+        goal_force_factor: 10.0
+        obstacle_force_factor: 2.0
+        social_force_factor: 5.0
+        other_force_factor: 20.0
+      goals: ["17", "18", "19", "20"]
+    agent6:
+      id: 6
+      group_id: -1
+      skin: 6
+      max_vel: 0.82
+      radius: 0.4
+      goal_radius: 0.6
+      cyclic_goals: true
+      init_pose: {x: 6.68, y: 0.03, z: 0.0, h: 0.00}
+      behavior:
+        type: 2
+        configuration: 0
+        goal_force_factor: 10.0
+        obstacle_force_factor: 2.0
+        social_force_factor: 5.0
+        other_force_factor: 20.0
+      goals: ["21", "22", "23", "24"]
+    agent7:
+      id: 7
+      group_id: -1
+      skin: 7
+      max_vel: 0.88
+      radius: 0.4
+      goal_radius: 0.6
+      cyclic_goals: true
+      init_pose: {x: -18.00, y: 8.00, z: 0.0, h: 0.00}
+      behavior:
+        type: 2
+        configuration: 0
+        goal_force_factor: 10.0
+        obstacle_force_factor: 2.0
+        social_force_factor: 5.0
+        other_force_factor: 20.0
+      goals: ["25", "26", "27", "28"]
+    agent8:
+      id: 8
+      group_id: -1
+      skin: 8
+      max_vel: 0.93
+      radius: 0.4
+      goal_radius: 0.6
+      cyclic_goals: true
+      init_pose: {x: -8.00, y: 9.00, z: 0.0, h: 0.00}
+      behavior:
+        type: 2
+        configuration: 0
+        goal_force_factor: 10.0
+        obstacle_force_factor: 2.0
+        social_force_factor: 5.0
+        other_force_factor: 20.0
+      goals: ["29", "30", "31", "32"]
+    agent9:
+      id: 9
+      group_id: -1
+      skin: 9
+      max_vel: 0.87
+      radius: 0.4
+      goal_radius: 0.6
+      cyclic_goals: true
+      init_pose: {x: 6.50, y: 9.00, z: 0.0, h: 0.00}
+      behavior:
+        type: 2
+        configuration: 0
+        goal_force_factor: 10.0
+        obstacle_force_factor: 2.0
+        social_force_factor: 5.0
+        other_force_factor: 20.0
+      goals: ["33", "34", "35", "36"]
+    agent10:
+      id: 10
+      group_id: -1
+      skin: 10
+      max_vel: 0.91
+      radius: 0.4
+      goal_radius: 0.6
+      cyclic_goals: true
+      init_pose: {x: -0.50, y: 4.50, z: 0.0, h: 0.00}
+      behavior:
+        type: 2
+        configuration: 0
+        goal_force_factor: 10.0
+        obstacle_force_factor: 2.0
+        social_force_factor: 5.0
+        other_force_factor: 20.0
+      goals: ["37", "38", "39", "40"]

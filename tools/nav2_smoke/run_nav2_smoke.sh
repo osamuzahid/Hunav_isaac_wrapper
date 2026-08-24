@@ -153,6 +153,39 @@ else
   sleep 2
 fi
 
+# Optional wait after Nav2 is up before sending the goal.
+GOAL_SETTLE_S="${GOAL_SETTLE_S:-0}"
+if [[ "$GOAL_SETTLE_S" != "0" ]]; then
+  log "=== settle ${GOAL_SETTLE_S}s for obstacle layer (/scan → costmap) ==="
+  sleep "$GOAL_SETTLE_S"
+fi
+
+DUMP_NAV2_GRID="${DUMP_NAV2_GRID:-0}"
+PLAN_DUMP_PID=""
+if [[ "$DUMP_NAV2_GRID" == "1" ]]; then
+  log "=== dump /global_costmap + /scan + TF (pre-goal) ==="
+  python3 "$SMOKE_DIR/dump_nav2_grid.py" --snapshot "$OUT/costmap_at_goal.txt" \
+    | tee -a "$SUMMARY" || true
+  {
+    echo "=== live Nav2 params ==="
+    ros2 param get /planner_server GridBased.plugin 2>/dev/null || true
+    ros2 param get /planner_server GridBased.cost_travel_multiplier 2>/dev/null || true
+    ros2 param get /planner_server GridBased.allow_unknown 2>/dev/null || true
+    ros2 param get /planner_server GridBased.tolerance 2>/dev/null || true
+    ros2 param get /global_costmap/global_costmap robot_radius 2>/dev/null || true
+    ros2 param get /global_costmap/global_costmap inflation_layer.inflation_radius 2>/dev/null || true
+    ros2 param get /global_costmap/global_costmap inflation_layer.cost_scaling_factor 2>/dev/null || true
+    ros2 param get /global_costmap/global_costmap rolling_window 2>/dev/null || true
+    ros2 param get /global_costmap/global_costmap resolution 2>/dev/null || true
+    ros2 param get /global_costmap/global_costmap obstacle_layer.scan.clearing 2>/dev/null || true
+    ros2 param get /global_costmap/global_costmap obstacle_layer.scan.obstacle_max_range 2>/dev/null || true
+  } | tee "$OUT/nav2_params_live.txt" | tee -a "$SUMMARY" || true
+  python3 "$SMOKE_DIR/dump_nav2_grid.py" --watch-plan "$OUT/plan_first.txt" \
+    >"$OUT/plan_watch.log" 2>&1 &
+  PLAN_DUMP_PID=$!
+  sleep 1
+fi
+
 log "=== NavigateToPose goal ($GOAL_X,$GOAL_Y) ==="
 timeout 3 ros2 topic echo "$ODOM_TOPIC" --once --qos-reliability best_effort >"$OUT/odom_before.txt" 2>&1 || true
 
@@ -178,6 +211,14 @@ tail -40 "$OUT/nav_goal.txt" | tee -a "$SUMMARY"
 if [[ -n "$ODOM_REC_PID" ]]; then
   kill "$ODOM_REC_PID" 2>/dev/null || true
   wait "$ODOM_REC_PID" 2>/dev/null || true
+fi
+if [[ -n "$PLAN_DUMP_PID" ]]; then
+  kill "$PLAN_DUMP_PID" 2>/dev/null || true
+  wait "$PLAN_DUMP_PID" 2>/dev/null || true
+  if [[ -f "$OUT/plan_first.txt" ]]; then
+    log "=== first /plan ==="
+    cat "$OUT/plan_first.txt" | tee -a "$SUMMARY" || true
+  fi
 fi
 
 timeout 3 ros2 topic echo "$ODOM_TOPIC" --once --qos-reliability best_effort >"$OUT/odom_after.txt" 2>&1 || true
@@ -253,7 +294,7 @@ else
   log "no nav2_bringup.log" | tee -a "$DIAG"
 fi
 
-kill $PC2_PID $NAV_PID $MAP_PID $ODOM_REC_PID 2>/dev/null || true
-wait $PC2_PID $NAV_PID $MAP_PID $ODOM_REC_PID 2>/dev/null || true
+kill $PC2_PID $NAV_PID $MAP_PID $ODOM_REC_PID $PLAN_DUMP_PID 2>/dev/null || true
+wait $PC2_PID $NAV_PID $MAP_PID $ODOM_REC_PID $PLAN_DUMP_PID 2>/dev/null || true
 log "=== done ==="
 cat "$SUMMARY"

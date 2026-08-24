@@ -15,12 +15,12 @@ Fork of [robotics-upo/Hunav_isaac_wrapper](https://github.com/robotics-upo/Hunav
 - CUCR office: `office.usd` is ServiceSim (`cucr_worlds_office`), not the stock HuNav bake — `tools/README_office_port.md`
 - CUCR bookstore: `bookstore.usd` (AWS RoboMaker retail; convert `tools/isaac_convert_bookstore.py`) + `bookstore_behaviors` disjoint aisle loops — `tools/README_bookstore_port.md`
 - CUCR house_museum / small_house / small_warehouse: remaining `cucr_worlds` ports (GUI-good; house_museum roofs off + sunset sky kept) — `tools/README_remaining_ports.md`
-- Lab Reachy: `--robot reachy` (Zuuu mobile base + full-kit torso; parked TF + `/scan` + dual RGB — Validated **#49/#59/#60**)
+- Lab Reachy: `--robot reachy` (Zuuu + full-kit torso; kinematic `chassis_only` + `/scan` + dual RGB — Validated **#49/#59/#60/#77**). Hospital occupancy hop: `tools/drive_reachy_waypoints.py` `(5,0)`→`(5,-8)`.
 - Lab Stretch: `--robot stretch` (kinematic chassis) and `--robot stretch_wheeled` (PhysX diff-drive; flat-ground smoke PASS)
-- Stretch Nav2: `KinematicNavPublisher` (`world→map→odom→base_link` + `/odom`); museum A10 plaza **#69**; plaza `/cmd_vel` A* **#68**; `museum_eval` static crowd **#67**
+- Stretch Nav2: `KinematicNavPublisher` (`world→map→odom→base_link` + `/odom`); museum A10 plaza **#69**; plaza `/cmd_vel` A* **#68**; `museum_eval` static crowd **#67**. Reachy uses the same publisher (`lidar_link` + `laser` alias) — **#77**.
 - Lab Franka: `--robot franka` (CDN `FrankaPanda`, parked `drive: static`) + stock TF/`joint_states`
 - Lab sensors: `lab_robot_sensors.py` — Stretch `/scan` (RTX 2D) + `/imu` + parked joints; RGB-D via `HUNAV_LAB_CAMERAS=1` under `camera_color_optical_frame` (Validated **#46**); museum `/scan` wall rings after Z fix (**#47**); smoke `tools/lab_robot_sensor_smoke.py`
-- Agent walk on Isaac 6: People biped retarget source, file-referenced retarget clips, SFM goals wiring, museum free-space goals + collider/ray fixes — see **[docs/ANIMATION_LOG.md](docs/ANIMATION_LOG.md)**
+- Agent walk on Isaac 6: People biped retarget source, file-referenced retarget clips, SFM goals wiring, museum free-space goals + collider/ray fixes — discovery log **[docs/ANIMATION_LOG.md](docs/ANIMATION_LOG.md)**; current architecture (parent repo) **[docs/PEOPLE_MOTION.md](https://github.com/osamuzahid/isaac-social-nav/blob/master/docs/PEOPLE_MOTION.md)**
 - In-source notes: search `ORIGINALLY` / `PATCH (isaac-social-nav)`
 
 Parent project docs: [isaac-social-nav](https://github.com/osamuzahid/isaac-social-nav) (`README.md`, `docs/ENVIRONMENT.md` Handoff, `docs/TROUBLESHOOTING.md`).
@@ -74,7 +74,7 @@ It supports both **ROS 2 teleoperation** and **autonomous navigation (Nav2)**, w
  - Supports animation **retargeting**, applying a single set of animations to different characters via **USD SkelAnimation** and the **Omni Anim Retargeting extension**
 
 - **Multiple Robot Models:**
- - Includes `jetbot`, `create3`, `carter`, `carter_ROS`, lab Stretch (`stretch`, `stretch_wheeled`), lab Franka (`franka`), and lab Reachy (`reachy`, Zuuu base, parked)
+ - Includes `jetbot`, `create3`, `carter`, `carter_ROS`, lab Stretch (`stretch`, `stretch_wheeled`), lab Franka (`franka`), and lab Reachy (`reachy`, Zuuu kinematic chassis)
 
 - **ROS 2 Navigation (Nav2) Support:**
  - Dissertation path: kinematic **Stretch** (`tools/nav2_smoke/run_stretch_nav2_smoke.sh`, museum A10 plaza)
@@ -268,6 +268,8 @@ Use ROS 2 to publish Twist messages to `/cmd_vel` for direct robot control:
 ```bash
 ros2 topic pub /cmd_vel geometry_msgs/msg/Twist '{linear: {x: 0.5}, angular: {z: 0.1}}'
 ```
+
+Kinematic Stretch/Reachy (`Physics=none`) **hold the last twist** until a new one arrives, including zeros. `ros2 topic pub … -r 10` keeps moving after Ctrl-C until you publish a zero twist. Raw `/cmd_vel` ghosts walls; occupancy / Nav2 / ESC keep the robot in halls.
 
 #### ROS 2 Navigation (Nav2)
 

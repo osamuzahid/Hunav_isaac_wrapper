@@ -120,6 +120,9 @@ cp -f "$MAIN_CSV" "$DESK/metrics.csv" 2>/dev/null || true
 cp -f "$SUMMARY" "$DESK/nav2_eval_summary.txt" 2>/dev/null || true
 [[ -f "$OUT/nav2_smoke_summary.txt" ]] && cp -f "$OUT/nav2_smoke_summary.txt" "$DESK/" || true
 log "copied CSV → $DESK/metrics.csv"
+if [[ -x /home/osamuzahid/Projects/isaac-social-nav/tools/archive_eval.sh ]]; then
+  /home/osamuzahid/Projects/isaac-social-nav/tools/archive_eval.sh "$OUT" "${ARCHIVE_TAG:-nav2_crowd}" | tee -a "$SUMMARY" || true
+fi
 
 if [[ "$NAV_RC" -eq 0 ]] && grep -q 'GOAL=SUCCEEDED' "$OUT/nav2_smoke_summary.txt" 2>/dev/null && [[ "$SUM_RC" -eq 0 ]]; then
   log "VERDICT PASS (nav2 SUCCEEDED + metrics.csv)"

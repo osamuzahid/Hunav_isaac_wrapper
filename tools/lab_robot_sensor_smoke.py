@@ -41,8 +41,15 @@ _REACHY_JS_REQUIRED = (
     "l_shoulder_pitch",
 )
 
-# TF child/parent leaf names expected for Reachy stock mounts.
-_REACHY_TF_LEAVES = ("torso", "left_camera_optical", "right_camera_optical")
+# TF child/parent leaf names expected for Reachy stock mounts (Nav2 tree).
+_REACHY_TF_LEAVES = (
+    "base_link",
+    "odom",
+    "lidar_link",
+    "torso",
+    "left_camera_optical",
+    "right_camera_optical",
+)
 
 
 def _finite(xs) -> bool:
@@ -130,8 +137,9 @@ def _external_content_capture(robot: str, out_json: str, wait_s: float = 12.0) -
             rclpy.spin_once(n, timeout_sec=0.1)
             done = n.js is not None and n.frames
             if robot == 'reachy':
-                need = {{'torso', 'left_camera_optical', 'right_camera_optical'}}
+                need = {{'base_link', 'odom', 'lidar_link'}}
                 done = n.js is not None and need.issubset(n.frames)
+                done = done and n.imu is not None and n.scan is not None
             elif robot in ('stretch', 'stretch_wheeled'):
                 done = done and n.imu is not None and n.scan is not None
             if done:
@@ -248,7 +256,8 @@ def _evaluate_captured(robot: str, data: Optional[Dict[str, Any]]) -> List[str]:
                 f"(base_link/laser/base_imu; {len(frames)} frames)"
             )
     elif robot == "reachy":
-        missing = [f for f in _REACHY_TF_LEAVES if f not in frames]
+        required = ("base_link", "odom", "lidar_link")
+        missing = [f for f in required if f not in frames]
         if missing:
             lines.append(
                 f"content /tf: FAIL (missing {missing}; saw {sorted(frames)[:12]})"
@@ -256,12 +265,12 @@ def _evaluate_captured(robot: str, data: Optional[Dict[str, Any]]) -> List[str]:
         else:
             lines.append(
                 f"content /tf: PASS "
-                f"(torso + head cameras; {len(frames)} frames)"
+                f"(odom/base_link/lidar_link; {len(frames)} frames)"
             )
     else:
         lines.append(f"content /tf: PASS ({len(frames)} frames)")
 
-    if robot in ("stretch", "stretch_wheeled"):
+    if robot in ("stretch", "stretch_wheeled", "reachy"):
         imu = data.get("imu")
         if not imu:
             lines.append("content /imu: FAIL (no message)")
@@ -271,11 +280,12 @@ def _evaluate_captured(robot: str, data: Optional[Dict[str, Any]]) -> List[str]:
             g = math.sqrt(ax * ax + ay * ay + az * az)
             rate = math.sqrt(wx * wx + wy * wy + wz * wz)
             frame = str(imu.get("frame") or "")
-            ok = (
-                8.0 <= g <= 11.5
-                and rate < 0.5
-                and ("imu" in frame.lower() or frame.endswith("base_imu"))
+            imu_ok_frame = (
+                "imu" in frame.lower()
+                or frame.endswith("base_imu")
+                or frame.endswith("imu_link")
             )
+            ok = 8.0 <= g <= 11.5 and rate < 0.5 and imu_ok_frame
             lines.append(
                 f"content /imu: {'PASS' if ok else 'FAIL'} "
                 f"(frame={frame}, |a|={g:.2f}, |w|={rate:.3f})"
@@ -439,9 +449,9 @@ def main() -> int:
     flat = sorted(topics_seen)
     want = {
         "franka": ["/clock", "/tf", "/joint_states"],
-        "stretch": ["/clock", "/tf", "/joint_states", "/scan", "/imu"],
+        "stretch": ["/clock", "/tf", "/joint_states", "/scan", "/imu", "/odom"],
         "stretch_wheeled": ["/clock", "/tf", "/joint_states", "/scan", "/imu"],
-        "reachy": ["/clock", "/tf", "/joint_states", "/scan", "/imu"],
+        "reachy": ["/clock", "/tf", "/joint_states", "/scan", "/imu", "/odom"],
     }.get(args.robot, ["/clock"])
     if args.robot == "reachy" and os.environ.get("HUNAV_LAB_CAMERAS", "0") in (
         "1",
@@ -481,6 +491,33 @@ def main() -> int:
         captured = capture_proc
 
     content_lines = _evaluate_captured(args.robot, captured)
+    if args.robot == "reachy" and getattr(node, "_chassis_drive", False):
+        try:
+            from hunav_isaac_wrapper.lab_robot_sensors import tick_lab_sensor_handles
+
+            pos0, _ = node.robot.get_world_pose()
+            dt = float(node.world.get_physics_dt())
+            n_move = max(20, int(2.0 / max(dt, 1e-3)))
+            for _ in range(n_move):
+                node.robot.apply_cmd_vel(0.30, 0.0, dt)
+                if getattr(node, "_lab_sensor_handles", None):
+                    tick_lab_sensor_handles(
+                        node._lab_sensor_handles,
+                        sim_time=float(node.world.current_time),
+                    )
+                node.world.step(render=True)
+            pos1, _ = node.robot.get_world_pose()
+            moved = math.hypot(
+                float(pos1[0]) - float(pos0[0]),
+                float(pos1[1]) - float(pos0[1]),
+            )
+            ok_move = moved >= 0.25
+            content_lines.append(
+                f"content chassis_xy: {'PASS' if ok_move else 'FAIL'} "
+                f"(Δxy={moved:.3f} m in ~2 s @ 0.30 m/s)"
+            )
+        except Exception as exc:
+            content_lines.append(f"content chassis_xy: FAIL ({exc})")
     lines.append("--- content ---")
     lines.extend(content_lines)
     ok_content = all(": PASS" in ln for ln in content_lines) and bool(content_lines)

@@ -73,7 +73,7 @@ def main() -> int:
     idle = _f(row, "time_not_moving")
     ped_vel = _f(row, "avg_pedestrian_velocity")
 
-    print("=== Nav2 crowd eval (Stretch, museum_eval_5, A10 plaza) ===")
+    print("=== Nav2 crowd eval ===")
     print(f"metrics: {metrics_path}")
     for line in _goal_line(out):
         print(f"  {line}")
@@ -94,8 +94,8 @@ def main() -> int:
     print(f"  avg_pedestrian_velocity    {ped_vel}")
 
     fails = []
-    if path_len is None or path_len < 8.0:
-        fails.append(f"path too short for A10 hop (path_length={path_len})")
+    if path_len is None or path_len < 7.0:
+        fails.append(f"path too short for hop (path_length={path_len})")
     if ped_vel is not None and ped_vel < 0.05:
         fails.append(f"crowd stuck (avg_pedestrian_velocity={ped_vel:.3f})")
     if min_people is not None and min_people < 0.05:

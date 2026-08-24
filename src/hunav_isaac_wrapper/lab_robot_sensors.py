@@ -867,6 +867,9 @@ def _yaw_from_xyzw(x, y, z, w) -> float:
 # Nav2 then skips /scan (local costmap ``Sensor origin out of map bounds``).
 _STRETCH_LASER_IN_BASE_XYZ = (0.004, 0.0, 0.1664)
 _STRETCH_LASER_IN_BASE_XYZW = (0.0, 0.0, 1.0, 0.0)
+# zuuu.urdf.xacro lidar_joint: base_link → lidar_link xyz="0.184 0 0.25" rpy="0 0 0"
+_REACHY_LIDAR_IN_BASE_XYZ = (0.184, 0.0, 0.25)
+_REACHY_LIDAR_IN_BASE_XYZW = (0.0, 0.0, 0.0, 1.0)
 
 
 class KinematicNavPublisher:
@@ -982,16 +985,16 @@ class KinematicNavPublisher:
                 out.transforms.append(
                     self._ts(stamp_sec, "base_link", frame_id, cxyz, cxyzw)
                 )
-                if not self._logged_ok and frame_id == "laser":
+                if not self._logged_ok and frame_id in ("laser", "lidar_link"):
                     off = math.hypot(cxyz[0], cxyz[1])
                     print(
-                        f"[lab_robot_sensors] laser in base_link "
+                        f"[lab_robot_sensors] {frame_id} in base_link "
                         f"({cxyz[0]:.3f},{cxyz[1]:.3f},{cxyz[2]:.3f}) "
                         f"xy={off:.3f} m (URDF mount pin)"
                     )
                     if off > 1.0:
                         print(
-                            "[lab_robot_sensors] WARNING: laser XY offset "
+                            "[lab_robot_sensors] WARNING: lidar XY offset "
                             f"{off:.2f} m — local costmap will not raytrace"
                         )
             self._tf_pub.publish(out)
@@ -1122,10 +1125,12 @@ def attach_lab_robot_sensors(
         return handles
 
     if robot_name == "reachy":
-        # Lab Reachy = full_kit torso on Zuuu. PoseTree eInvalid on opticals —
-        # parked rclpy TF. Lidar on lidar_link (stock mobile).
+        # Lab Reachy = full_kit torso on Zuuu. Kinematic chassis (Physics=none)
+        # uses the same Nav2 TF tree as Stretch. Lidar on lidar_link.
+        # `laser` is an alias of the URDF pin so Stretch Nav2/ESC yaml still works.
         base = _join(robot_prim_path, _REACHY_BASE)
         lidar = _join(robot_prim_path, _REACHY_LIDAR)
+        imu = _join(robot_prim_path, _REACHY_IMU)
         torso = _join(robot_prim_path, _REACHY_TORSO)
         left_opt = _join(robot_prim_path, _REACHY_LEFT_OPTICAL)
         right_opt = _join(robot_prim_path, _REACHY_RIGHT_OPTICAL)
@@ -1133,20 +1138,31 @@ def attach_lab_robot_sensors(
             handles["parked_js"] = ParkedJointStatePublisher(
                 ros_node, joint_names=_REACHY_PARKED_JOINTS
             )
-            handles["parked_tf"] = ParkedLinkTfPublisher(
+            handles["parked_tf"] = KinematicNavPublisher(
                 ros_node,
-                frames=[
-                    (base, "base_link"),
+                base_prim=base,
+                child_frames=[
                     (lidar, "lidar_link"),
+                    (lidar, "laser"),
+                    (imu, "imu_link"),
                     (torso, "torso"),
                     (left_opt, "left_camera_optical"),
                     (right_opt, "right_camera_optical"),
                 ],
-                parent_frame="world",
+                fixed_in_base={
+                    "lidar_link": (
+                        _REACHY_LIDAR_IN_BASE_XYZ,
+                        _REACHY_LIDAR_IN_BASE_XYZW,
+                    ),
+                    "laser": (
+                        _REACHY_LIDAR_IN_BASE_XYZ,
+                        _REACHY_LIDAR_IN_BASE_XYZW,
+                    ),
+                },
             )
             print(
-                "[lab_robot_sensors] Reachy: publishing parked "
-                "/joint_states + /tf via rclpy"
+                "[lab_robot_sensors] Reachy kinematic: /joint_states + Nav2 "
+                "TF (map/odom/base_link) + /odom via rclpy (Physics=none; no PoseTree)"
             )
         handles["lidar"] = _attach_stretch_lidar(lidar, frame_id="lidar_link")
         _attach_synthetic_imu_publisher("/World/ROS2_ReachyImu", frame_id="imu_link")

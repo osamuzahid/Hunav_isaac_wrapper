@@ -1,8 +1,21 @@
-# Stretch Nav2 crowd hop (#70): moving robot + museum_eval_5 people.
+# Stretch Nav2 crowd hop (#70/#71) and ESC matched hop (#76).
+# Reachy hospital Nav2 crowd (B5) uses the same file (frequency 0.0).
 # System ROS Python only (not Isaac python.sh). result_file overridden on CLI.
+#
+# Capture rate: 0.0 = every /robot_states + /human_states sample (published
+# each Isaac physics step, physics_dt=1/20). Needed for Arena-style jerk
+# (avg_overacceleration) and denser curvature (cumulative_heading_changes).
+# Do NOT pin 20.0 — if the sim sags, the timer duplicates last-message
+# samples and finite-difference jerk explodes. Check:
+#   ros2 topic hz /robot_states
+# Do not raise Isaac physics_dt or Nav2 expected_planner_frequency for this.
+# Arena 5.0 Table II extras: private zone, jerk, path efficiency, facing/seen-by
+# (±90° cone), movement-towards (±30° of pose step). Robot heading from
+# position.orientation, not Agent.yaw (#68).
+# Policy: docs/METRICS.md (catalog) and docs/ARENA_ROSNAV_IMPLEMENTATION.md (why Arena is not installed).
 hunav_evaluator_node:
   ros__parameters:
-    frequency: 1.0
+    frequency: 0.0
     result_file: /tmp/hunav_nav2_crowd_eval/metrics
     metrics:
       time_to_reach_goal: true
@@ -14,6 +27,14 @@ hunav_evaluator_node:
       intimate_space_intrusions: true
       personal_space_intrusions: true
       social_space_intrusions: true
+      arena_private_zone_intrusions: true
+      arena_private_zone_time: true
+      arena_max_speed_in_intimate_space: true
+      arena_path_efficiency: true
+      arena_angle_over_length: true
+      arena_time_facing_pedestrians: true
+      arena_time_seen_by_pedestrians: true
+      arena_movement_towards_pedestrians: true
       group_intimate_space_intrusions: false
       group_personal_space_intrusions: false
       group_social_space_intrusions: false
@@ -26,7 +47,7 @@ hunav_evaluator_node:
       avg_robot_linear_speed: true
       avg_robot_angular_speed: true
       avg_acceleration: true
-      avg_overacceleration: false
+      avg_overacceleration: true
       avg_pedestrian_velocity: true
       avg_closest_pedestrian_velocity: true
       social_force_on_agents: true

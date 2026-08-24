@@ -1,5 +1,6 @@
 # Static-scene eval: parked robot + circulating pedestrians.
 # Robot path/goal/speed metrics off — they are meaningless when Stretch is parked.
+# Keep frequency 1.0 and jerk off; Arena path metrics need a moving hop.
 hunav_evaluator_node:
   ros__parameters:
     frequency: 1.0
@@ -14,6 +15,14 @@ hunav_evaluator_node:
       intimate_space_intrusions: true
       personal_space_intrusions: true
       social_space_intrusions: true
+      arena_private_zone_intrusions: true
+      arena_private_zone_time: true
+      arena_max_speed_in_intimate_space: true
+      arena_path_efficiency: false
+      arena_angle_over_length: false
+      arena_time_facing_pedestrians: true
+      arena_time_seen_by_pedestrians: true
+      arena_movement_towards_pedestrians: false
       group_intimate_space_intrusions: false
       group_personal_space_intrusions: false
       group_social_space_intrusions: false

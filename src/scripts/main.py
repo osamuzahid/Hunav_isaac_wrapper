@@ -143,6 +143,7 @@ PRESETS = {
     "hospital_agents",
     "hospital_behaviors",
     "hospital_lab_park",
+    "hospital_eval_5",
     "office_agents",
     "office_behaviors",
     "empty_world_agents",
@@ -589,7 +590,7 @@ def main():
             "stretch": "Hello Robot Stretch — kinematic chassis (no wall collision)",
             "stretch_wheeled": "Hello Robot Stretch — PhysX diff-drive (walls collide)",
             "franka": "CUCR lab Franka Panda — parked (TF + joint_states)",
-            "reachy": "CUCR lab Reachy 2023 + Zuuu base — parked (TF + joints + /scan + dual RGB)",
+            "reachy": "CUCR lab Reachy 2023 + Zuuu — kinematic chassis (same as Stretch)",
         }
         robot = choose(
             "Select robot:",

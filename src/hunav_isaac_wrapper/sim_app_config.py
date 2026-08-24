@@ -68,6 +68,8 @@ _LAB_CONFIG: Dict[str, Any] = {
 }
 
 # Laptop / debug: lighter for RTX 4070 8GB + 16GB RAM; headless for smoke/E2E.
+# Keep RaytracedLighting (RTX lidar needs RTX). 960x540 — do not drop res/AA
+# here; 800x450 + AA off was after #79 and quiet then matched the crowd squeeze.
 _DEBUG_CONFIG: Dict[str, Any] = {
     "width": 960,
     "height": 540,

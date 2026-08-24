@@ -16,6 +16,12 @@ Usage:
   export HUNAV_ISAAC_PROFILE=lab HUNAV_ISAAC_HEADLESS=0
   ~/isaacsim/python.sh tools/nav2_isaac_keepalive.py --seconds 600 \\
     --world hospital --config hospital_agents --frame-robot
+  # hospital Reachy quiet Nav2 (B4; same goal as occupancy #78):
+  ~/isaacsim/python.sh tools/nav2_isaac_keepalive.py --seconds 600 \\
+    --robot reachy --world hospital --config hospital_lab_park --disable-cameras
+  # hospital Reachy crowd Nav2 + CSV (B5; same goal):
+  ~/isaacsim/python.sh tools/nav2_isaac_keepalive.py --seconds 720 \\
+    --robot reachy --world hospital --config hospital_eval_5 --disable-cameras
 """
 
 from __future__ import annotations
@@ -207,6 +213,19 @@ def main() -> int:
             node.world.reset()
             _ensure_nova_carter_visual_config("/World/Nova_Carter", "Full_Merged")
             _expand_nova_carter_body_instances("/World/Nova_Carter")
+
+    # TeleopHuNavSim.run() does this after reset. Keepalive calls reset itself and
+    # never run(), so Stretch RGB-D stayed identity-under-optical (self-view / blank)
+    # on ESC/Nav2 hops. museum_behaviors GUI still looked fine because it uses run().
+    if getattr(node, "_lab_sensor_handles", None):
+        try:
+            from hunav_isaac_wrapper.lab_robot_sensors import (
+                refresh_optical_camera_orients,
+            )
+
+            refresh_optical_camera_orients(node._lab_sensor_handles)
+        except Exception as exc:
+            print(f"[nav2_keepalive] camera orient refresh failed: {exc}", flush=True)
 
     _disable_usd_diff_drive_graph()
 

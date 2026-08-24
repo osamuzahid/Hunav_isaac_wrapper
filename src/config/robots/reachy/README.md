@@ -4,18 +4,23 @@ Apache-2.0 (Pollen Robotics). Source: official
 [`pollen-robotics/reachy_2023`](https://github.com/pollen-robotics/reachy_2023)
 `reachy_description` (develop) **plus Zuuu mobile base** (`mobile_base_visual.dae`,
 lidar at `lidar_link`). Camera optical frames come from the description’s Gazebo
-camera section (links kept; plugins stripped). Wheels are **fixed** (kinematic
-park / later chassis teleport — not PhysX omni drive).
+camera section (links kept; plugins stripped). Wheels are **fixed** — planar
+motion is kinematic `ChassisDriveRobot` (`/cmd_vel` `vx`+`wz`), not PhysX omni drive.
 
 ## Stock sensors
 
 | Stream | Topic | Notes |
 |---|---|---|
-| TF | `/tf` | parked rclpy: `world`→`base_link` / `lidar_link` / `torso` / camera opticals |
-| Joint states | `/joint_states` | parked zeros via rclpy; bodies **`park_kinematic`** |
+| TF | `/tf` | Nav2 tree: `world→map→odom→base_link→lidar_link` (`laser` alias of the URDF pin). RELIABLE. |
+| Odom | `/odom` | Ground-truth chassis pose (BEST_EFFORT) |
+| Joint states | `/joint_states` | parked zeros via rclpy (arm visual-only) |
 | Base lidar | `/scan` | RTX 2D on `lidar_link` (frame_id=`lidar_link`) |
 | IMU | `/imu` | synthetic gravity on `imu_link` |
 | Head RGB L/R | `/left_camera/*`, `/right_camera/*` | opt-in `HUNAV_LAB_CAMERAS=1`; no gripper force |
+
+Drive is **kinematic chassis** (`--robot reachy`, same `ChassisDriveRobot` as Stretch). `/cmd_vel` `linear.x` + `angular.z`. Last twist is **held** until a new message (including zeros). Do **not** PhysX omniwheels. Raw `/cmd_vel` **ghosts walls**; occupancy / Nav2 / ESC keep it in halls. Hospital spawn `(5.0, 0.0)` yaw `2.9`. Occupancy hop (B3): `(5, 0)` → `(5, -8)` south hall (`tools/drive_reachy_waypoints.py`).
+
+RViz `reachy_scan.rviz`: Fixed Frame `lidar_link` for a local scan check. TF **Show Arrows** draws a grey dotted line from the sensor — that is not a lidar ray.
 
 ## Rebuild USD
 

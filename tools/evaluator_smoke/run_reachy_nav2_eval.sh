@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Record hunav_evaluator against a running parked-robot museum_eval Isaac session.
-# No /cmd_vel. System ROS Python only (not Isaac python.sh).
+# Record hunav_evaluator during the Reachy hospital Nav2 crowd hop (B5).
+# System ROS Python only. Isaac keepalive must already be up:
+#   ~/isaacsim/python.sh tools/nav2_isaac_keepalive.py --seconds 720 \
+#     --robot reachy --world hospital --config hospital_eval_5 --disable-cameras
 #
-# Prerequisites:
-#   ./tools/run_museum_static_eval.sh   # Isaac already up, /human_states live
-#
-# Env: OUT_DIR RECORD_SECS EXP_TAG RUN_ID
+# Same goal as quiet #79: (5,0) → (5,-8). metrics_nav2_crowd.yaml frequency 0.0.
+# Env: OUT_DIR EXP_TAG RUN_ID
 set -eo pipefail
 export AMENT_TRACE_SETUP_FILES="${AMENT_TRACE_SETUP_FILES:-}"
 source /opt/ros/jazzy/setup.bash
@@ -14,22 +14,25 @@ export ROS_DOMAIN_ID="${ROS_DOMAIN_ID:-0}"
 
 SMOKE_DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(cd "$SMOKE_DIR/../.." && pwd)"
-OUT="${OUT_DIR:-/tmp/hunav_static_eval}"
+NAV2_DIR="$ROOT/tools/nav2_smoke"
+OUT="${OUT_DIR:-/tmp/hunav_reachy_nav2_crowd_eval}"
 mkdir -p "$OUT"
 RESULT_FILE="$OUT/metrics"
-RECORD_SECS="${RECORD_SECS:-60}"
-EXP_TAG="${EXP_TAG:-museum_static_eval}"
+EXP_TAG="${EXP_TAG:-hospital_reachy_nav2_crowd}"
 RUN_ID="${RUN_ID:-1}"
-SUMMARY="$OUT/static_eval_summary.txt"
-PARAMS="${PARAMS:-$SMOKE_DIR/metrics_static.yaml}"
+GOAL_X="${GOAL_X:-5.0}"
+GOAL_Y="${GOAL_Y:--8.0}"
+SUMMARY="$OUT/nav2_eval_summary.txt"
+PARAMS="${PARAMS:-$SMOKE_DIR/metrics_nav2_crowd.yaml}"
+DESK="${DESK_COPY:-$HOME/Desktop/hunav_reachy_nav2_crowd_eval}"
 
-export FASTRTPS_DEFAULT_PROFILES_FILE="${FASTRTPS_DEFAULT_PROFILES_FILE:-$SMOKE_DIR/../nav2_smoke/fastrtps_no_shm.xml}"
+export FASTRTPS_DEFAULT_PROFILES_FILE="${FASTRTPS_DEFAULT_PROFILES_FILE:-$NAV2_DIR/fastrtps_no_shm.xml}"
 export RMW_FASTRTPS_USE_QOS_FROM_XML="${RMW_FASTRTPS_USE_QOS_FROM_XML:-1}"
 
 : >"$SUMMARY"
 log() { echo "$@" | tee -a "$SUMMARY"; }
 
-log "out=$OUT record=${RECORD_SECS}s tag=$EXP_TAG (parked robot, no cmd_vel)"
+log "out=$OUT tag=$EXP_TAG goal=($GOAL_X,$GOAL_Y) (Reachy hospital Nav2 crowd + evaluator)"
 
 wait_topic() {
   local t="$1"
@@ -83,16 +86,20 @@ for i in $(seq 1 30); do
   fi
 done
 
-log "=== start recording (robot_goal = parked pose, unused) ==="
+log "=== start recording ==="
 ros2 service call /hunav_start_recording hunav_msgs/srv/StartEvaluation \
-  "{experiment_tag: '$EXP_TAG', run_id: $RUN_ID, robot_goal: {header: {frame_id: 'map'}, pose: {position: {x: 2.0, y: -8.0, z: 0.0}, orientation: {w: 1.0}}}}" \
+  "{experiment_tag: '$EXP_TAG', run_id: $RUN_ID, robot_goal: {header: {frame_id: 'map'}, pose: {position: {x: $GOAL_X, y: $GOAL_Y, z: 0.0}, orientation: {w: 1.0}}}}" \
   | tee -a "$SUMMARY"
 
-log "=== wait ${RECORD_SECS}s (people circulating, robot parked) ==="
-sleep "$RECORD_SECS"
+log "=== Reachy Nav2 smoke (5,0) → ($GOAL_X,$GOAL_Y) ==="
+set +e
+OUT_DIR="$OUT" "$NAV2_DIR/run_reachy_nav2_smoke.sh"
+NAV_RC=$?
+set -e
+log "nav2_smoke exit=$NAV_RC"
 
 log "=== stop recording ==="
-ros2 service call /hunav_stop_recording std_srvs/srv/Empty "{}" | tee -a "$SUMMARY"
+ros2 service call /hunav_stop_recording std_srvs/srv/Empty "{}" | tee -a "$SUMMARY" || true
 sleep 3
 
 MAIN_CSV="${RESULT_FILE}.csv"
@@ -104,9 +111,25 @@ if [[ ! -f "$MAIN_CSV" ]]; then
 fi
 
 log "PASS: $MAIN_CSV"
-python3 "$ROOT/tools/summarize_static_eval.py" "$OUT" | tee -a "$SUMMARY"
+set +e
+python3 "$ROOT/tools/summarize_nav2_crowd_eval.py" "$OUT" | tee -a "$SUMMARY"
+SUM_RC=${PIPESTATUS[0]}
+set -e
+
+mkdir -p "$DESK"
+cp -f "$MAIN_CSV" "$DESK/metrics.csv" 2>/dev/null || true
+cp -f "$SUMMARY" "$DESK/nav2_eval_summary.txt" 2>/dev/null || true
+[[ -f "$OUT/nav2_smoke_summary.txt" ]] && cp -f "$OUT/nav2_smoke_summary.txt" "$DESK/" || true
+[[ -f "$OUT/costmap_at_goal.txt" ]] && cp -f "$OUT/costmap_at_goal.txt" "$DESK/" || true
+[[ -f "$OUT/plan_first.txt" ]] && cp -f "$OUT/plan_first.txt" "$DESK/" || true
+log "copied CSV → $DESK/metrics.csv"
 if [[ -x /home/osamuzahid/Projects/isaac-social-nav/tools/archive_eval.sh ]]; then
-  /home/osamuzahid/Projects/isaac-social-nav/tools/archive_eval.sh "$OUT" "${ARCHIVE_TAG:-museum_static}" | tee -a "$SUMMARY" || true
+  /home/osamuzahid/Projects/isaac-social-nav/tools/archive_eval.sh "$OUT" "${ARCHIVE_TAG:-reachy_nav2_crowd}" | tee -a "$SUMMARY" || true
 fi
-log "VERDICT see summariser above"
+
+if [[ "$NAV_RC" -eq 0 ]] && grep -q 'GOAL=SUCCEEDED' "$OUT/nav2_smoke_summary.txt" 2>/dev/null && [[ "$SUM_RC" -eq 0 ]]; then
+  log "VERDICT PASS (nav2 SUCCEEDED + metrics.csv)"
+  exit 0
+fi
+log "VERDICT PARTIAL (csv=$MAIN_CSV nav2_rc=$NAV_RC summariser_rc=$SUM_RC)"
 exit 0

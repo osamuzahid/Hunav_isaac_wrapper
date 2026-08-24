@@ -13,6 +13,14 @@ hunav_evaluator_node:
       intimate_space_intrusions: true
       personal_space_intrusions: true
       social_space_intrusions: true
+      arena_private_zone_intrusions: true
+      arena_private_zone_time: true
+      arena_max_speed_in_intimate_space: true
+      arena_path_efficiency: true
+      arena_angle_over_length: true
+      arena_time_facing_pedestrians: true
+      arena_time_seen_by_pedestrians: true
+      arena_movement_towards_pedestrians: true
       group_intimate_space_intrusions: false
       group_personal_space_intrusions: false
       group_social_space_intrusions: false

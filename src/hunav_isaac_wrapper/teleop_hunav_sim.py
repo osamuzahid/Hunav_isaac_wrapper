@@ -277,11 +277,10 @@ def _yaw_from_orientation(quat):
 
 class ChassisDriveRobot:
     """
-    PATCH (isaac-social-nav): kinematic planar base for Stretch.
+    PATCH (isaac-social-nav): kinematic planar base for Stretch and Reachy.
     Spawns a vendored USD and integrates /cmd_vel on the root Xform each step.
     Uses Physics variant ``none`` so arm/lift joints are not PhysX-simulated
-    (shared wheeled USD otherwise collapses under gravity — and SingleArticulation
-    on this asset fails to resolve `/World/Stretch/Geometry/base_link`).
+    (Stretch otherwise collapses; Reachy omniwheel PhysX flings the arm).
     """
 
     def __init__(self, prim_path, usd_path, position, orientation):
@@ -629,16 +628,12 @@ class TeleopHuNavSim(Node):
                 },
             },
             # PATCH (isaac-social-nav): Pollen Reachy 2023 on Zuuu mobile base.
-            # Stock: TF/joints + base lidar + IMU + dual head RGB. Park kinematic
-            # — dynamic PhysX still blows on leftover joint-drive / contact issues.
+            # Same kinematic chassis as Stretch (Physics=none). Do not PhysX
+            # omniwheels — leftover inertias fling the arm (TROUBLESHOOTING Reachy).
             "reachy": {
                 "name": "Reachy",
                 "usd_package_file": "reachy/reachy.usd",
-                "drive": "static",
-                "variants": {"Physics": "physx"},
-                "articulation_prim": "Geometry/base_footprint/base_link",
-                "expand_instances": False,
-                "park_kinematic": True,
+                "drive": "chassis_only",
             },
         }
 
@@ -672,9 +667,9 @@ class TeleopHuNavSim(Node):
         self._robot_name = robot_name
         self._lab_sensor_handles = None
         # ORIGINALLY (upstream v2.0): always WheeledRobot + DifferentialController at [0,0,0].
-        # PATCH (isaac-social-nav): Stretch uses chassis_only kinematic base; optional robot_init_pose.
+        # PATCH (isaac-social-nav): Stretch / Reachy use chassis_only kinematic base.
         # stretch_wheeled keeps PhysX WheeledRobot + DifferentialController (walls collide).
-        # franka (and later Reachy/A1) use drive=static parked USD.
+        # franka stays drive=static parked USD.
         drive = robot_config.get("drive")
         if drive == "chassis_only":
             self._chassis_drive = True

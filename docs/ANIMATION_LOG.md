@@ -2,6 +2,8 @@
 
 Sections are in **discovery order** (how we found each failure on the Isaac 6.0.1 + Jazzy port, then how we fixed it). Code markers: search `ORIGINALLY` / `PATCH (isaac-social-nav)` in `hunav_manager.py` and `animation_utils.py`.
 
+**Current architecture, remaining limits, Arena lessons:** parent repo [`docs/PEOPLE_MOTION.md`](../../../../docs/PEOPLE_MOTION.md) (checked against live code). This file is the bring-up log, not the live spec.
+
 Parent handoff / validation IDs: main repo `docs/ENVIRONMENT.md` (Validated **#26–#28**, **#32**, port **6b–6d**).
 
 ---
@@ -90,8 +92,9 @@ Upstream authored an Idle/Walk **AnimationGraph**, retargeted clips from `Biped_
 |---|---|
 | **Symptom** | After relaunch: both run into a wall; female stops; male still rotates L/R. Live: Agent1 on **occupied map cell** `(2.75, 3.47)` val=0; Agent2 `|v_xy|~0.3` next to a wall (yaw freeze at 0.05 too low); `/people` showed huge `velocity.z` (PhysX tumble fed back into msgs). |
 | **Root cause** | HuNav SFM is a **local** force model — it walks **straight lines** between goals. Goals in different rooms ⇒ path crosses walls. Obstacle rays against the museum mesh then pin/spin agents. Map “free” clearance ≠ clear line-of-sight. |
-| **Fix** | (1) All museum spawns/goals inside one **mutual-LOS** room (`x∈[-8,4], y∈[-9.5,2.5]`). (2) `ignore_obstacle_rays: true` in `museum_agents.yaml` (no navmesh yet). (3) Zero planar-only velocities (kill `v_z` / tumble). (4) Freeze yaw when `|v_xy| &lt; 0.2`. |
-| **Trade-off** | Without obstacle rays, agents can clip through mesh if a goal is wrong; keep goals LOS-checked. Real wall avoidance waits on Nav2 / a planner. |
+| **Fix (then)** | (1) All museum spawns/goals inside one **mutual-LOS** room (`x∈[-8,4], y∈[-9.5,2.5]`). (2) `ignore_obstacle_rays: true` in `museum_agents.yaml` (no occupancy planner yet). (3) Zero planar-only velocities (kill `v_z` / tumble). (4) Freeze yaw when `|v_xy| &lt; 0.2`. |
+| **Trade-off (then)** | Without obstacle rays, agents can clip through mesh if a goal is wrong; keep goals LOS-checked. |
+| **Current (Validated #31)** | Occupancy A* (`occupancy_path.py`, `plan_goals_on_map: true`) densifies YAML goals. Live `museum_agents.yaml` / `museum_behaviors.yaml` set `ignore_obstacle_rays: false` again. A* miss still falls back to sparse chords. Live spec: parent `docs/PEOPLE_MOTION.md`. |
 | **Verify** | **DONE (GUI)** — both agents walk cyclic goal loops in the west open room (expected HuNav Regular + `cyclic_goals: true`). |
 
 ---
@@ -102,6 +105,7 @@ Upstream authored an Idle/Walk **AnimationGraph**, retargeted clips from `Biped_
 |---|---|
 | `animation_utils.py` | Graph authoring, `speed` uniform float, retarget + materialize clips, `set_anim_graph_speed` |
 | `hunav_manager.py` | Biped USD, spawn/physics, goals → `/compute_agents`, obstacle rays, orientation / Z pin |
+| `occupancy_path.py` | Occupancy A* (`OccupancyMap.from_yaml`, `world_to_grid` floor, `plan` / `plan_route`) |
 | `sim_app_config.py` | Kit-start `--enable` for anim extensions + laptop profiles |
 | `src/scenarios/museum_agents.yaml` | Spawns, goal loop, behavior type ints, string goal ids |
 | `src/worlds/assets/museum/PATCH_NOTES.md` | Museum **look** patches (floor/light), not animation |

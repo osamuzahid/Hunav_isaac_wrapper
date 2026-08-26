@@ -1,10 +1,10 @@
 # PATCH (isaac-social-nav): Nav2 params for kinematic Reachy (hospital).
-# Same chassis recipe as Stretch (odom /scan, no AMCL, speeds ~0.35 m/s) but
-# global planner is Smac 2D, not NavFn. Lidar marks the stretcher as a lethal
-# bar at y≈-4.55; a 0.1 m sliver at x=6.0 (cost 218) stayed legal at
-# robot_radius 0.35 so Smac took the 8 m hall. 0.42 makes that cell inscribed.
-# Do **not** paint hospital.png. Do **not** raise inflation_radius (seals spawn
-# on other hospital pinches). Stretch museum hops keep nav2_stretch_params.yaml.
+# Same chassis recipe as Stretch (odom /scan, no AMCL, speeds ~0.35 m/s).
+# Global planner: Smac 2D (same GridBased block as nav2_stretch_params.yaml).
+# Lidar marks the stretcher as a lethal bar at y≈-4.55; a 0.1 m sliver at
+# x=6.0 (cost 218) stayed legal at robot_radius 0.35 so Smac took the 8 m hall.
+# 0.42 makes that cell inscribed. Do **not** paint hospital.png. Do **not**
+# raise inflation_radius (seals spawn on other hospital pinches).
 amcl:
   ros__parameters:
     alpha1: 0.2

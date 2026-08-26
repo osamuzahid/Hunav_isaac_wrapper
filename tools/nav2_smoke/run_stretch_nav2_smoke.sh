@@ -7,6 +7,7 @@
 #
 # Same goal as plaza /cmd_vel #68: (2,-8) → A10 plaza (1.5, 6.5). Nav2 must
 # plan west of the y≈3 partition (not the first doorway at ~(2,1)).
+# Global planner: Smac 2D (nav2_stretch_params.yaml).
 # Records /odom and scores clearance vs the three staggered standing people
 # (STATUE / STATUE2 / STATUE3). Look for OBSTACLE=AVOID.
 set -eo pipefail

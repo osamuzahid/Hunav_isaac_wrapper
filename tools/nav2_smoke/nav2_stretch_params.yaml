@@ -2,6 +2,8 @@
 # odom_topic /odom (KinematicNavPublisher). Native /scan. No AMCL
 # (use_localization:=False + map_server in run_stretch_nav2_smoke.sh).
 # Speeds capped to match ChassisDriveRobot (~0.35 m/s).
+# Global planner: Smac 2D (same GridBased block as nav2_reachy_params.yaml).
+# robot_radius 0.35.
 amcl:
   ros__parameters:
     alpha1: 0.2
@@ -245,10 +247,9 @@ global_costmap:
       global_frame: map
       robot_base_frame: base_link
       robot_radius: 0.35
-      # museum.png is 200 m @ 5 cm (4000²). NavFn allocates that full grid even
-      # with A*, so each plan was ~100 ms ("current loop rate 10 Hz"). A 50 m
-      # rolling window at 10 cm is 500² — small enough to finish in the 20 Hz
-      # budget. Hop (2,-8)→(1.5,6.5) is ~15 m, so the goal stays in-window.
+      # museum.png is 200 m @ 5 cm (4000²). A 50 m rolling window at 10 cm is
+      # 500² — small enough for the 20 Hz planner budget. Hop (2,-8)→(1.5,6.5)
+      # is ~15 m, so the goal stays in-window.
       rolling_window: true
       width: 50
       height: 50
@@ -298,12 +299,17 @@ planner_server:
     planner_plugins: ["GridBased"]
     costmap_update_timeout: 1.0
     GridBased:
-      plugin: "nav2_navfn_planner::NavfnPlanner"
+      plugin: "nav2_smac_planner::SmacPlanner2D"
       tolerance: 0.5
-      # A* + rolling 50 m / 0.10 m global costmap (see global_costmap). Keep
-      # expected_planner_frequency at 20; do not lower it to match a slow plan.
-      use_astar: true
+      downsample_costmap: false
+      downsampling_factor: 1
       allow_unknown: true
+      max_iterations: 1000000
+      max_on_approach_iterations: 1000
+      max_planning_time: 2.0
+      motion_model_for_search: "MOORE"
+      cost_travel_multiplier: 2.0
+      use_final_approach_orientation: false
 
 smoother_server:
   ros__parameters:

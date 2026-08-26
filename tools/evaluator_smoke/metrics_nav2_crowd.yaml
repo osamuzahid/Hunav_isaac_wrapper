@@ -1,5 +1,5 @@
 # Stretch Nav2 crowd hop (#70/#71) and ESC matched hop (#76).
-# Reachy hospital Nav2 crowd (B5) uses the same file (frequency 0.0).
+# Reachy hospital Nav2/ESC crowd uses the same file (frequency 0.0).
 # System ROS Python only (not Isaac python.sh). result_file overridden on CLI.
 #
 # Capture rate: 0.0 = every /robot_states + /human_states sample (published

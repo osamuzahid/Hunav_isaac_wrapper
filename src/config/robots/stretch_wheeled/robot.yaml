@@ -1,0 +1,51 @@
+# Optional PhysX Stretch (walls collide). Same USD as kinematic Stretch.
+# --robot stretch_wheeled  |  not the dissertation hop path (Physics=none is accepted)
+#
+# USD is stretch/stretch.usd (sibling folder). This directory exists so the
+# launcher can discover the drive variant as its own --robot name.
+
+name: Stretch
+kind: differential
+description: Hello Robot Stretch — PhysX diff-drive (walls collide)
+usd_package_file: stretch/stretch.usd
+spawn_z_lift: 0.12
+wheel_dof_names:
+  - joint_left_wheel
+  - joint_right_wheel
+wheel_radius: 0.0508
+wheel_base: 0.3407
+hold_non_wheel_dofs: true
+
+sensors:
+  mode: pose_tree
+  parked_joints:
+    - joint_left_wheel
+    - joint_right_wheel
+    - joint_lift
+    - joint_arm_l0
+    - joint_arm_l1
+    - joint_arm_l2
+    - joint_arm_l3
+    - joint_arm_l4
+    - joint_wrist_yaw
+    - joint_wrist_pitch
+    - joint_wrist_roll
+    - joint_head_pan
+    - joint_head_tilt
+    - joint_gripper_finger_left
+    - joint_gripper_finger_right
+  links:
+    base: Geometry/base_link
+    lidar: Geometry/base_link/laser
+    imu: Geometry/base_link/base_imu
+    camera_link: Geometry/base_link/link_mast/link_head/link_head_pan/link_head_tilt/camera_bottom_screw_frame/camera_link
+    camera_optical: Geometry/base_link/link_mast/link_head/link_head_pan/link_head_tilt/camera_bottom_screw_frame/camera_link/camera_color_frame/camera_color_optical_frame
+  lidar:
+    link: lidar
+    frame_id: laser
+  imu:
+    frame_id: base_imu
+    graph_path: /World/ROS2_LabImu
+  cameras:
+    - type: stretch_rgbd
+      optical: camera_optical

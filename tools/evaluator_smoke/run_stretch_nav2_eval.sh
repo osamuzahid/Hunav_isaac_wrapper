@@ -2,7 +2,7 @@
 # Record hunav_evaluator during the Stretch Nav2 A10 crowd hop (#70).
 # System ROS Python only. Isaac keepalive must already be up:
 #   ~/isaacsim/python.sh tools/nav2_isaac_keepalive.py --seconds 600 \
-#     --robot stretch --world museum --config museum_eval_5 --disable-cameras
+#     --robot stretch --world museum --config museum_crowd --disable-cameras
 #
 # Env: OUT_DIR EXP_TAG RUN_ID
 set -eo pipefail
@@ -22,7 +22,8 @@ RUN_ID="${RUN_ID:-1}"
 GOAL_X="${GOAL_X:-1.5}"
 GOAL_Y="${GOAL_Y:-6.5}"
 SUMMARY="$OUT/nav2_eval_summary.txt"
-PARAMS="${PARAMS:-$SMOKE_DIR/metrics_nav2_crowd.yaml}"
+METRICS_YAML="${METRICS_YAML:-$SMOKE_DIR/metrics_nav2_crowd.yaml}"
+NAV2_PARAMS="${NAV2_PARAMS:-$NAV2_DIR/nav2_stretch_params.yaml}"
 DESK="${DESK_COPY:-$HOME/Desktop/hunav_nav2_crowd_eval}"
 
 export FASTRTPS_DEFAULT_PROFILES_FILE="${FASTRTPS_DEFAULT_PROFILES_FILE:-$NAV2_DIR/fastrtps_no_shm.xml}"
@@ -61,7 +62,7 @@ sleep 1
 
 log "=== start hunav_evaluator_node ==="
 ros2 run hunav_evaluator hunav_evaluator_node --ros-args \
-  --params-file "$PARAMS" \
+  --params-file "$METRICS_YAML" \
   -p "result_file:=$RESULT_FILE" \
   >"$OUT/evaluator_node.log" 2>&1 &
 EVAL_PID=$!
@@ -92,7 +93,7 @@ ros2 service call /hunav_start_recording hunav_msgs/srv/StartEvaluation \
 
 log "=== Stretch Nav2 smoke (2,-8) → ($GOAL_X,$GOAL_Y) ==="
 set +e
-OUT_DIR="$OUT" "$NAV2_DIR/run_stretch_nav2_smoke.sh"
+OUT_DIR="$OUT" PARAMS="$NAV2_PARAMS" "$NAV2_DIR/run_stretch_nav2_smoke.sh"
 NAV_RC=$?
 set -e
 log "nav2_smoke exit=$NAV_RC"

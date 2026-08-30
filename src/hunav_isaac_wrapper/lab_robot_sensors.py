@@ -1,16 +1,17 @@
 """
 lab_robot_sensors.py
 
-PATCH (isaac-social-nav): attach stock critical sensors for CUCR lab robots and
-publish TF / joint_states / lidar / IMU / RGB-D via isaacsim.ros2.bridge.
-
-URDF→USD gives morphology only. Lidar/cameras/IMU are Isaac sensor prims parented
-under the correct frames (see docs/ROBOTS.md in isaac-social-nav).
+PATCH (isaac-social-nav): attach stock sensors for lab robots declared in
+config/robots/<name>/robot.yaml (see robot_catalog.py). URDF→USD is morphology
+only; lidar/cameras/IMU are Isaac prims under the YAML link paths.
 
 Env:
-  HUNAV_LAB_SENSORS=0|1   — master switch (default 1 for lab robots)
-  HUNAV_LAB_CAMERAS=0|1   — RGB-D (default 0; heavy on under-spec laptops)
-  HUNAV_LAB_LIDAR=0|1     — RTX 2D lidar (default 1 for Stretch)
+  HUNAV_LAB_SENSORS=0|1   — master switch (default 1 when YAML has sensors:)
+  HUNAV_LAB_CAMERAS=0|1   — RGB / RGB-D (default 0; heavy on under-spec laptops)
+  HUNAV_LAB_LIDAR=0|1     — RTX 2D lidar (default 1)
+
+Link paths, lidar TF pins, and parked joints are in robot.yaml — do not add a
+new `if robot_name ==` branch here for a new lab robot.
 """
 
 from __future__ import annotations
@@ -21,21 +22,6 @@ from typing import Any, Dict, List, Optional, Sequence
 
 import numpy as np
 import omni.graph.core as og
-
-# Stretch SE3 link paths relative to robot root (`/World/Stretch`).
-_STRETCH_BASE = "Geometry/base_link"
-_STRETCH_LASER = f"{_STRETCH_BASE}/laser"
-_STRETCH_IMU = f"{_STRETCH_BASE}/base_imu"
-# ROS optical frame: +Z is the RealSense look axis (+Y down). On parked Stretch,
-# camera_link +X is NOT that look axis (head_tilt joint origin is +90° X) — mounting
-# there looked straight down at the base. Always parent under optical.
-_STRETCH_CAMERA_LINK = (
-    f"{_STRETCH_BASE}/link_mast/link_head/link_head_pan/link_head_tilt/"
-    "camera_bottom_screw_frame/camera_link"
-)
-_STRETCH_CAMERA_OPTICAL = (
-    f"{_STRETCH_CAMERA_LINK}/camera_color_frame/camera_color_optical_frame"
-)
 
 
 def _orient_opengl_camera_on_optical(stage, cam_prim, optical_path: str) -> None:
@@ -147,38 +133,6 @@ _STRETCH_PARKED_JOINTS = [
     "joint_gripper_finger_right",
 ]
 
-# Reachy 2023 full_kit on Zuuu mobile base (lidar + dual head RGB).
-_REACHY_BASE = "Geometry/base_footprint/base_link"
-_REACHY_TORSO = f"{_REACHY_BASE}/torso"
-_REACHY_LIDAR = f"{_REACHY_BASE}/lidar_link"
-_REACHY_IMU = f"{_REACHY_BASE}/imu_link"
-_REACHY_HEAD = f"{_REACHY_TORSO}/head_x/head_y/head_z/head"
-_REACHY_LEFT_OPTICAL = f"{_REACHY_HEAD}/left_camera/left_camera_optical"
-_REACHY_RIGHT_OPTICAL = f"{_REACHY_HEAD}/right_camera/right_camera_optical"
-_REACHY_PARKED_JOINTS = [
-    "r_shoulder_pitch",
-    "r_shoulder_roll",
-    "r_arm_yaw",
-    "r_elbow_pitch",
-    "r_forearm_yaw",
-    "r_wrist_pitch",
-    "r_wrist_roll",
-    "r_gripper",
-    "l_shoulder_pitch",
-    "l_shoulder_roll",
-    "l_arm_yaw",
-    "l_elbow_pitch",
-    "l_forearm_yaw",
-    "l_wrist_pitch",
-    "l_wrist_roll",
-    "l_gripper",
-    "neck_roll",
-    "neck_pitch",
-    "neck_yaw",
-    "l_antenna",
-    "r_antenna",
-]
-
 
 def _env_bool(name: str, default: bool) -> bool:
     raw = os.environ.get(name)
@@ -188,7 +142,10 @@ def _env_bool(name: str, default: bool) -> bool:
 
 
 def lab_sensors_enabled(robot_name: str) -> bool:
-    if robot_name not in ("franka", "stretch", "stretch_wheeled", "reachy"):
+    from .robot_catalog import load_lab_robot_yaml
+
+    spec = load_lab_robot_yaml(robot_name)
+    if not spec or not spec.get("sensors"):
         return False
     return _env_bool("HUNAV_LAB_SENSORS", True)
 
@@ -861,17 +818,6 @@ def _yaw_from_xyzw(x, y, z, w) -> float:
     return float(math.atan2(2.0 * (w * z + x * y), 1.0 - 2.0 * (y * y + z * z)))
 
 
-# Stretch SE3 ``joint_laser`` (stretch.urdf): xyz 0.004 0 0.1664, rpy 0 0 π.
-# Do not derive this from USD LocalToWorld — kinematic ChassisDriveRobot moves
-# the root Xform; laser's computed world pose can sit 10–18 m off chassis and
-# Nav2 then skips /scan (local costmap ``Sensor origin out of map bounds``).
-_STRETCH_LASER_IN_BASE_XYZ = (0.004, 0.0, 0.1664)
-_STRETCH_LASER_IN_BASE_XYZW = (0.0, 0.0, 1.0, 0.0)
-# zuuu.urdf.xacro lidar_joint: base_link → lidar_link xyz="0.184 0 0.25" rpy="0 0 0"
-_REACHY_LIDAR_IN_BASE_XYZ = (0.184, 0.0, 0.25)
-_REACHY_LIDAR_IN_BASE_XYZW = (0.0, 0.0, 0.0, 1.0)
-
-
 class KinematicNavPublisher:
     """Nav2 TF tree + /odom for kinematic Stretch (Physics=none).
 
@@ -1056,136 +1002,97 @@ def attach_lab_robot_sensors(
     ros_node=None,
 ) -> Dict[str, Any]:
     """
-    Attach stock sensors for a lab robot. Returns a handle dict (may include
-    lidar sensor objects and optional ParkedJointStatePublisher).
+    Attach stock sensors from config/robots/<name>/robot.yaml.
     """
+    from .robot_catalog import load_lab_robot_yaml
+
     handles: Dict[str, Any] = {"robot": robot_name, "prim": robot_prim_path}
     if not lab_sensors_enabled(robot_name):
         print(f"[lab_robot_sensors] skipped for {robot_name}")
         return handles
 
-    if robot_name == "franka":
-        _attach_tf_tree("/World/ROS2_LabTF", [robot_prim_path])
-        _attach_joint_state_publisher("/World/ROS2_LabJoints", robot_prim_path)
-        # Wrist F/T: optional later if lab cell includes it (ROBOTS.md open Q).
-        print("[lab_robot_sensors] Franka: TF + joint_states attached")
-        return handles
+    spec = load_lab_robot_yaml(robot_name) or {}
+    sensors = spec.get("sensors") or {}
+    links = sensors.get("links") or {}
+    resolved = {key: _join(robot_prim_path, rel) for key, rel in links.items()}
+    joints = sensors.get("parked_joints")
+    mode = sensors.get("mode", "kinematic_nav")
+    base = resolved.get("base", robot_prim_path)
 
-    if robot_name in ("stretch", "stretch_wheeled"):
-        base = _join(robot_prim_path, _STRETCH_BASE)
-        laser = _join(robot_prim_path, _STRETCH_LASER)
-        imu = _join(robot_prim_path, _STRETCH_IMU)
-        cam_link = _join(robot_prim_path, _STRETCH_CAMERA_LINK)
-        cam_optical = _join(robot_prim_path, _STRETCH_CAMERA_OPTICAL)
-
-        if robot_name == "stretch_wheeled":
-            # PhysX bodies present — Isaac PoseTree works. Prefer articulation root.
-            tf_targets = [
-                p
-                for p in (robot_prim_path, base, laser, imu, cam_link)
-                if _prim_exists(p)
-            ]
-            _attach_tf_tree("/World/ROS2_LabTF", tf_targets or [robot_prim_path])
-            ok = _attach_joint_state_publisher("/World/ROS2_LabJoints", robot_prim_path)
-            if not ok and ros_node is not None:
-                handles["parked_js"] = ParkedJointStatePublisher(ros_node)
-        elif ros_node is not None:
-            # Kinematic Physics=none → PoseTree eInvalid flood every frame on those
-            # prims (thousands of warnings; can hitch the sim and make agents look
-            # broken). Same parked rclpy /tf path as Reachy.
-            handles["parked_js"] = ParkedJointStatePublisher(ros_node)
-            # PATCH: Nav2 needs map→odom→base_link→laser, not world→each link.
-            handles["parked_tf"] = KinematicNavPublisher(
-                ros_node,
-                base_prim=base,
-                child_frames=[
-                    (laser, "laser"),
-                    (imu, "base_imu"),
-                    (cam_link, "camera_link"),
-                    (cam_optical, "camera_color_optical_frame"),
-                ],
-                fixed_in_base={
-                    "laser": (
-                        _STRETCH_LASER_IN_BASE_XYZ,
-                        _STRETCH_LASER_IN_BASE_XYZW,
-                    ),
-                },
-            )
-            print(
-                "[lab_robot_sensors] Stretch kinematic: /joint_states + Nav2 "
-                "TF (map/odom/base_link) + /odom via rclpy (Physics=none; no PoseTree)"
-            )
-
-        handles["lidar"] = _attach_stretch_lidar(laser)
-        _attach_synthetic_imu_publisher("/World/ROS2_LabImu", frame_id="base_imu")
-        cam_spec = _attach_stretch_camera(cam_optical)
-        if cam_spec:
-            handles.setdefault("optical_cam_refresh", []).append(cam_spec)
-        print("[lab_robot_sensors] Stretch: TF + joints + lidar + IMU (+ optional RGB-D)")
-        return handles
-
-    if robot_name == "reachy":
-        # Lab Reachy = full_kit torso on Zuuu. Kinematic chassis (Physics=none)
-        # uses the same Nav2 TF tree as Stretch. Lidar on lidar_link.
-        # `laser` is an alias of the URDF pin so Stretch Nav2/ESC yaml still works.
-        base = _join(robot_prim_path, _REACHY_BASE)
-        lidar = _join(robot_prim_path, _REACHY_LIDAR)
-        imu = _join(robot_prim_path, _REACHY_IMU)
-        torso = _join(robot_prim_path, _REACHY_TORSO)
-        left_opt = _join(robot_prim_path, _REACHY_LEFT_OPTICAL)
-        right_opt = _join(robot_prim_path, _REACHY_RIGHT_OPTICAL)
-        if ros_node is not None:
+    if mode == "pose_tree":
+        tf_targets = [
+            p
+            for p in [robot_prim_path, *resolved.values()]
+            if _prim_exists(p)
+        ]
+        _attach_tf_tree("/World/ROS2_LabTF", tf_targets or [robot_prim_path])
+        ok = _attach_joint_state_publisher("/World/ROS2_LabJoints", robot_prim_path)
+        if not ok and ros_node is not None:
             handles["parked_js"] = ParkedJointStatePublisher(
-                ros_node, joint_names=_REACHY_PARKED_JOINTS
+                ros_node, joint_names=joints
             )
-            handles["parked_tf"] = KinematicNavPublisher(
-                ros_node,
-                base_prim=base,
-                child_frames=[
-                    (lidar, "lidar_link"),
-                    (lidar, "laser"),
-                    (imu, "imu_link"),
-                    (torso, "torso"),
-                    (left_opt, "left_camera_optical"),
-                    (right_opt, "right_camera_optical"),
-                ],
-                fixed_in_base={
-                    "lidar_link": (
-                        _REACHY_LIDAR_IN_BASE_XYZ,
-                        _REACHY_LIDAR_IN_BASE_XYZW,
-                    ),
-                    "laser": (
-                        _REACHY_LIDAR_IN_BASE_XYZ,
-                        _REACHY_LIDAR_IN_BASE_XYZW,
-                    ),
-                },
-            )
-            print(
-                "[lab_robot_sensors] Reachy kinematic: /joint_states + Nav2 "
-                "TF (map/odom/base_link) + /odom via rclpy (Physics=none; no PoseTree)"
-            )
-        handles["lidar"] = _attach_stretch_lidar(lidar, frame_id="lidar_link")
-        _attach_synthetic_imu_publisher("/World/ROS2_ReachyImu", frame_id="imu_link")
-        _attach_rgb_optical_camera(
-            left_opt,
-            graph_path="/World/ROS2_ReachyLeftCam",
-            topic_ns="left_camera",
-            frame_id="left_camera_optical",
-            fixed_optical_orient=True,
+    elif mode == "kinematic_nav" and ros_node is not None:
+        handles["parked_js"] = ParkedJointStatePublisher(
+            ros_node, joint_names=joints
         )
-        _attach_rgb_optical_camera(
-            right_opt,
-            graph_path="/World/ROS2_ReachyRightCam",
-            topic_ns="right_camera",
-            frame_id="right_camera_optical",
-            fixed_optical_orient=True,
+        nav = sensors.get("nav_tf") or {}
+        child_frames = []
+        for item in nav.get("children") or []:
+            prim = resolved.get(item["link"])
+            if prim:
+                child_frames.append((prim, item["frame_id"]))
+        fixed_in_base = {}
+        for frame_id, pose in (nav.get("fixed_in_base") or {}).items():
+            fixed_in_base[frame_id] = (
+                tuple(pose["xyz"]),
+                tuple(pose["xyzw"]),
+            )
+        handles["parked_tf"] = KinematicNavPublisher(
+            ros_node,
+            base_prim=base,
+            child_frames=child_frames,
+            fixed_in_base=fixed_in_base,
         )
         print(
-            "[lab_robot_sensors] Reachy: TF + joints + Zuuu /scan + IMU "
-            "+ dual head RGB (gripper force skipped)"
+            f"[lab_robot_sensors] {robot_name} kinematic: /joint_states + Nav2 "
+            "TF (map/odom/base_link) + /odom via rclpy (Physics=none; no PoseTree)"
         )
-        return handles
 
+    lidar = sensors.get("lidar") or {}
+    lidar_link = lidar.get("link")
+    if lidar_link and lidar_link in resolved:
+        handles["lidar"] = _attach_stretch_lidar(
+            resolved[lidar_link],
+            frame_id=str(lidar.get("frame_id", "laser")),
+        )
+
+    imu = sensors.get("imu") or {}
+    if imu.get("frame_id"):
+        _attach_synthetic_imu_publisher(
+            str(imu.get("graph_path", "/World/ROS2_LabImu")),
+            frame_id=str(imu["frame_id"]),
+        )
+
+    for cam in sensors.get("cameras") or []:
+        optical_key = cam.get("optical")
+        optical_prim = resolved.get(optical_key) if optical_key else None
+        if not optical_prim:
+            continue
+        ctype = cam.get("type")
+        if ctype == "stretch_rgbd":
+            cam_spec = _attach_stretch_camera(optical_prim)
+            if cam_spec:
+                handles.setdefault("optical_cam_refresh", []).append(cam_spec)
+        elif ctype == "rgb_optical":
+            _attach_rgb_optical_camera(
+                optical_prim,
+                graph_path=str(cam.get("graph_path", "/World/ROS2_LabRgb")),
+                topic_ns=str(cam.get("topic_ns", "camera")),
+                frame_id=str(cam.get("frame_id", "camera_optical")),
+                fixed_optical_orient=bool(cam.get("fixed_optical_orient", False)),
+            )
+
+    print(f"[lab_robot_sensors] {robot_name}: sensors from robot.yaml")
     return handles
 
 

@@ -1,55 +1,48 @@
 hunav_loader:
   ros__parameters:
-    yaml_base_name: hospital_eval_5
+    yaml_base_name: museum_crowd
     simulator: Isaac Sim
-    map: hospital
+    map: museum
     publish_people: true
-    # PATCH (isaac-social-nav): Reachy hospital crowd hop. 5 Impassive loops
-    # plus 3 staggered standing on the Smac west-wing path (5,0)→(5,-8):
-    # north E–W y≈0.7, west N–S x≈−4.3, south E–W y≈−7.8.
-    # Previous 5 walkers sat at y=10/−14/−24 (beyond 6 m lidar) so the hop
-    # looked empty. Do not occupy spawn (5,0). Inflation 0.40 m.
+    # PATCH (isaac-social-nav): 5 Impassive loops from museum_eval along the
+    # Stretch alcove → west gap → A10 plaza hop, plus 3 standing people staggered
+    # off the empty-map hop (not colinear). Do not replace museum_eval (10).
+    # Mixed BTs stay on museum_behaviors. Inflation 0.40 m.
     plan_goals_on_map: true
-    map_yaml: hospital.yaml
+    map_yaml: museum.yaml
     plan_waypoint_spacing_m: 1.0
     plan_inflation_radius_m: 0.40
     plan_from_init_pose: true
     ignore_obstacle_rays: false
     robot_init_pose:
-      x: 5.0
-      y: 0.0
+      x: 2.0
+      y: -8.0
       z: 0.0
-      h: 2.9
+      h: 1.57
     global_goals:
-      # A1 Impassive — north hall east (first leg y≈0.7)
-      1: {x: 2.50, y: 0.70}
-      2: {x: 0.00, y: 0.70}
-      3: {x: 0.00, y: 1.80}
-      4: {x: 2.50, y: 1.80}
-      # A2 Impassive — north hall west (gap ~1.8 m from A1)
-      5: {x: -1.80, y: 0.70}
-      6: {x: -4.00, y: 0.70}
-      7: {x: -4.00, y: 1.80}
-      8: {x: -1.80, y: 1.80}
-      # A3 Impassive — west N–S (robot x≈−4.3)
-      9: {x: -4.30, y: -1.20}
-      10: {x: -4.30, y: -5.80}
-      11: {x: -5.40, y: -5.80}
-      12: {x: -5.40, y: -1.20}
-      # A4 Impassive — south hall east (last leg y≈−7.8)
-      13: {x: 0.50, y: -7.80}
-      14: {x: 3.50, y: -7.80}
-      15: {x: 3.50, y: -8.80}
-      16: {x: 0.50, y: -8.80}
-      # A5 Impassive — south hall west (gap ~1.7 m from A4)
-      17: {x: -4.00, y: -7.80}
-      18: {x: -1.20, y: -7.80}
-      19: {x: -1.20, y: -8.80}
-      20: {x: -4.00, y: -8.80}
-      # Standing probes (not colinear, not on spawn/goal)
-      21: {x: -0.90, y: 1.20}
-      22: {x: -3.90, y: -4.00}
-      23: {x: -0.35, y: -8.20}
+      1: {x: -3.92, y: -7.27}
+      2: {x: -0.20, y: -7.30}
+      3: {x: -0.20, y: -3.70}
+      4: {x: -3.80, y: -3.70}
+      5: {x: 6.50, y: -8.00}
+      6: {x: 10.50, y: -8.00}
+      7: {x: 10.50, y: -4.00}
+      8: {x: 6.68, y: -3.97}
+      9: {x: -6.67, y: 1.73}
+      10: {x: -5.70, y: 1.73}
+      11: {x: -5.55, y: 5.30}
+      12: {x: -6.80, y: 5.30}
+      13: {x: -8.00, y: 9.00}
+      14: {x: -4.00, y: 9.00}
+      15: {x: -4.00, y: 13.00}
+      16: {x: -7.62, y: 13.03}
+      17: {x: -0.50, y: 4.50}
+      18: {x: 3.50, y: 4.50}
+      19: {x: 3.50, y: 8.50}
+      20: {x: -0.50, y: 8.50}
+      21: {x: -3.25, y: -2.10}
+      22: {x: -4.55, y: 0.50}
+      23: {x: -4.20, y: 2.90}
     agents:
       - agent1
       - agent2
@@ -59,6 +52,7 @@ hunav_loader:
       - agent6
       - agent7
       - agent8
+    # South gallery (near spawn alcove) — museum_eval agent2
     agent1:
       id: 1
       group_id: -1
@@ -67,7 +61,7 @@ hunav_loader:
       radius: 0.4
       goal_radius: 0.6
       cyclic_goals: true
-      init_pose: {x: 2.50, y: 0.70, z: 0.0, h: 3.14}
+      init_pose: {x: -3.92, y: -7.27, z: 0.0, h: 0.00}
       behavior:
         type: 2
         configuration: 0
@@ -76,6 +70,7 @@ hunav_loader:
         social_force_factor: 5.0
         other_force_factor: 20.0
       goals: ["1", "2", "3", "4"]
+    # SE south — museum_eval agent3
     agent2:
       id: 2
       group_id: -1
@@ -84,7 +79,7 @@ hunav_loader:
       radius: 0.4
       goal_radius: 0.6
       cyclic_goals: true
-      init_pose: {x: -1.80, y: 0.70, z: 0.0, h: 3.14}
+      init_pose: {x: 6.50, y: -8.00, z: 0.0, h: 0.00}
       behavior:
         type: 2
         configuration: 0
@@ -93,6 +88,8 @@ hunav_loader:
         social_force_factor: 5.0
         other_force_factor: 20.0
       goals: ["5", "6", "7", "8"]
+    # West of the west-gap (y≈3). East edge stays west of standing agent8
+    # at (-4.20, 2.90) so the loop does not chord through the statue.
     agent3:
       id: 3
       group_id: -1
@@ -101,7 +98,7 @@ hunav_loader:
       radius: 0.4
       goal_radius: 0.6
       cyclic_goals: true
-      init_pose: {x: -4.30, y: -1.20, z: 0.0, h: 4.71}
+      init_pose: {x: -6.67, y: 1.73, z: 0.0, h: 0.00}
       behavior:
         type: 2
         configuration: 0
@@ -110,6 +107,7 @@ hunav_loader:
         social_force_factor: 5.0
         other_force_factor: 20.0
       goals: ["9", "10", "11", "12"]
+    # North of plaza — museum_eval agent8
     agent4:
       id: 4
       group_id: -1
@@ -118,7 +116,7 @@ hunav_loader:
       radius: 0.4
       goal_radius: 0.6
       cyclic_goals: true
-      init_pose: {x: 0.50, y: -7.80, z: 0.0, h: 0.00}
+      init_pose: {x: -8.00, y: 9.00, z: 0.0, h: 0.00}
       behavior:
         type: 2
         configuration: 0
@@ -127,6 +125,7 @@ hunav_loader:
         social_force_factor: 5.0
         other_force_factor: 20.0
       goals: ["13", "14", "15", "16"]
+    # A10 plaza (robot goal) — museum_eval agent10
     agent5:
       id: 5
       group_id: -1
@@ -135,7 +134,7 @@ hunav_loader:
       radius: 0.4
       goal_radius: 0.6
       cyclic_goals: true
-      init_pose: {x: -4.00, y: -7.80, z: 0.0, h: 0.00}
+      init_pose: {x: -0.50, y: 4.50, z: 0.0, h: 0.00}
       behavior:
         type: 2
         configuration: 0
@@ -144,7 +143,9 @@ hunav_loader:
         social_force_factor: 5.0
         other_force_factor: 20.0
       goals: ["17", "18", "19", "20"]
-    # Standing: north-hall gap, west-hall east edge, south-hall gap.
+    # Standing probes staggered around the hop (not a N-S queue at x=-4.07):
+    # south elbow east of path, hallway west of path, west-gap slight west.
+    # Keep off walker loops (agent3 east edge is x≈-5.6, not through agent8).
     agent6:
       id: 6
       group_id: -1
@@ -153,7 +154,7 @@ hunav_loader:
       radius: 0.4
       goal_radius: 0.6
       cyclic_goals: true
-      init_pose: {x: -0.90, y: 1.20, z: 0.0, h: 0.00}
+      init_pose: {x: -3.25, y: -2.10, z: 0.0, h: 0.00}
       behavior:
         type: 2
         configuration: 0
@@ -170,7 +171,7 @@ hunav_loader:
       radius: 0.4
       goal_radius: 0.6
       cyclic_goals: true
-      init_pose: {x: -3.90, y: -4.00, z: 0.0, h: 1.57}
+      init_pose: {x: -4.55, y: 0.50, z: 0.0, h: 0.00}
       behavior:
         type: 2
         configuration: 0
@@ -187,7 +188,7 @@ hunav_loader:
       radius: 0.4
       goal_radius: 0.6
       cyclic_goals: true
-      init_pose: {x: -0.35, y: -8.20, z: 0.0, h: 0.00}
+      init_pose: {x: -4.20, y: 2.90, z: 0.0, h: 0.00}
       behavior:
         type: 2
         configuration: 0

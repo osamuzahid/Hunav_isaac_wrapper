@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Offline A* + crowd-safety bars for hospital_eval_5 Impassive loops.
+"""Offline A* + crowd-safety bars for hospital_crowd Impassive loops.
 
 Usage:
-  python3 tools/plan_hospital_eval_routes.py
-  python3 tools/plan_hospital_eval_routes.py hospital_eval_5
+  python3 tools/plan_hospital_crowd_routes.py
+  python3 tools/plan_hospital_crowd_routes.py hospital_crowd
 """
 
 from __future__ import annotations
@@ -19,23 +19,22 @@ sys.path.insert(0, ROOT)
 
 from hunav_isaac_wrapper.occupancy_path import OccupancyMap  # noqa: E402
 
-# Hospital halls are tighter than museum; do not reuse museum 2.0 m choke.
+# Hospital halls are ~1 m; pairwise walker paths below this share a choke.
 CHOKE_M = 1.0
-# Spawn only — walkers on the Smac hop are allowed (that is the crowd).
-# Previously a museum-style 3–4 m standoff failed every on-path standing pose.
+# Standing people may sit on the hop (they are the crowd). Standoff is vs spawn only.
 ROBOT_STANDOFF_M = 2.0
 # hospital_behaviors A1 south rectangle has an occupied island; A* walks the
 # real ~32 m perimeter (detour ≈1.6 vs the 20 m corner-to-corner cycle).
 MAX_DETOUR = 1.70
 INIT_SEP_M = 2.0
-# Quiet #79 / 0.42 wing: (5,0) → west y≈0.7 → x≈−4.3 south → y≈−7.8 east → (5,−8).
+# Stretch hop: south hall west → west wing north (avoid x=5 stretcher column).
 ROBOT_HOP = (
-    (5.00, 0.00),
-    (3.50, 0.70),
-    (-4.30, 0.70),
+    (0.50, -7.80),
     (-4.30, -7.80),
-    (5.00, -8.00),
+    (-4.30, -0.50),
 )
+# USD stretcher in the N–S hall (occupancy PNG is walls only).
+STRETCHER = (4.2, 5.8, -5.3, -3.7)
 
 
 def _load_scenario(name: str) -> dict:
@@ -74,6 +73,16 @@ def _min_path_hop(path: list, hop: tuple) -> float:
     return best
 
 
+def _hits_stretcher(path: list) -> bool:
+    x0, x1, y0, y1 = STRETCHER
+    samples = list(path)
+    for (ax, ay), (bx, by) in zip(path, path[1:]):
+        for i in range(1, 8):
+            t = i / 8
+            samples.append((ax + t * (bx - ax), ay + t * (by - ay)))
+    return any(x0 <= x <= x1 and y0 <= y <= y1 for x, y in samples)
+
+
 def _min_path_path(p1: list, p2: list) -> float:
     best = float("inf")
     s1 = max(1, len(p1) // 30)
@@ -87,7 +96,7 @@ def _min_path_path(p1: list, p2: list) -> float:
 
 
 def main() -> int:
-    name = sys.argv[1] if len(sys.argv) > 1 else "hospital_eval_5"
+    name = sys.argv[1] if len(sys.argv) > 1 else "hospital_crowd"
     params = _load_scenario(name)
     inflation = float(params.get("plan_inflation_radius_m", 0.40))
     maps = os.path.join(ROOT, "maps", params.get("map_yaml", "hospital.yaml"))
@@ -127,6 +136,9 @@ def main() -> int:
                 print(f"FAIL {aname}: standing on parked robot "
                       f"{d_robot:.2f} m < {ROBOT_STANDOFF_M:.1f} m")
                 ok = False
+            if _hits_stretcher([init]):
+                print(f"FAIL {aname}: standing pose in N–S stretcher hall")
+                ok = False
             paths[aname] = [init]
             continue
         keys = [init] + [goals[g] for g in gids] + [goals[gids[0]]]
@@ -158,6 +170,11 @@ def main() -> int:
             print(f"FAIL {aname}: init on parked robot "
                   f"{d_robot:.2f} m < {ROBOT_STANDOFF_M:.1f} m")
             ok = False
+        if _hits_stretcher(path):
+            print(f"FAIL {aname}: A* enters N–S stretcher hall "
+                  f"x[{STRETCHER[0]:.1f},{STRETCHER[1]:.1f}] "
+                  f"y[{STRETCHER[2]:.1f},{STRETCHER[3]:.1f}]")
+            ok = False
         paths[aname] = path
 
     names = list(paths)
@@ -173,6 +190,13 @@ def main() -> int:
                 )
                 if stand:
                     print(f"NOTE {a} vs {b}: {d:.2f} m (standing blocker; ok)")
+                    continue
+                hop_share = (
+                    _min_path_hop(paths[a], ROBOT_HOP) < 0.5
+                    and _min_path_hop(paths[b], ROBOT_HOP) < 0.5
+                )
+                if hop_share:
+                    print(f"NOTE {a} vs {b}: {d:.2f} m (same hop corridor; ok)")
                     continue
                 print(f"FAIL {a} vs {b}: share a {d:.2f} m choke (< {CHOKE_M:.1f} m)")
                 ok = False

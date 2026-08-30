@@ -1,0 +1,123 @@
+hunav_loader:
+  ros__parameters:
+    yaml_base_name: hospital_crowd
+    simulator: Isaac Sim
+    map: hospital
+    publish_people: true
+    # Stretch hop (0.5,−7.8) yaw π → (−4.3, −0.5). Spawn west of x=5 stretcher
+    # column (16.6 cm lidar misses that USD prop). 2 Impassive + 3 standing.
+    plan_goals_on_map: true
+    map_yaml: hospital.yaml
+    plan_waypoint_spacing_m: 1.0
+    plan_inflation_radius_m: 0.40
+    plan_from_init_pose: true
+    ignore_obstacle_rays: false
+    robot_init_pose:
+      x: 0.5
+      y: -7.8
+      z: 0.0
+      h: 3.1416
+    global_goals:
+      # M1 Impassive — north hall east (away from south spawn)
+      1: {x: 2.00, y: 0.70}
+      2: {x: 0.00, y: 0.70}
+      3: {x: 0.00, y: 1.80}
+      4: {x: 2.00, y: 1.80}
+      # M2 Impassive — west wing mid N–S (not south hall)
+      5: {x: -4.30, y: -5.50}
+      6: {x: -4.30, y: -2.50}
+      # Standing — on hop, staggered, not colinear
+      7: {x: -3.00, y: -7.80}
+      8: {x: -5.20, y: -8.20}
+      9: {x: -2.80, y: -0.40}
+    agents:
+      - agent1
+      - agent2
+      - agent3
+      - agent4
+      - agent5
+    agent1:
+      id: 1
+      group_id: -1
+      skin: 1
+      max_vel: 0.85
+      radius: 0.4
+      goal_radius: 0.6
+      cyclic_goals: true
+      init_pose: {x: 2.00, y: 0.70, z: 0.0, h: 3.14}
+      behavior:
+        type: 2
+        configuration: 0
+        goal_force_factor: 10.0
+        obstacle_force_factor: 2.0
+        social_force_factor: 5.0
+        other_force_factor: 20.0
+      goals: ["1", "2", "3", "4"]
+    agent2:
+      id: 2
+      group_id: -1
+      skin: 2
+      max_vel: 0.88
+      radius: 0.4
+      goal_radius: 0.6
+      cyclic_goals: true
+      init_pose: {x: -4.30, y: -5.50, z: 0.0, h: 1.57}
+      behavior:
+        type: 2
+        configuration: 0
+        goal_force_factor: 10.0
+        obstacle_force_factor: 2.0
+        social_force_factor: 5.0
+        other_force_factor: 20.0
+      goals: ["5", "6"]
+    agent3:
+      id: 3
+      group_id: -1
+      skin: 3
+      max_vel: 0.0
+      radius: 0.4
+      goal_radius: 0.6
+      cyclic_goals: true
+      init_pose: {x: -3.00, y: -7.80, z: 0.0, h: 0.00}
+      behavior:
+        type: 2
+        configuration: 0
+        goal_force_factor: 0.0
+        obstacle_force_factor: 0.0
+        social_force_factor: 0.0
+        other_force_factor: 0.0
+      goals: ["7"]
+    agent4:
+      id: 4
+      group_id: -1
+      skin: 4
+      max_vel: 0.0
+      radius: 0.4
+      goal_radius: 0.6
+      cyclic_goals: true
+      init_pose: {x: -5.20, y: -8.20, z: 0.0, h: 1.57}
+      behavior:
+        type: 2
+        configuration: 0
+        goal_force_factor: 0.0
+        obstacle_force_factor: 0.0
+        social_force_factor: 0.0
+        other_force_factor: 0.0
+      goals: ["8"]
+    agent5:
+      id: 5
+      group_id: -1
+      skin: 5
+      max_vel: 0.0
+      radius: 0.4
+      goal_radius: 0.6
+      cyclic_goals: true
+      init_pose: {x: -2.80, y: -0.40, z: 0.0, h: 3.14}
+      behavior:
+        type: 2
+        configuration: 0
+        goal_force_factor: 0.0
+        obstacle_force_factor: 0.0
+        social_force_factor: 0.0
+        other_force_factor: 0.0
+      goals: ["9"]

@@ -42,7 +42,7 @@ PROFILE_ALIASES = {
 }
 
 # HuNav needs anim graph + retarget; isaacsim.exp.base.python does not enable them.
-# Nav2 / carter_ROS also need the ROS 2 bridge (clock + USD OmniGraph publishers).
+# Nav2 also needs the ROS 2 bridge (clock + USD OmniGraph publishers).
 # Load at Kit startup via extra_args — runtime enable_extension + app.update() has
 # crashed OmniGraph on Isaac 6.0.1 (laptop) during Port item 4 E2E.
 _HUNAV_EXTRA_ARGS = [

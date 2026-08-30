@@ -3,7 +3,7 @@
 #
 # Requires a running Isaac keepalive, e.g.:
 #   ~/isaacsim/python.sh tools/nav2_isaac_keepalive.py --seconds 600 \
-#     --robot stretch --world museum --config museum_eval_5 --disable-cameras
+#     --robot stretch --world museum --config museum_crowd --disable-cameras
 #
 # Same goal as plaza /cmd_vel #68: (2,-8) → A10 plaza (1.5, 6.5). Nav2 must
 # plan west of the y≈3 partition (not the first doorway at ~(2,1)).

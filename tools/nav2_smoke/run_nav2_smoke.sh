@@ -168,17 +168,28 @@ if [[ "$DUMP_NAV2_GRID" == "1" ]]; then
     | tee -a "$SUMMARY" || true
   {
     echo "=== live Nav2 params ==="
-    ros2 param get /planner_server GridBased.plugin 2>/dev/null || true
-    ros2 param get /planner_server GridBased.cost_travel_multiplier 2>/dev/null || true
-    ros2 param get /planner_server GridBased.allow_unknown 2>/dev/null || true
-    ros2 param get /planner_server GridBased.tolerance 2>/dev/null || true
-    ros2 param get /global_costmap/global_costmap robot_radius 2>/dev/null || true
-    ros2 param get /global_costmap/global_costmap inflation_layer.inflation_radius 2>/dev/null || true
-    ros2 param get /global_costmap/global_costmap inflation_layer.cost_scaling_factor 2>/dev/null || true
-    ros2 param get /global_costmap/global_costmap rolling_window 2>/dev/null || true
-    ros2 param get /global_costmap/global_costmap resolution 2>/dev/null || true
-    ros2 param get /global_costmap/global_costmap obstacle_layer.scan.clearing 2>/dev/null || true
-    ros2 param get /global_costmap/global_costmap obstacle_layer.scan.obstacle_max_range 2>/dev/null || true
+    # ros2 param get prints "Type value is: X" with no name — label here.
+    nav2_live() {
+      local node="$1" name="$2" label="$3"
+      local raw val
+      raw=$(ros2 param get "$node" "$name" 2>/dev/null) || {
+        printf '  %-28s (unavailable)\n' "$label"
+        return 0
+      }
+      val="${raw#*: }"
+      printf '  %-28s %s\n' "$label" "$val"
+    }
+    nav2_live /planner_server GridBased.plugin "planner plugin"
+    nav2_live /planner_server GridBased.cost_travel_multiplier "cost_travel_multiplier"
+    nav2_live /planner_server GridBased.allow_unknown "allow_unknown"
+    nav2_live /planner_server GridBased.tolerance "goal tolerance (m)"
+    nav2_live /global_costmap/global_costmap robot_radius "robot_radius (m)"
+    nav2_live /global_costmap/global_costmap inflation_layer.inflation_radius "inflation_radius (m)"
+    nav2_live /global_costmap/global_costmap inflation_layer.cost_scaling_factor "cost_scaling_factor"
+    nav2_live /global_costmap/global_costmap rolling_window "rolling_window"
+    nav2_live /global_costmap/global_costmap resolution "costmap resolution (m)"
+    nav2_live /global_costmap/global_costmap obstacle_layer.scan.clearing "lidar clearing"
+    nav2_live /global_costmap/global_costmap obstacle_layer.scan.obstacle_max_range "lidar max range (m)"
   } | tee "$OUT/nav2_params_live.txt" | tee -a "$SUMMARY" || true
   python3 "$SMOKE_DIR/dump_nav2_grid.py" --watch-plan "$OUT/plan_first.txt" \
     >"$OUT/plan_watch.log" 2>&1 &

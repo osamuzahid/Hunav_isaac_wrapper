@@ -1,10 +1,10 @@
 # PATCH (isaac-social-nav): Nav2 params for kinematic Reachy (hospital).
 # Same chassis recipe as Stretch (odom /scan, no AMCL, speeds ~0.35 m/s).
 # Global planner: Smac 2D (same GridBased block as nav2_stretch_params.yaml).
-# Lidar marks the stretcher as a lethal bar at y≈-4.55; a 0.1 m sliver at
-# x=6.0 (cost 218) stayed legal at robot_radius 0.35 so Smac took the 8 m hall.
-# 0.42 makes that cell inscribed. Do **not** paint hospital.png. Do **not**
-# raise inflation_radius (seals spawn on other hospital pinches).
+# robot_radius 0.25 m: Pollen Zuuu 50 cm diameter (radius, not 0.50).
+# URDF collision cylinder is 0.245 m. Cited #80/#81 used 0.42 to swallow a
+# 0.1 m cost-218 sliver at x=6; that is not the chassis size. Do **not**
+# paint hospital.png. Do **not** raise inflation_radius (seals spawn).
 amcl:
   ros__parameters:
     alpha1: 0.2
@@ -215,7 +215,7 @@ local_costmap:
       width: 6
       height: 6
       resolution: 0.05
-      robot_radius: 0.42
+      robot_radius: 0.25
       plugins: ["obstacle_layer", "inflation_layer"]
       inflation_layer:
         plugin: "nav2_costmap_2d::InflationLayer"
@@ -247,7 +247,7 @@ global_costmap:
       publish_frequency: 2.0
       global_frame: map
       robot_base_frame: base_link
-      robot_radius: 0.42
+      robot_radius: 0.25
       # museum.png is 200 m @ 5 cm (4000²). NavFn allocates that full grid even
       # with A*, so each plan was ~100 ms ("current loop rate 10 Hz"). A 50 m
       # rolling window at 10 cm is 500² — small enough to finish in the 20 Hz

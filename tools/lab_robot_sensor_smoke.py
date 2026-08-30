@@ -4,7 +4,7 @@ lab_robot_sensor_smoke.py
 
 PATCH (isaac-social-nav): headless smoke for Phase 0 lab robots.
 
-Spawns empty_world (or museum/hospital) with --robot franka|stretch, steps sim,
+Spawns empty_world (or museum/hospital) with --robot stretch|reachy, steps sim,
 and checks ROS topics **plus** message content for TF / joint_states / IMU
 (and Stretch /scan hit count).
 
@@ -31,6 +31,23 @@ from typing import Any, Dict, List, Optional, Set
 def _repo_root() -> str:
     return os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
+
+# Key Stretch parked joints (must appear on /joint_states).
+_STRETCH_JS_REQUIRED = (
+    "joint_lift",
+    "joint_head_pan",
+    "joint_head_tilt",
+    "joint_left_wheel",
+    "joint_right_wheel",
+)
+
+# TF leaf names for Stretch Nav2 tree (map→odom→base_link→laser).
+_STRETCH_TF_LEAVES = (
+    "base_link",
+    "odom",
+    "laser",
+    "base_imu",
+)
 
 # Key Reachy parked joints (must appear on /joint_states).
 _REACHY_JS_REQUIRED = (
@@ -308,8 +325,8 @@ def main() -> int:
     ap = argparse.ArgumentParser(description="Lab robot sensor smoke (Phase 0)")
     ap.add_argument(
         "--robot",
-        default="franka",
-        choices=["franka", "stretch", "stretch_wheeled", "reachy"],
+        default="stretch",
+        choices=["stretch", "stretch_wheeled", "reachy"],
     )
     ap.add_argument("--world", default="empty_world")
     ap.add_argument("--config", default=None, help="Scenario yaml basename or path")
@@ -448,7 +465,6 @@ def main() -> int:
 
     flat = sorted(topics_seen)
     want = {
-        "franka": ["/clock", "/tf", "/joint_states"],
         "stretch": ["/clock", "/tf", "/joint_states", "/scan", "/imu", "/odom"],
         "stretch_wheeled": ["/clock", "/tf", "/joint_states", "/scan", "/imu"],
         "reachy": ["/clock", "/tf", "/joint_states", "/scan", "/imu", "/odom"],

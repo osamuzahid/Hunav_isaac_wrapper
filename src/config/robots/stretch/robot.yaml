@@ -1,0 +1,60 @@
+# Dissertation Stretch (Hello Robot SE3).
+# --robot stretch  |  kinematic chassis (Physics=none)  |  museum hops
+#
+# Swap: copy this file to config/robots/<new>/robot.yaml and point usd_package_file
+# at a vendored USD. Launcher picks up the folder name. Do not edit teleop's
+# upstream robot table for a new lab robot.
+#
+# Planner footprint lives in tools/nav2_smoke/nav2_stretch_params.yaml (0.33 m)
+# and tools/esc_isaac/esc_stretch.yaml — keep those in sync with chassis size.
+
+name: Stretch
+kind: chassis_only
+description: Hello Robot Stretch — kinematic chassis (no wall collision)
+usd_package_file: stretch/stretch.usd
+spawn_z_lift: 0.0
+
+sensors:
+  mode: kinematic_nav
+  parked_joints:
+    - joint_left_wheel
+    - joint_right_wheel
+    - joint_lift
+    - joint_arm_l0
+    - joint_arm_l1
+    - joint_arm_l2
+    - joint_arm_l3
+    - joint_arm_l4
+    - joint_wrist_yaw
+    - joint_wrist_pitch
+    - joint_wrist_roll
+    - joint_head_pan
+    - joint_head_tilt
+    - joint_gripper_finger_left
+    - joint_gripper_finger_right
+  links:
+    base: Geometry/base_link
+    lidar: Geometry/base_link/laser
+    imu: Geometry/base_link/base_imu
+    camera_link: Geometry/base_link/link_mast/link_head/link_head_pan/link_head_tilt/camera_bottom_screw_frame/camera_link
+    camera_optical: Geometry/base_link/link_mast/link_head/link_head_pan/link_head_tilt/camera_bottom_screw_frame/camera_link/camera_color_frame/camera_color_optical_frame
+  nav_tf:
+    children:
+      - {link: lidar, frame_id: laser}
+      - {link: imu, frame_id: base_imu}
+      - {link: camera_link, frame_id: camera_link}
+      - {link: camera_optical, frame_id: camera_color_optical_frame}
+    # URDF joint_laser: xyz 0.004 0 0.1664, rpy 0 0 π. Do not use USD LocalToWorld.
+    fixed_in_base:
+      laser:
+        xyz: [0.004, 0.0, 0.1664]
+        xyzw: [0.0, 0.0, 1.0, 0.0]
+  lidar:
+    link: lidar
+    frame_id: laser
+  imu:
+    frame_id: base_imu
+    graph_path: /World/ROS2_LabImu
+  cameras:
+    - type: stretch_rgbd
+      optical: camera_optical

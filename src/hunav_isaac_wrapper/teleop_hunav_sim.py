@@ -47,6 +47,7 @@ import yaml
 import numpy as np
 from pathlib import Path
 from rclpy.node import Node
+from rclpy.qos import DurabilityPolicy, HistoryPolicy, QoSProfile, ReliabilityPolicy
 from geometry_msgs.msg import Twist
 from isaacsim.core.api import World
 from isaacsim.storage.native import get_assets_root_path
@@ -593,49 +594,12 @@ class TeleopHuNavSim(Node):
                 "wheel_base": 0.413,
                 "spawn_z_lift": 0.08,
             },
-            # PATCH (isaac-social-nav): Hello Robot Stretch — vendored USD.
-            # Two selectable drives:
-            #   stretch           — kinematic chassis_only (no wall collision; arm visual-only)
-            #   stretch_wheeled   — PhysX WheeledRobot + DifferentialController (collides)
-            # usd_package_file resolved after robot_name select (avoid requiring unused assets).
-            "stretch": {
-                "name": "Stretch",
-                "usd_package_file": "stretch/stretch.usd",
-                "drive": "chassis_only",
-            },
-            "stretch_wheeled": {
-                "name": "Stretch",
-                "usd_package_file": "stretch/stretch.usd",
-                "wheel_dof_names": ["joint_left_wheel", "joint_right_wheel"],
-                # URDF: wheel centers at y=±0.17035, z=0.0508 → radius 0.0508, base ~0.3407
-                "wheel_radius": 0.0508,
-                "wheel_base": 0.3407,
-                # PATCH (isaac-social-nav): museum floor + free arm DOFs need clearance;
-                # 2 mm was enough on a flat ground plane smoke but collapses into cucr museum mesh.
-                "spawn_z_lift": 0.12,
-            },
-            # PATCH (isaac-social-nav): CUCR lab Franka — Isaac 6.0 CDN (Verified OK).
-            # drive=static: parked morphology + stock joint_states/TF (see lab_robot_sensors).
-            "franka": {
-                "name": "Franka",
-                "usd_relative_path": os.path.join(
-                    "Isaac", "Robots", "FrankaRobotics", "FrankaPanda", "franka.usd"
-                ),
-                "drive": "static",
-                "variants": {
-                    "Gripper": "AlternateFinger",
-                    "Mesh": "Quality",
-                },
-            },
-            # PATCH (isaac-social-nav): Pollen Reachy 2023 on Zuuu mobile base.
-            # Same kinematic chassis as Stretch (Physics=none). Do not PhysX
-            # omniwheels — leftover inertias fling the arm (TROUBLESHOOTING Reachy).
-            "reachy": {
-                "name": "Reachy",
-                "usd_package_file": "reachy/reachy.usd",
-                "drive": "chassis_only",
-            },
         }
+        # PATCH (isaac-social-nav): Stretch / Reachy (and later lab robots) live in
+        # config/robots/<name>/robot.yaml — do not add them to the dict above.
+        from .robot_catalog import load_lab_spawn_configs
+
+        robot_configs.update(load_lab_spawn_configs())
 
         if robot_name not in robot_configs:
             raise ValueError(f"Unsupported robot_name: {robot_name}")
@@ -667,9 +631,7 @@ class TeleopHuNavSim(Node):
         self._robot_name = robot_name
         self._lab_sensor_handles = None
         # ORIGINALLY (upstream v2.0): always WheeledRobot + DifferentialController at [0,0,0].
-        # PATCH (isaac-social-nav): Stretch / Reachy use chassis_only kinematic base.
-        # stretch_wheeled keeps PhysX WheeledRobot + DifferentialController (walls collide).
-        # franka stays drive=static parked USD.
+        # PATCH (isaac-social-nav): lab YAML `kind: chassis_only` / `static` / `differential`.
         drive = robot_config.get("drive")
         if drive == "chassis_only":
             self._chassis_drive = True
@@ -730,7 +692,9 @@ class TeleopHuNavSim(Node):
             # two wheel DOFs are driven; unheld joints fall under gravity and the mesh
             # looks collapsed / detached from the root gizmo. Hold non-wheel DOFs at the
             # post-reset pose every control step.
-            self._hold_non_wheel_dofs = robot_name == "stretch_wheeled"
+            self._hold_non_wheel_dofs = bool(
+                robot_config.get("hold_non_wheel_dofs", False)
+            )
             self._held_joint_positions = None
             self._wheel_dof_indices = None
 
@@ -738,11 +702,17 @@ class TeleopHuNavSim(Node):
         if robot_name in ("carter", "carter_ROS"):
             _ensure_nova_carter_visual_config(robot_prim_path, "Full_Merged")
 
-        # ROS2 cmd_vel subscriber
+        # ROS2 cmd_vel subscriber (BEST_EFFORT — matches ESC / Nav2 velocity QoS).
         self.cmd_lin = 0.00
         self.cmd_ang = 0.00
+        cmd_vel_qos = QoSProfile(
+            reliability=ReliabilityPolicy.BEST_EFFORT,
+            durability=DurabilityPolicy.VOLATILE,
+            history=HistoryPolicy.KEEP_LAST,
+            depth=10,
+        )
         self.cmd_vel_sub = self.create_subscription(
-            Twist, "/cmd_vel", self._cmd_vel_callback, 10
+            Twist, "/cmd_vel", self._cmd_vel_callback, cmd_vel_qos
         )
 
         # Setup HuNavManager

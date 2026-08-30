@@ -1,0 +1,81 @@
+# Dissertation Reachy (Pollen 2023 + Zuuu).
+# --robot reachy  |  kinematic chassis (Physics=none)  |  hospital hops
+#
+# Do not PhysX Zuuu omniwheels. Lidar frame is lidar_link; laser is a TF alias
+# of the same URDF pin so Stretch-shaped Nav2/ESC yaml still works.
+#
+# Planner footprint: tools/nav2_smoke/nav2_reachy_params.yaml (0.25 m) and
+# tools/esc_isaac/esc_reachy.yaml.
+
+name: Reachy
+kind: chassis_only
+description: Pollen Reachy 2023 + Zuuu — kinematic chassis (same as Stretch)
+usd_package_file: reachy/reachy.usd
+spawn_z_lift: 0.0
+
+sensors:
+  mode: kinematic_nav
+  parked_joints:
+    - r_shoulder_pitch
+    - r_shoulder_roll
+    - r_arm_yaw
+    - r_elbow_pitch
+    - r_forearm_yaw
+    - r_wrist_pitch
+    - r_wrist_roll
+    - r_gripper
+    - l_shoulder_pitch
+    - l_shoulder_roll
+    - l_arm_yaw
+    - l_elbow_pitch
+    - l_forearm_yaw
+    - l_wrist_pitch
+    - l_wrist_roll
+    - l_gripper
+    - neck_roll
+    - neck_pitch
+    - neck_yaw
+    - l_antenna
+    - r_antenna
+  links:
+    base: Geometry/base_footprint/base_link
+    lidar: Geometry/base_footprint/base_link/lidar_link
+    imu: Geometry/base_footprint/base_link/imu_link
+    torso: Geometry/base_footprint/base_link/torso
+    left_optical: Geometry/base_footprint/base_link/torso/head_x/head_y/head_z/head/left_camera/left_camera_optical
+    right_optical: Geometry/base_footprint/base_link/torso/head_x/head_y/head_z/head/right_camera/right_camera_optical
+  nav_tf:
+    children:
+      - {link: lidar, frame_id: lidar_link}
+      - {link: lidar, frame_id: laser}
+      - {link: imu, frame_id: imu_link}
+      - {link: torso, frame_id: torso}
+      - {link: left_optical, frame_id: left_camera_optical}
+      - {link: right_optical, frame_id: right_camera_optical}
+    # zuuu.urdf.xacro lidar_joint: base_link → lidar_link xyz="0.184 0 0.25"
+    fixed_in_base:
+      lidar_link:
+        xyz: [0.184, 0.0, 0.25]
+        xyzw: [0.0, 0.0, 0.0, 1.0]
+      laser:
+        xyz: [0.184, 0.0, 0.25]
+        xyzw: [0.0, 0.0, 0.0, 1.0]
+  lidar:
+    link: lidar
+    frame_id: lidar_link
+  imu:
+    frame_id: imu_link
+    graph_path: /World/ROS2_ReachyImu
+  cameras:
+    - type: rgb_optical
+      optical: left_optical
+      graph_path: /World/ROS2_ReachyLeftCam
+      topic_ns: left_camera
+      frame_id: left_camera_optical
+      fixed_optical_orient: true
+    - type: rgb_optical
+      optical: right_optical
+      graph_path: /World/ROS2_ReachyRightCam
+      topic_ns: right_camera
+      frame_id: right_camera_optical
+      fixed_optical_orient: true

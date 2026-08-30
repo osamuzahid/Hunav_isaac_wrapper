@@ -4,7 +4,9 @@ Occupancy-grid path planning for HuNav goal chains.
 PATCH (isaac-social-nav): HuNav SFM walks straight chords between goals and has
 no global planner. Plan on a ROS map_server YAML + image (e.g. maps/museum.yaml)
 and densify the path into waypoints so agents can circulate a whole building.
-Reusable across worlds that ship an aligned occupancy map.
+
+Swap: pass a world's occupancy YAML to plan_*_routes.py — this module is not
+robot-specific. Robot / planner stay --robot and Nav2-or-ESC.
 """
 
 from __future__ import annotations

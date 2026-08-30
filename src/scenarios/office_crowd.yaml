@@ -1,0 +1,129 @@
+hunav_loader:
+  ros__parameters:
+    yaml_base_name: office_crowd
+    simulator: Isaac Sim
+    map: office
+    publish_people: true
+    # Reachy hop (−6, 4) yaw 1.57 → (6, 4). South hall east. 2 Impassive + 3 standing.
+    # Inflated A* corridor y≈3.93. Statics on south lip beside the lane; Impassive
+    # 4-corner loops north of the spine (not on it, not at spawn).
+    plan_goals_on_map: true
+    map_yaml: office.yaml
+    plan_waypoint_spacing_m: 1.0
+    plan_inflation_radius_m: 0.40
+    plan_from_init_pose: true
+    ignore_obstacle_rays: false
+    robot_init_pose:
+      x: -6.0
+      y: 4.0
+      z: 0.0
+      h: 1.57
+    campaign_goal:
+      x: 6.0
+      y: 4.0
+    global_goals:
+      # M1 Impassive — NW 4-corner loop, ≥2 m north of spawn and south-lip spine
+      1: {x: -4.00, y: 5.20}
+      2: {x: -2.00, y: 5.20}
+      3: {x: -2.00, y: 6.80}
+      4: {x: -4.00, y: 6.80}
+      # M2 Impassive — east 4-corner loop, north alcove (y≥5.2)
+      5: {x: 5.00, y: 5.20}
+      6: {x: 8.00, y: 5.20}
+      7: {x: 8.00, y: 6.80}
+      8: {x: 5.00, y: 6.80}
+      # Standing — south lip beside hop, staggered x, not colinear
+      9: {x: -3.00, y: 3.52}
+      10: {x: 0.50, y: 3.52}
+      11: {x: 3.50, y: 3.52}
+    agents:
+      - agent1
+      - agent2
+      - agent3
+      - agent4
+      - agent5
+    agent1:
+      id: 1
+      group_id: -1
+      skin: 1
+      max_vel: 0.85
+      radius: 0.4
+      goal_radius: 0.6
+      cyclic_goals: true
+      init_pose: {x: -4.00, y: 5.20, z: 0.0, h: 0.00}
+      behavior:
+        type: 2
+        configuration: 0
+        goal_force_factor: 10.0
+        obstacle_force_factor: 2.0
+        social_force_factor: 5.0
+        other_force_factor: 20.0
+      goals: ["1", "2", "3", "4"]
+    agent2:
+      id: 2
+      group_id: -1
+      skin: 2
+      max_vel: 0.88
+      radius: 0.4
+      goal_radius: 0.6
+      cyclic_goals: true
+      init_pose: {x: 5.00, y: 5.20, z: 0.0, h: 0.00}
+      behavior:
+        type: 2
+        configuration: 0
+        goal_force_factor: 10.0
+        obstacle_force_factor: 2.0
+        social_force_factor: 5.0
+        other_force_factor: 20.0
+      goals: ["5", "6", "7", "8"]
+    agent3:
+      id: 3
+      group_id: -1
+      skin: 3
+      max_vel: 0.0
+      radius: 0.4
+      goal_radius: 0.6
+      cyclic_goals: true
+      init_pose: {x: -3.00, y: 3.52, z: 0.0, h: 0.00}
+      behavior:
+        type: 2
+        configuration: 0
+        goal_force_factor: 0.0
+        obstacle_force_factor: 0.0
+        social_force_factor: 0.0
+        other_force_factor: 0.0
+      goals: ["9"]
+    agent4:
+      id: 4
+      group_id: -1
+      skin: 4
+      max_vel: 0.0
+      radius: 0.4
+      goal_radius: 0.6
+      cyclic_goals: true
+      init_pose: {x: 0.50, y: 3.52, z: 0.0, h: 1.57}
+      behavior:
+        type: 2
+        configuration: 0
+        goal_force_factor: 0.0
+        obstacle_force_factor: 0.0
+        social_force_factor: 0.0
+        other_force_factor: 0.0
+      goals: ["10"]
+    agent5:
+      id: 5
+      group_id: -1
+      skin: 5
+      max_vel: 0.0
+      radius: 0.4
+      goal_radius: 0.6
+      cyclic_goals: true
+      init_pose: {x: 3.50, y: 3.52, z: 0.0, h: 3.14}
+      behavior:
+        type: 2
+        configuration: 0
+        goal_force_factor: 0.0
+        obstacle_force_factor: 0.0
+        social_force_factor: 0.0
+        other_force_factor: 0.0
+      goals: ["11"]

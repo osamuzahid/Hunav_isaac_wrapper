@@ -7,7 +7,7 @@
 #
 # Same south-hall goal as occupancy #78: (5,0) → (5,-8). Not museum A10.
 # Not Carter (10,-17). Live /scan should see USD stretchers (occupancy A* will not).
-# Quiet hospital_lab_park. Crowd hop uses hospital_eval_5 + run_reachy_nav2_eval.sh.
+# Quiet hospital_lab_park. Crowd hop uses hospital_crowd + run_reachy_nav2_eval.sh.
 # Global planner: Smac 2D (nav2_reachy_params.yaml). NavFn kept the 8 m
 # stretcher squeeze; Smac prefers the ~27 m wing.
 set -eo pipefail

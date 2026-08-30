@@ -8,7 +8,7 @@ This script provides a command-line interface that allows users to:
 - Select between existing agent configuration files or create new ones via RViz
 - Choose from built-in presets (warehouse, hospital, office, museum, bookstore, house_museum, small_house, small_warehouse) or custom YAML files
 - Automatically infer the simulation world based on the configuration file
-- Select the robot type (jetbot, create3, carter, carter_ROS, stretch, stretch_wheeled, franka)
+- Select the robot type (upstream CDN robots plus lab robots from config/robots/*/robot.yaml)
 - Launch the TeleopHuNavSim node with the selected parameters
 
 """
@@ -143,14 +143,15 @@ PRESETS = {
     "hospital_agents",
     "hospital_behaviors",
     "hospital_lab_park",
-    "hospital_eval_5",
+    "hospital_crowd",
     "office_agents",
     "office_behaviors",
+    "office_crowd",
     "empty_world_agents",
     "museum_agents",
     "museum_behaviors",
     "museum_eval",
-    "museum_eval_5",
+    "museum_crowd",
     "museum_sensor_demo",
     "bookstore_agents",
     "bookstore_behaviors",
@@ -172,16 +173,29 @@ KNOWN_WORLDS = {
     "small_house",
     "small_warehouse",
 }
-ROBOTS = [
+# ORIGINALLY (upstream v2.0): four CDN robots. Lab Stretch/Reachy are folders
+# under config/robots/<name>/robot.yaml (robot_catalog.py).
+_UPSTREAM_ROBOTS = [
     "jetbot",
     "create3",
     "carter",
     "carter_ROS",
-    "stretch",
-    "stretch_wheeled",
-    "franka",
-    "reachy",
 ]
+try:
+    from hunav_isaac_wrapper.robot_catalog import (
+        lab_robot_descriptions,
+        list_robot_choices,
+    )
+
+    ROBOTS = list_robot_choices(_UPSTREAM_ROBOTS)
+    _LAB_ROBOT_DESCRIPTIONS = lab_robot_descriptions()
+except Exception:
+    ROBOTS = _UPSTREAM_ROBOTS + ["stretch", "stretch_wheeled", "reachy"]
+    _LAB_ROBOT_DESCRIPTIONS = {
+        "stretch": "Hello Robot Stretch — kinematic chassis (no wall collision)",
+        "stretch_wheeled": "Hello Robot Stretch — PhysX diff-drive (walls collide)",
+        "reachy": "Pollen Reachy 2023 + Zuuu — kinematic chassis (same as Stretch)",
+    }
 
 # Colors for terminal output
 class Colors:
@@ -577,7 +591,7 @@ def main():
         if args.verbose:
             print_info(f"Using robot from last configuration: {robot}")
     elif args.batch:
-        # PATCH (isaac-social-nav): dissertation demos default to Stretch, not Carter.
+        # PATCH (isaac-social-nav): dissertation default is Stretch.
         robot = "stretch"
         print_info(f"Batch mode: using default robot {robot}")
     else:
@@ -587,11 +601,8 @@ def main():
             "create3": "iRobot Create3 educational robot platform", 
             "carter": "NVIDIA Carter robot for advanced navigation",
             "carter_ROS": "Carter with full ROS2 Nav2 stack support",
-            "stretch": "Hello Robot Stretch — kinematic chassis (no wall collision)",
-            "stretch_wheeled": "Hello Robot Stretch — PhysX diff-drive (walls collide)",
-            "franka": "CUCR lab Franka Panda — parked (TF + joint_states)",
-            "reachy": "CUCR lab Reachy 2023 + Zuuu — kinematic chassis (same as Stretch)",
         }
+        robot_descriptions.update(_LAB_ROBOT_DESCRIPTIONS)
         robot = choose(
             "Select robot:",
             ROBOTS,

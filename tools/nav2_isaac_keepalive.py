@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """
-Keep a HuNav Isaac scene stepping for Nav2 smoke (no internal ros2 CLI).
+Keep a HuNav Isaac scene stepping while an external ROS shell runs Nav2 or ESC.
+
+Swap: --robot + --world + --config. Then start Nav2 *or* ESC (not both).
+Do not spawn hunav_evaluator under Isaac (HUNAV_START_EVALUATOR=0).
 
 Usage:
   export OMNI_KIT_ACCEPT_EULA=YES ROS_DOMAIN_ID=0 HUNAV_ISAAC_PROFILE=debug
@@ -8,7 +11,7 @@ Usage:
     --world empty_world --config empty_world_agents
   # museum Stretch Nav2 (5 Impassive along plaza hop):
   ~/isaacsim/python.sh tools/nav2_isaac_keepalive.py --seconds 600 \\
-    --robot stretch --world museum --config museum_eval_5 --disable-cameras
+    --robot stretch --world museum --config museum_crowd --disable-cameras
   # museum (2-agent demo):
   ~/isaacsim/python.sh tools/nav2_isaac_keepalive.py --seconds 400 \\
     --world museum --config museum_agents --disable-cameras
@@ -21,7 +24,11 @@ Usage:
     --robot reachy --world hospital --config hospital_lab_park --disable-cameras
   # hospital Reachy crowd Nav2 + CSV (B5; same goal):
   ~/isaacsim/python.sh tools/nav2_isaac_keepalive.py --seconds 720 \\
-    --robot reachy --world hospital --config hospital_eval_5 --disable-cameras
+    --robot reachy --world hospital --config hospital_crowd --disable-cameras
+  # hospital Reachy ESC (B6; no Nav2; same scene/goal as #80).
+  # --seconds 0 = until the window is closed (long detour; do not wall-clock abort).
+  ~/isaacsim/python.sh tools/nav2_isaac_keepalive.py --seconds 0 \\
+    --robot reachy --world hospital --config hospital_crowd --disable-cameras
 """
 
 from __future__ import annotations
@@ -152,7 +159,12 @@ def _select_chassis_link() -> None:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--seconds", type=float, default=180.0)
+    ap.add_argument(
+        "--seconds",
+        type=float,
+        default=180.0,
+        help="Sim wall time. <=0 keeps stepping until the window is closed.",
+    )
     ap.add_argument("--robot", default="carter_ROS")
     ap.add_argument("--world", default="empty_world")
     ap.add_argument("--config", default="empty_world_agents")
@@ -264,7 +276,9 @@ def main() -> int:
             flush=True,
         )
 
-    t_end = time.time() + args.seconds
+    t_end = (
+        float("inf") if args.seconds <= 0.0 else time.time() + args.seconds
+    )
     step_i = 0
     while time.time() < t_end and simulation_app.is_running():
         rclpy.spin_once(node, timeout_sec=0.0)

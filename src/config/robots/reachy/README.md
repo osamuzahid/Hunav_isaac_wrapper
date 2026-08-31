@@ -20,7 +20,10 @@ motion is kinematic `ChassisDriveRobot` (`/cmd_vel` `vx`+`wz`), not PhysX omni d
 
 Drive is **kinematic chassis** (`--robot reachy`, same `ChassisDriveRobot` as Stretch). `/cmd_vel` `linear.x` + `angular.z`. Last twist is **held** until a new message (including zeros). Do **not** PhysX omniwheels. Raw `/cmd_vel` **ghosts walls**; occupancy / Nav2 / ESC keep it in halls. Hospital spawn `(5.0, 0.0)` yaw `2.9`. Occupancy hop (B3): `(5, 0)` → `(5, -8)` south hall (`tools/drive_reachy_waypoints.py`).
 
-RViz `reachy_scan.rviz`: Fixed Frame `lidar_link` for a local scan check. TF **Show Arrows** draws a grey dotted line from the sensor — that is not a lidar ray.
+RViz `reachy_scan.rviz`: Fixed Frame `map`, LaserScan `/scan`, TF axes only
+(no arrows — the grey dotted segment is not a lidar ray). RGB cameras use
+`rqt_image_view` on `/left_camera/image_raw` and `/right_camera/image_raw`
+(Reachy has no depth stream).
 
 ## Rebuild USD
 

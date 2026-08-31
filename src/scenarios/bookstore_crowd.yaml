@@ -1,0 +1,128 @@
+hunav_loader:
+  ros__parameters:
+    yaml_base_name: bookstore_crowd
+    simulator: Isaac Sim
+    map: bookstore
+    publish_people: true
+    # Stretch hop (0.2, 1.0) yaw 0 → (−5.0, 6.5). ESC/Nav2 chord ≈7.6 m NW
+    # through open floor (path_efficiency ≈0.95); inflated A* L ≈15 m along y≈0
+    # is not the driven path. A3–A5 on the chord; A1 4-corner near goal; A2 E–W
+    # shuttle on y≈4 (3.5 m, wall-clear A* legs). Inflation 0.35 m.
+    plan_goals_on_map: true
+    map_yaml: bookstore.yaml
+    plan_waypoint_spacing_m: 1.0
+    plan_inflation_radius_m: 0.35
+    plan_from_init_pose: true
+    ignore_obstacle_rays: false
+    robot_init_pose:
+      x: 0.2
+      y: 1.0
+      z: 0.0
+      h: 0.0
+    campaign_goal:
+      x: -5.0
+      y: 6.5
+    global_goals:
+      # A1 — 4-corner loop NW of goal (perimeter 5.4 m)
+      1: {x: -3.25, y: 5.40}
+      2: {x: -1.75, y: 5.40}
+      3: {x: -1.75, y: 6.60}
+      4: {x: -3.25, y: 6.60}
+      # A2 — E–W shuttle on y≈4 (3.5 m; crosses chord mid, clear of A5)
+      5: {x: -4.50, y: 4.00}
+      6: {x: -1.00, y: 4.00}
+      # Standing — on the driven chord, staggered, ≥2 m apart
+      7: {x: -1.50, y: 2.20}
+      8: {x: -2.56, y: 3.92}
+      9: {x: -4.01, y: 5.46}
+    agents:
+      - agent1
+      - agent2
+      - agent3
+      - agent4
+      - agent5
+    agent1:
+      id: 1
+      group_id: -1
+      skin: 1
+      max_vel: 0.88
+      radius: 0.4
+      goal_radius: 0.6
+      cyclic_goals: true
+      init_pose: {x: -3.25, y: 6.60, z: 0.0, h: -1.57}
+      behavior:
+        type: 2
+        configuration: 0
+        goal_force_factor: 10.0
+        obstacle_force_factor: 2.0
+        social_force_factor: 5.0
+        other_force_factor: 20.0
+      goals: ["1", "2", "3", "4"]
+    agent2:
+      id: 2
+      group_id: -1
+      skin: 2
+      max_vel: 0.90
+      radius: 0.4
+      goal_radius: 0.6
+      cyclic_goals: true
+      init_pose: {x: -4.50, y: 4.00, z: 0.0, h: 0.00}
+      behavior:
+        type: 2
+        configuration: 0
+        goal_force_factor: 10.0
+        obstacle_force_factor: 2.0
+        social_force_factor: 5.0
+        other_force_factor: 20.0
+      goals: ["5", "6"]
+    agent3:
+      id: 3
+      group_id: -1
+      skin: 3
+      max_vel: 0.0
+      radius: 0.4
+      goal_radius: 0.6
+      cyclic_goals: true
+      init_pose: {x: -1.50, y: 2.20, z: 0.0, h: 1.57}
+      behavior:
+        type: 2
+        configuration: 0
+        goal_force_factor: 0.0
+        obstacle_force_factor: 0.0
+        social_force_factor: 0.0
+        other_force_factor: 0.0
+      goals: ["7"]
+    agent4:
+      id: 4
+      group_id: -1
+      skin: 4
+      max_vel: 0.0
+      radius: 0.4
+      goal_radius: 0.6
+      cyclic_goals: true
+      init_pose: {x: -2.56, y: 3.92, z: 0.0, h: 1.57}
+      behavior:
+        type: 2
+        configuration: 0
+        goal_force_factor: 0.0
+        obstacle_force_factor: 0.0
+        social_force_factor: 0.0
+        other_force_factor: 0.0
+      goals: ["8"]
+    agent5:
+      id: 5
+      group_id: -1
+      skin: 5
+      max_vel: 0.0
+      radius: 0.4
+      goal_radius: 0.6
+      cyclic_goals: true
+      init_pose: {x: -4.01, y: 5.46, z: 0.0, h: 3.14}
+      behavior:
+        type: 2
+        configuration: 0
+        goal_force_factor: 0.0
+        obstacle_force_factor: 0.0
+        social_force_factor: 0.0
+        other_force_factor: 0.0
+      goals: ["9"]

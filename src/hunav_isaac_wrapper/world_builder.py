@@ -19,6 +19,18 @@ _LEGACY_ISAAC_PREFIXES = (
     "omniverse://localhost/NVIDIA/Assets/Isaac/5.1",
 )
 
+# CUCR ports that compose /World/DomeLight + /World/DistantLight in the stage USD.
+# Default viewport rig on top of those lights blows the scene out (bookstore #58
+# milky wash). Hospital/museum keep the Default rig.
+_STAGE_LIGHT_WORLDS = frozenset(
+    {
+        "bookstore",
+        "house_museum",
+        "small_house",
+        "small_warehouse",
+    }
+)
+
 
 def _remap_legacy_isaac_asset_paths(stage: Usd.Stage) -> int:
     """Rewrite dead Nucleus Isaac 4.x/5.x asset URLs → current CDN root. Returns count."""
@@ -57,26 +69,37 @@ def _remap_legacy_isaac_asset_paths(stage: Usd.Stage) -> int:
     return changed
 
 
-def apply_viewport_defaults() -> None:
+def apply_viewport_defaults(map_name: str | None = None) -> None:
     """
-    PATCH (isaac-social-nav): force free Perspective camera + Default light rig.
+    PATCH (isaac-social-nav): force free Perspective camera + sane viewport lighting.
 
-    Hospital USD activates Camera_01 (locked) and Stage Lights. Operators want the
-    same Default / free-fly view as a fresh Isaac stage.
+    Hospital USD activates Camera_01 (locked) and Stage Lights — use Default rig.
+    CUCR bookstore/residential stages ship DomeLight in the USD; Default rig
+    on top washes them out. Office and hospital/museum use the Default rig.
     """
-    # Lighting: Default rig (not Stage Lights / Camera Light)
+    use_stage = map_name in _STAGE_LIGHT_WORLDS
     try:
         import omni.kit.actions.core
 
         reg = omni.kit.actions.core.get_action_registry()
-        action = reg.get_action(
-            "omni.kit.viewport.menubar.lighting", "set_lighting_mode_rig"
-        )
-        if action is not None:
-            action.execute("Default")
-            print("[WorldBuilder] viewport lighting → Default")
+        if use_stage:
+            action = reg.get_action(
+                "omni.kit.viewport.menubar.lighting", "set_lighting_mode_stage"
+            )
+            if action is not None:
+                action.execute()
+                print(f"[WorldBuilder] viewport lighting → Stage ({map_name})")
+            else:
+                print("[WorldBuilder] stage lighting action unavailable (headless?)")
         else:
-            print("[WorldBuilder] lighting action unavailable (headless?)")
+            action = reg.get_action(
+                "omni.kit.viewport.menubar.lighting", "set_lighting_mode_rig"
+            )
+            if action is not None:
+                action.execute("Default")
+                print("[WorldBuilder] viewport lighting → Default")
+            else:
+                print("[WorldBuilder] lighting action unavailable (headless?)")
     except Exception as exc:
         print(f"[WorldBuilder] lighting default skipped: {exc}")
 
@@ -115,6 +138,6 @@ class WorldBuilder:
             stage = self.usd_context.get_stage()
             if stage is not None:
                 _remap_legacy_isaac_asset_paths(stage)
-            apply_viewport_defaults()
+            apply_viewport_defaults(map_name)
         else:
             print(f"[WorldBuilder] Error: map '{map_name}' not found at {map_path}")

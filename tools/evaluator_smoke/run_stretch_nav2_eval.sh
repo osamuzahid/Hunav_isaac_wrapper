@@ -122,7 +122,13 @@ cp -f "$SUMMARY" "$DESK/nav2_eval_summary.txt" 2>/dev/null || true
 [[ -f "$OUT/nav2_smoke_summary.txt" ]] && cp -f "$OUT/nav2_smoke_summary.txt" "$DESK/" || true
 log "copied CSV → $DESK/metrics.csv"
 if [[ -x /home/osamuzahid/Projects/isaac-social-nav/tools/archive_eval.sh ]]; then
-  /home/osamuzahid/Projects/isaac-social-nav/tools/archive_eval.sh "$OUT" "${ARCHIVE_TAG:-nav2_crowd}" | tee -a "$SUMMARY" || true
+  if [[ -n "${ARCHIVE_NAME:-}" ]]; then
+    /home/osamuzahid/Projects/isaac-social-nav/tools/archive_eval.sh "$OUT" "$ARCHIVE_NAME" | tee -a "$SUMMARY" || true
+  elif [[ -n "${ARCHIVE_WORLD:-}" && -n "${ARCHIVE_ROBOT:-}" && -n "${ARCHIVE_STACK:-}" ]]; then
+    /home/osamuzahid/Projects/isaac-social-nav/tools/archive_eval.sh "$OUT" "$ARCHIVE_WORLD" "$ARCHIVE_ROBOT" "$ARCHIVE_STACK" "${ARCHIVE_RUN:-}" | tee -a "$SUMMARY" || true
+  else
+    log "skip archive: set ARCHIVE_NAME or ARCHIVE_WORLD/ROBOT/STACK (world_robot_stack)"
+  fi
 fi
 
 if [[ "$NAV_RC" -eq 0 ]] && grep -q 'GOAL=SUCCEEDED' "$OUT/nav2_smoke_summary.txt" 2>/dev/null && [[ "$SUM_RC" -eq 0 ]]; then

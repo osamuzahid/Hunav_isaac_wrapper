@@ -63,3 +63,40 @@ Shared checklist for the next CUCR world (`house_museum`, …):
   source `src/worlds` when present.
 - DistantLight 5000 + DomeLight ~400. Live Kit does not pick up a rewritten USD —
   close Isaac and relaunch.
+- Viewport lighting: **Default** rig (`world_builder.py` — office is not in
+  `_STAGE_LIGHT_WORLDS`). Bookstore/residential use Stage.
+
+## Compose orientation fixes (GUI-verified, one asset at a time)
+
+Some Assimp OBJ exports are **Y-up** (mesh height on **+Y**) while the Isaac
+stage is **Z-up**. Gazebo tolerated this; composed payloads need **`RotateX(90)`**
+on the **`geometry`** xform only (bookstore pattern). Do **not** reconvert asset
+USDs or run `_patch_office_asset_usd` for these — **`--compose-only`** rewrite
+`office.usd` only.
+
+| Model | Symptom | Fix | Instances | GUI sign-off |
+|---|---|---|---|---|
+| `office_table` | Table on its side | `RotateX(90)` on payload | all `office_table_*` | 2026-08-31 |
+| `office_chair` | Chair on its side | `RotateX(90)` on payload | 59× `office_chair_*` | 2026-08-31 |
+| `toilet` | Toilet on its side (`toilet_16`) | `RotateX(90)` on payload | 3× `toilet_*` | 2026-08-31 |
+| `wastebasket` | Bin on its side (`wastebasket_17`) | `RotateX(90)` on payload | 6× `wastebasket_*` | 2026-08-31 |
+| `office_cafe_table` | Cafe table fallen | `RotateX(90)` on payload | 7× `office_cafe_table_*` | 2026-08-31 |
+| `tv_stand` | TV unit fallen (`tv_stand_679`) | `RotateX(90)` on payload | 2× `tv_stand_*` | 2026-08-31 |
+| `office_couch` | Couch fallen (`office_couch_677`) | `RotateX(90)` on payload | 3× `office_couch_*` | 2026-08-31 |
+
+**Workflow:** add model name to `_COMPOSE_ROTATE_X_MODELS` in
+`isaac_convert_office.py` → close Isaac →
+
+```bash
+OMNI_KIT_ACCEPT_EULA=YES HUNAV_OFFICE_OBJ_DIR=/tmp/cucr_office_src/obj \
+  ~/isaacsim/python.sh tools/isaac_convert_office.py --compose-only
+```
+
+→ relaunch office → confirm in GUI → tick the table above.
+
+**Do not:** bulk `_patch_office_asset_usd`, full reconvert all assets, or add
+models to the rotate set without a screenshot — that regressed the whole scene
+(2026-08-31).
+
+**Still open (not rotate-tested):** `desk_chair`, `hangout_chair` (OBJ `scale
+0.01` — separate class from DAE furniture above).

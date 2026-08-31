@@ -49,6 +49,18 @@ if not _COMPOSE_ONLY:
     )
     from omni.kit.asset_converter import AssetConverterContext, get_instance
     from omni.kit.async_engine import run_coroutine
+else:
+    from isaacsim import SimulationApp
+
+    simulation_app = SimulationApp(
+        {
+            "width": 64,
+            "height": 64,
+            "headless": True,
+            "renderer": "RaytracedLighting",
+            "sync_loads": True,
+        }
+    )
 
 from pxr import Gf, Sdf, Usd, UsdGeom, UsdPhysics, UsdShade
 
@@ -72,6 +84,21 @@ DOME_LIGHT_INTENSITY = 400.0
 WALL_COLOR = Gf.Vec3f(0.82, 0.82, 0.78)
 FLOOR_COLOR = Gf.Vec3f(0.62, 0.62, 0.58)
 TEX_DIR = os.path.join(ASSETS_DIR, "textures")
+
+# Assimp OBJ exports with height on +Y; Isaac stage is Z-up. Rotate at compose on
+# the payload geometry xform only (bookstore pattern). Add models one at a time
+# after GUI sign-off — do not bulk-apply.
+_COMPOSE_ROTATE_X_MODELS = frozenset(
+    {
+        "office_table",
+        "office_chair",
+        "toilet",
+        "wastebasket",
+        "office_cafe_table",
+        "tv_stand",
+        "office_couch",
+    }
+)
 
 
 def _make_context() -> AssetConverterContext:
@@ -383,7 +410,16 @@ def _set_display_color(prim, rgb: Gf.Vec3f) -> None:
     UsdGeom.Gprim(prim).CreateDisplayColorAttr().Set([rgb])
 
 
-def _add_payload(stage, path: str, rel_usd: str, translate, rpy_rad, scale) -> None:
+def _add_payload(
+    stage,
+    path: str,
+    rel_usd: str,
+    translate,
+    rpy_rad,
+    scale,
+    *,
+    rotate_y_to_z: bool = False,
+) -> None:
     xf = UsdGeom.Xform.Define(stage, path)
     xf.ClearXformOpOrder()
     xf.AddTranslateOp(UsdGeom.XformOp.PrecisionDouble).Set(
@@ -397,6 +433,9 @@ def _add_payload(stage, path: str, rel_usd: str, translate, rpy_rad, scale) -> N
         Gf.Vec3d(float(scale[0]), float(scale[1]), float(scale[2]))
     )
     child = UsdGeom.Xform.Define(stage, f"{path}/geometry")
+    if rotate_y_to_z:
+        child.ClearXformOpOrder()
+        child.AddRotateXOp(UsdGeom.XformOp.PrecisionDouble).Set(90.0)
     # Absolute refs: Isaac often opens the install-prefix symlink of office.usd,
     # and ./assets/office then misses the uninstalled furniture USDs.
     abs_usd = rel_usd
@@ -539,6 +578,7 @@ def compose_office_stage(manifest: dict, out_usd: str) -> None:
             inst["translate"],
             inst["rpy_rad"],
             inst["scale"],
+            rotate_y_to_z=model in _COMPOSE_ROTATE_X_MODELS,
         )
         if kind != "overlay":
             collider_paths.append(f"{path}/geometry")
@@ -617,11 +657,12 @@ def main() -> int:
                 print(f"[fail] {model}: {exc}", flush=True)
                 continue
     else:
-        print("[compose-only] reusing existing assets/office/*.usd", flush=True)
+        print("[compose-only] reusing existing assets/office/*.usd (no material patch)", flush=True)
 
-    for fn in sorted(os.listdir(ASSETS_DIR)):
-        if fn.endswith(".usd"):
-            _patch_office_asset_usd(os.path.join(ASSETS_DIR, fn))
+    if not compose_only:
+        for fn in sorted(os.listdir(ASSETS_DIR)):
+            if fn.endswith(".usd"):
+                _patch_office_asset_usd(os.path.join(ASSETS_DIR, fn))
 
     compose_office_stage(manifest, final_out)
     _install_map()

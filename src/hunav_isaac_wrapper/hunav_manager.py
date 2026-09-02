@@ -177,8 +177,13 @@ class HuNavManager:
         with open(full_path, "r") as file:
             return yaml.safe_load(file)
 
-    def _find_maps_dir(self) -> str:
-        """Locate share/.../maps or source src/maps without importing teleop (circular)."""
+    def _iter_maps_dirs(self):
+        """Source src/maps first (install share can lag), then share/.../maps."""
+        src_maps = os.path.abspath(
+            os.path.join(os.path.dirname(__file__), "..", "maps")
+        )
+        if os.path.isdir(src_maps):
+            yield src_maps
         try:
             result = subprocess.run(
                 ["ros2", "pkg", "prefix", "hunav_isaac_wrapper"],
@@ -189,16 +194,15 @@ class HuNavManager:
             share_maps = os.path.join(
                 result.stdout.strip(), "share", "hunav_isaac_wrapper", "maps"
             )
-            if os.path.isdir(share_maps):
-                return share_maps
+            if os.path.isdir(share_maps) and os.path.abspath(share_maps) != src_maps:
+                yield share_maps
         except (subprocess.CalledProcessError, FileNotFoundError):
-            pass
-        # Development: .../src/hunav_isaac_wrapper/hunav_manager.py → .../src/maps
-        src_maps = os.path.abspath(
-            os.path.join(os.path.dirname(__file__), "..", "maps")
-        )
-        if os.path.isdir(src_maps):
-            return src_maps
+            return
+
+    def _find_maps_dir(self) -> str:
+        """Locate share/.../maps or source src/maps without importing teleop (circular)."""
+        for maps_dir in self._iter_maps_dirs():
+            return maps_dir
         raise FileNotFoundError("Could not locate hunav_isaac_wrapper maps/ directory")
 
     def _maybe_load_occupancy_map(self) -> None:
@@ -217,19 +221,28 @@ class HuNavManager:
             return
         map_key = params.get("map_yaml") or params.get("map") or "museum"
         inflation = float(params.get("plan_inflation_radius_m", 0.35))
-        try:
-            maps_dir = self._find_maps_dir()
-            yaml_path = resolve_map_yaml(str(map_key), maps_dir)
-            self._occupancy_map = OccupancyMap.from_yaml(
-                yaml_path, inflation_radius_m=inflation
-            )
-            print(
-                f"[HuNavManager] Occupancy planner loaded: {yaml_path} "
-                f"(inflation={inflation} m)"
-            )
-        except Exception as exc:
-            print(f"[HuNavManager] WARNING: plan_goals_on_map enabled but map load failed: {exc}")
-            self._occupancy_map = None
+        last_exc = None
+        for maps_dir in self._iter_maps_dirs():
+            try:
+                yaml_path = resolve_map_yaml(str(map_key), maps_dir)
+                self._occupancy_map = OccupancyMap.from_yaml(
+                    yaml_path, inflation_radius_m=inflation
+                )
+                print(
+                    f"[HuNavManager] Occupancy planner loaded: {yaml_path} "
+                    f"(inflation={inflation} m)"
+                )
+                return
+            except FileNotFoundError as exc:
+                last_exc = exc
+            except Exception as exc:
+                last_exc = exc
+                break
+        print(
+            f"[HuNavManager] WARNING: plan_goals_on_map enabled but map load failed: "
+            f"{last_exc}"
+        )
+        self._occupancy_map = None
 
     def slerp_quaternions(self, q1: Gf.Quatf, q2: Gf.Quatf, t: float) -> Gf.Quatf:
         """

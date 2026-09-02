@@ -4,8 +4,9 @@ hunav_loader:
     simulator: Isaac Sim
     map: museum
     publish_people: true
-    # PATCH (isaac-social-nav): 5 Impassive loops from museum_eval along the
-    # Stretch alcove → west gap → A10 plaza hop, plus 3 standing people staggered
+    # PATCH (isaac-social-nav): Reachy (2.0, −8.0) yaw 1.57 → (1.5, 6.5) yaw 1.57.
+    # West gap to plaza. 5 Impassive loops from museum_eval along the
+    # alcove → west gap → A10 plaza hop, plus 3 standing people staggered
     # off the empty-map hop (not colinear). Do not replace museum_eval (10).
     # Mixed BTs stay on museum_behaviors. Inflation 0.40 m.
     plan_goals_on_map: true
@@ -19,6 +20,9 @@ hunav_loader:
       y: -8.0
       z: 0.0
       h: 1.57
+    campaign_goal:
+      x: 1.5
+      y: 6.5
     global_goals:
       1: {x: -3.92, y: -7.27}
       2: {x: -0.20, y: -7.30}

@@ -4,7 +4,7 @@ hunav_loader:
     simulator: Isaac Sim
     map: office
     publish_people: true
-    # Reachy hop (−6, 4) yaw 1.57 → (6, 4). South hall east. 2 Impassive + 3 standing.
+    # Reachy hop (−6, 4) yaw 1.57 → (6, 4) yaw 1.57. South hall east. 2 Impassive + 3 standing.
     # Inflated A* corridor y≈3.93. Statics on south lip beside the lane; Impassive
     # 4-corner loops north of the spine (not on it, not at spawn).
     plan_goals_on_map: true

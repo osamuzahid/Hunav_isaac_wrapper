@@ -159,8 +159,10 @@ PRESETS = {
     "house_museum_behaviors",
     "small_house_agents",
     "small_house_behaviors",
+    "small_house_crowd",
     "small_warehouse_agents",
     "small_warehouse_behaviors",
+    "small_warehouse_crowd",
 }
 KNOWN_WORLDS = {
     "warehouse",

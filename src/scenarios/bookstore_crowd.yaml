@@ -4,7 +4,7 @@ hunav_loader:
     simulator: Isaac Sim
     map: bookstore
     publish_people: true
-    # Stretch hop (0.2, 1.0) yaw 0 → (−5.0, 6.5). ESC/Nav2 chord ≈7.6 m NW
+    # Stretch hop (0.2, 1.0) yaw 0 → (−5.0, 6.5) yaw 1.57. ESC/Nav2 chord ≈7.6 m NW
     # through open floor (path_efficiency ≈0.95); inflated A* L ≈15 m along y≈0
     # is not the driven path. A3–A5 on the chord; A1 4-corner near goal; A2 E–W
     # shuttle on y≈4 (3.5 m, wall-clear A* legs). Inflation 0.35 m.

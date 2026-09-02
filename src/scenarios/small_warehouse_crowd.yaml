@@ -1,42 +1,42 @@
 hunav_loader:
   ros__parameters:
-    yaml_base_name: house_museum_crowd
+    yaml_base_name: small_warehouse_crowd
     simulator: Isaac Sim
-    map: house_museum
+    map: small_warehouse
     publish_people: true
-    # Reachy (−0.50, −3.00) yaw 1.57 → (−0.50, 1.00) yaw 1.57: north along the
-    # south hall. Occupancy PNG joins this hall to a north gallery
-    # through a gap the USD floor does not; a cross-room hop lets A*
-    # pull people into that gap. This hop and A1 stay in the hall.
-    # A3/A4 stand on it. A5 stands off-hop (4 m packing). A2 loops the
-    # northeast gallery — no patrol crosses rooms.
+    # Reachy (0.0, 0.0) yaw −1.57 → (0.0, −8.0) yaw −1.57: south along the x≈0 aisle.
+    # Occupancy A* = 8.0 m, ratio 1.00 to the chord — ESC/Nav2 likely path
+    # is this polyline, not a west-room detour. A3–A5 stand on it, staggered.
+    # A1 loops the west room. A2 loops the south aisle and crosses the hop
+    # near the goal. Inflation 0.35 m.
     plan_goals_on_map: true
-    map_yaml: house_museum.yaml
+    map_yaml: small_warehouse.yaml
     plan_waypoint_spacing_m: 1.0
-    plan_inflation_radius_m: 0.60
+    plan_inflation_radius_m: 0.35
     plan_from_init_pose: true
     ignore_obstacle_rays: false
     robot_init_pose:
-      x: -0.50
-      y: -3.00
+      x: 0.0
+      y: 0.0
       z: 0.0
-      h: 1.57
+      h: -1.57
     campaign_goal:
-      x: -0.50
-      y: 1.00
+      x: 0.0
+      y: -8.0
     global_goals:
-      # A1 — north-south shuttle on the robot hall
-      1: {x: -0.50, y: -3.00}
-      2: {x: -0.50, y: -1.00}
-      3: {x: -0.50, y: 1.00}
-      # A2 — northeast gallery pocket
-      4: {x: 2.00, y: 9.50}
-      5: {x: 1.00, y: 8.50}
-      6: {x: 2.00, y: 7.00}
-      # Standing — staggered on the hop, not colinear
-      7: {x: -1.50, y: -1.00}
-      8: {x: 0.50, y: -1.00}
-      9: {x: 0.75, y: 4.95}
+      # A1 — 4-corner west of the aisle (perimeter ≈ 15 m)
+      1: {x: -2.00, y: 0.50}
+      2: {x: -5.50, y: 0.50}
+      3: {x: -5.50, y: -3.50}
+      4: {x: -2.00, y: -3.50}
+      # A2 — south aisle, crosses the hop near the goal
+      5: {x: 1.60, y: -5.70}
+      6: {x: 1.60, y: -8.20}
+      7: {x: -0.40, y: -8.20}
+      # Standing — on the driven aisle, staggered, ≥2 m apart
+      8: {x: 0.45, y: -2.30}
+      9: {x: -0.45, y: -4.50}
+      10: {x: 0.40, y: -6.80}
     agents:
       - agent1
       - agent2
@@ -51,7 +51,7 @@ hunav_loader:
       radius: 0.4
       goal_radius: 0.6
       cyclic_goals: true
-      init_pose: {x: -0.50, y: 1.00, z: 0.0, h: -1.57}
+      init_pose: {x: -2.00, y: 0.50, z: 0.0, h: 3.14}
       behavior:
         type: 2
         configuration: 0
@@ -59,7 +59,7 @@ hunav_loader:
         obstacle_force_factor: 2.0
         social_force_factor: 5.0
         other_force_factor: 20.0
-      goals: ["1", "2", "3"]
+      goals: ["1", "2", "3", "4"]
     agent2:
       id: 2
       group_id: -1
@@ -68,7 +68,7 @@ hunav_loader:
       radius: 0.4
       goal_radius: 0.6
       cyclic_goals: true
-      init_pose: {x: 2.00, y: 9.50, z: 0.0, h: -1.57}
+      init_pose: {x: 1.60, y: -5.70, z: 0.0, h: -1.57}
       behavior:
         type: 2
         configuration: 0
@@ -76,7 +76,7 @@ hunav_loader:
         obstacle_force_factor: 2.0
         social_force_factor: 5.0
         other_force_factor: 20.0
-      goals: ["4", "5", "6"]
+      goals: ["5", "6", "7"]
     agent3:
       id: 3
       group_id: -1
@@ -85,24 +85,7 @@ hunav_loader:
       radius: 0.4
       goal_radius: 0.6
       cyclic_goals: true
-      init_pose: {x: -1.50, y: -1.00, z: 0.0, h: 1.57}
-      behavior:
-        type: 2
-        configuration: 0
-        goal_force_factor: 0.0
-        obstacle_force_factor: 0.0
-        social_force_factor: 0.0
-        other_force_factor: 0.0
-      goals: ["7"]
-    agent4:
-      id: 4
-      group_id: -1
-      skin: 4
-      max_vel: 0.0
-      radius: 0.4
-      goal_radius: 0.6
-      cyclic_goals: true
-      init_pose: {x: 0.50, y: -1.00, z: 0.0, h: 1.57}
+      init_pose: {x: 0.45, y: -2.30, z: 0.0, h: 1.57}
       behavior:
         type: 2
         configuration: 0
@@ -111,15 +94,15 @@ hunav_loader:
         social_force_factor: 0.0
         other_force_factor: 0.0
       goals: ["8"]
-    agent5:
-      id: 5
+    agent4:
+      id: 4
       group_id: -1
-      skin: 5
+      skin: 4
       max_vel: 0.0
       radius: 0.4
       goal_radius: 0.6
       cyclic_goals: true
-      init_pose: {x: 0.75, y: 4.95, z: 0.0, h: 1.57}
+      init_pose: {x: -0.45, y: -4.50, z: 0.0, h: 1.57}
       behavior:
         type: 2
         configuration: 0
@@ -128,3 +111,20 @@ hunav_loader:
         social_force_factor: 0.0
         other_force_factor: 0.0
       goals: ["9"]
+    agent5:
+      id: 5
+      group_id: -1
+      skin: 5
+      max_vel: 0.0
+      radius: 0.4
+      goal_radius: 0.6
+      cyclic_goals: true
+      init_pose: {x: 0.40, y: -6.80, z: 0.0, h: 3.14}
+      behavior:
+        type: 2
+        configuration: 0
+        goal_force_factor: 0.0
+        obstacle_force_factor: 0.0
+        social_force_factor: 0.0
+        other_force_factor: 0.0
+      goals: ["10"]

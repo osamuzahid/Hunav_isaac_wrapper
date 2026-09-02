@@ -4,7 +4,7 @@ hunav_loader:
     simulator: Isaac Sim
     map: hospital
     publish_people: true
-    # Stretch hop (0.5,−7.8) yaw π → (−4.3, −0.5). Spawn west of x=5 stretcher
+    # Stretch hop (0.5,−7.8) yaw π → (−4.3, −0.5) yaw 1.57. Spawn west of x=5 stretcher
     # column (16.6 cm lidar misses that USD prop). 2 Impassive + 3 standing.
     plan_goals_on_map: true
     map_yaml: hospital.yaml
@@ -17,6 +17,9 @@ hunav_loader:
       y: -7.8
       z: 0.0
       h: 3.1416
+    campaign_goal:
+      x: -4.3
+      y: -0.5
     global_goals:
       # M1 Impassive — north hall east (away from south spawn)
       1: {x: 2.00, y: 0.70}
